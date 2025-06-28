@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 
 // shadcn
@@ -11,11 +13,18 @@ import { EyeIcon } from "lucide-react";
 
 // next
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
+
+  const handleLogin = () => {
+    router.push("/dashboard");
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -61,7 +70,11 @@ export function LoginForm({
 
               {/* ログインボタン */}
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
+                <Button
+                  type="submit"
+                  className="w-full cursor-pointer"
+                  onClick={handleLogin}
+                >
                   ログイン
                 </Button>
               </div>
