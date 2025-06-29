@@ -1,5 +1,11 @@
 import { Code } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ログイン | CodeCampas",
+  description: "ログインページ",
+};
 
 export default function LoginPage() {
   return (

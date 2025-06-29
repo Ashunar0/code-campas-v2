@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import React from "react";
 import Link from "next/link";
 import {
@@ -26,6 +27,11 @@ import {
   currentUser,
 } from "@/lib/mockData";
 import { DashboardCard } from "@/components/dashboard/dashboard-card";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード | CodeCampas",
+  description: "ダッシュボードページ",
+};
 
 export default function Dashboard() {
   const recentMaterials = mockMaterials.filter((material) =>

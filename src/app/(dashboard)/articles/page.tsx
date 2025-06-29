@@ -81,7 +81,7 @@ export default function MaterialList() {
         </div>
 
         {/* Progress Overview Card */}
-        <Card className="bg-white border-primary/50 shadow-md">
+        <Card className="bg-white border-primary/50">
           <CardContent className="px-6 py-2">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-2">

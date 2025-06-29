@@ -1,5 +1,11 @@
+import { Metadata } from "next";
 import { Code } from "lucide-react";
 import { RegisterForm } from "@/components/auth/register-form";
+
+export const metadata: Metadata = {
+  title: "新規登録 | CodeCampas",
+  description: "新規登録ページ",
+};
 
 export default function RegisterPage() {
   return (
