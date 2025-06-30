@@ -80,7 +80,7 @@ export function RegisterForm({
                 href="/login"
                 className="underline underline-offset-4 hover:text-blue-500"
               >
-                ログイン
+                新規登録
               </Link>
             </div>
           </form>

@@ -3,21 +3,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Clock,
-  CheckCircle,
-  Home,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { mockMaterials } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BreadCrumb } from "@/components/articles/detail/bread-crumb";
+import { ArticleNotFound } from "@/components/articles/detail/article-not-found";
+import { ArticleHeader } from "@/components/articles/detail/article-header";
+import { CompleteConfirm } from "@/components/articles/detail/complete-comfirm";
 
 export default function ArticleDetail() {
   const router = useRouter();
@@ -34,21 +30,7 @@ export default function ArticleDetail() {
       : null;
 
   if (!material) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Material not found
-          </h2>
-          <p className="text-gray-600 mb-4">
-            The material you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link href="/articles">
-            <Button className="cursor-pointer">Back to Articles</Button>
-          </Link>
-        </div>
-      </div>
-    );
+    return <ArticleNotFound />;
   }
 
   const handleMarkAsUnderstood = async () => {
@@ -56,12 +38,12 @@ export default function ArticleDetail() {
 
     // Simulate API call
     setTimeout(() => {
-      toast.success("Material marked as understood. Keep up the great work!");
+      toast.success("完了としてマークしました。");
       setIsCompleting(false);
 
       // Navigate to next material if available
       if (nextMaterial) {
-        router.push(`/materials/${nextMaterial.id}`);
+        router.push(`/articles/${nextMaterial.id}`);
       }
     }, 1000);
   };
@@ -122,61 +104,10 @@ export default function ArticleDetail() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link href="/dashboard" className="hover:text-primary">
-          <Home className="h-4 w-4" />
-        </Link>
-        <span>/</span>
-        <Link href="/articles" className="hover:text-primary">
-          Articles
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900">{material.chapterTitle}</span>
-        <span>/</span>
-        <span className="text-gray-900">{material.title}</span>
-      </nav>
+      <BreadCrumb material={material} />
 
       {/* Header */}
-      <Card>
-        <CardContent className="px-6 py-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-4">
-                <Badge variant="secondary">Chapter {material.chapter}</Badge>
-                {material.isRead && (
-                  <Badge
-                    variant="default"
-                    className="bg-green-100 text-green-800"
-                  >
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Completed
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {material.title}
-              </h1>
-              <p className="text-gray-600 mb-4">{material.chapterTitle}</p>
-
-              <div className="flex items-center space-x-6 text-sm text-gray-500">
-                <span className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  {material.readingTime} min read
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Link href="/articles">
-                <Button variant="outline" size="sm" className="cursor-pointer">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  一覧へ戻る
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <ArticleHeader material={material} />
 
       {/* Content */}
       <Card>
@@ -189,35 +120,10 @@ export default function ArticleDetail() {
 
       {/* Understanding Confirmation */}
       {!material.isRead && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Did you understand this material?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Mark this material as understood to track your progress and
-                continue to the next topic.
-              </p>
-              <Button
-                onClick={handleMarkAsUnderstood}
-                disabled={isCompleting}
-                size="lg"
-                className="min-w-[200px]"
-              >
-                {isCompleting ? (
-                  "Processing..."
-                ) : (
-                  <>
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Mark as Understood
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <CompleteConfirm
+          handleMarkAsUnderstood={handleMarkAsUnderstood}
+          isCompleting={isCompleting}
+        />
       )}
 
       {/* Navigation */}
