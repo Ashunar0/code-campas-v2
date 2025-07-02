@@ -54,17 +54,52 @@ export const UserList = () => {
     return matchesSearch && matchesStatus && matchesPeriod;
   });
 
-  const handleBulkAction = (action: "approve" | "reject") => {
-    setUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        selectedUsers.includes(u.id)
-          ? { ...u, status: action === "approve" ? "approved" : "rejected" }
-          : u
-      )
-    );
+  const handleBulkAction = async (action: "approve" | "reject") => {
+    try {
+      const { error } = await supabase
+        .from("User")
+        .update({ status: action === "approve" ? "approved" : "rejected" })
+        .in("id", selectedUsers);
 
-    setSelectedUsers([]);
-    toast.success(`${selectedUsers.length} users ${action}d`);
+      if (error) {
+        console.error(error);
+        toast.error("ユーザーのステータス更新に失敗しました");
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          selectedUsers.includes(u.id)
+            ? { ...u, status: action === "approve" ? "approved" : "rejected" }
+            : u
+        )
+      );
+
+      setSelectedUsers([]);
+      toast.success(
+        `${selectedUsers.length}件のユーザーを${
+          action === "approve" ? "承認" : "拒否"
+        }しました`
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("ユーザーのステータス更新に失敗しました");
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers((prev) => [...prev, userId]);
+    } else {
+      setSelectedUsers((prev) => prev.filter((id) => id !== userId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(filteredUsers.map((u) => u.id));
+    } else {
+      setSelectedUsers([]);
+    }
   };
 
   // ユーザー認証
@@ -150,7 +185,6 @@ export const UserList = () => {
           icon={<XCircle className="h-8 w-8 text-red-600" />}
         />
       </div>
-
       {/* Filters and Search */}
       <SearchFilter
         searchTerm={searchTerm}
@@ -171,6 +205,9 @@ export const UserList = () => {
 
       {/* Users Table */}
       <UserTable
+        selectedUsers={selectedUsers}
+        onSelectUser={handleSelectUser}
+        onSelectAll={handleSelectAll}
         filteredUsers={filteredUsers}
         onApprove={handleUserApprove}
         onReject={handleUserReject}

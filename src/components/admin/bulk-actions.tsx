@@ -23,6 +23,7 @@ export const BulkActions = ({
             <Button
               size="sm"
               onClick={() => onBulkAction("approve")}
+              disabled={selectedUsers.length === 0}
               className="h-8"
             >
               <UserCheck className="h-4 w-4 mr-1" />
@@ -32,6 +33,7 @@ export const BulkActions = ({
               variant="outline"
               size="sm"
               onClick={() => onBulkAction("reject")}
+              disabled={selectedUsers.length === 0}
               className="h-8"
             >
               <UserX className="h-4 w-4 mr-1" />

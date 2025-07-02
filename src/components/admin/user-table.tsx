@@ -30,11 +30,13 @@ import {
 import { EditDialog } from "./edit-dialog";
 import { format } from "date-fns";
 import { User as UserType } from "@/types/type";
-import { useState } from "react";
 import { Badge } from "../ui/badge";
 
 interface UserTableProps {
   filteredUsers: UserType[];
+  selectedUsers: string[];
+  onSelectUser: (userId: string, checked: boolean) => void;
+  onSelectAll: (checked: boolean) => void;
   onApprove: (userId: string) => void;
   onReject: (userId: string) => void;
 }
@@ -89,27 +91,12 @@ const getPermissionBadge = (permission: string) => {
 
 export const UserTable = ({
   filteredUsers,
+  selectedUsers,
+  onSelectUser,
+  onSelectAll,
   onApprove,
   onReject,
 }: UserTableProps) => {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-
-  const handleSelectUser = (userId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedUsers((prev) => [...prev, userId]);
-    } else {
-      setSelectedUsers((prev) => prev.filter((id) => id !== userId));
-    }
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUsers(filteredUsers.map((u) => u.id));
-    } else {
-      setSelectedUsers([]);
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -127,7 +114,7 @@ export const UserTable = ({
                       selectedUsers.length === filteredUsers.length &&
                       filteredUsers.length > 0
                     }
-                    onCheckedChange={handleSelectAll}
+                    onCheckedChange={onSelectAll}
                     className="cursor-pointer"
                   />
                 </TableHead>
@@ -149,7 +136,7 @@ export const UserTable = ({
                       <Checkbox
                         checked={selectedUsers.includes(user.id)}
                         onCheckedChange={(checked) =>
-                          handleSelectUser(user.id, checked as boolean)
+                          onSelectUser(user.id, checked as boolean)
                         }
                         className="cursor-pointer"
                       />
