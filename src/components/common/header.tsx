@@ -10,24 +10,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  BookOpen,
-  LayoutDashboard,
-  LogOut,
-  Code,
-  Settings,
-} from "lucide-react";
-import { currentUser } from "@/lib/mockData";
+import { BookOpen, LayoutDashboard, LogOut, Code } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { Badge } from "../ui/badge";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const { user, userDetails } = useAuth();
+  const router = useRouter();
 
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/articles", icon: BookOpen, label: "Articles" },
   ];
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("ログアウトしました");
+    router.push("/login");
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40 h-16">
@@ -58,6 +63,19 @@ export const Header: React.FC = () => {
                   </Link>
                 );
               })}
+
+              {userDetails?.permission === "admin" && (
+                <Link
+                  href="/admin"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    pathname === "/admin"
+                      ? "text-primary"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <span>Admin</span>
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -70,30 +88,37 @@ export const Header: React.FC = () => {
                 >
                   <Avatar className="h-10 w-10 cursor-pointer">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {currentUser.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {userDetails?.name
+                        ? userDetails.name
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                        : user?.email?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
-                <div className="flex items-center justify-start gap-2 p-2">
+                <div className="flex items-center justify-start gap-2 p-2 pt-4">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{currentUser.name}</p>
-                    <p className="w-[200px] truncate text-sm text-muted-foreground">
-                      {currentUser.email}
+                    <p className="text-sm font-semibold text-gray-900">
+                      {userDetails?.name || user?.email}
                     </p>
+                    <p className="w-[200px] truncate text-sm text-gray-500">
+                      {user?.email}
+                    </p>
+                    {userDetails && (
+                      <Badge className="bg-gray-50 text-gray-800">
+                        {userDetails.permission}
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

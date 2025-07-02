@@ -7,7 +7,9 @@ export const mockUsers: User[] = [
     email: "john@example.com",
     period: 1,
     status: "approved",
-    registrationDate: "2024-01-15",
+    permission: "admin",
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-01-15"),
   },
   {
     id: "2",
@@ -15,7 +17,9 @@ export const mockUsers: User[] = [
     email: "jane@example.com",
     period: 2,
     status: "pending",
-    registrationDate: "2024-01-20",
+    permission: "mentor",
+    createdAt: new Date("2024-01-20"),
+    updatedAt: new Date("2024-01-20"),
   },
   {
     id: "3",
@@ -23,7 +27,9 @@ export const mockUsers: User[] = [
     email: "mike@example.com",
     period: 1,
     status: "approved",
-    registrationDate: "2024-01-10",
+    permission: "mentor",
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-10"),
   },
   {
     id: "4",
@@ -31,7 +37,9 @@ export const mockUsers: User[] = [
     email: "sarah@example.com",
     period: 3,
     status: "pending",
-    registrationDate: "2024-01-25",
+    permission: "student",
+    createdAt: new Date("2024-01-25"),
+    updatedAt: new Date("2024-01-25"),
   },
 ];
 
@@ -343,5 +351,7 @@ export const currentUser: User = {
   email: "john@example.com",
   period: 1,
   status: "approved",
-  registrationDate: "2024-01-15",
+  permission: "admin",
+  createdAt: new Date("2024-01-15"),
+  updatedAt: new Date("2024-01-15"),
 };

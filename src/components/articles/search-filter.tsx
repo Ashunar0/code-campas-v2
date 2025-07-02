@@ -44,9 +44,9 @@ export function SearchAndFilter() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="read">Read</SelectItem>
-                <SelectItem value="unread">Unread</SelectItem>
+                <SelectItem value="all">すべて</SelectItem>
+                <SelectItem value="read">完了</SelectItem>
+                <SelectItem value="unread">未読</SelectItem>
               </SelectContent>
             </Select>
 

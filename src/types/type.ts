@@ -4,7 +4,9 @@ export interface User {
   email: string;
   period: number;
   status: "pending" | "approved" | "rejected";
-  registrationDate: string;
+  permission: "admin" | "mentor" | "student";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Material {

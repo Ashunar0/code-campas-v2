@@ -11,7 +11,7 @@ export default function ArticlesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">記事一覧</h1>
+        <h1 className="text-2xl font-bold text-gray-900">記事一覧</h1>
       </div>
 
       {/* Progress Overview Card */}

@@ -1,11 +1,13 @@
-import { Metadata } from "next";
 import React from "react";
+import { Metadata } from "next";
 import { BookOpen, TrendingUp } from "lucide-react";
-import { mockProgress, mockMaterials, currentUser } from "@/lib/mockData";
+import { mockProgress, mockMaterials } from "@/lib/mockData";
 import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { ProgressCard } from "@/components/dashboard/progress-card";
 import { RecentArticlesCard } from "@/components/dashboard/recent-articles-card";
 import { UnreadCard } from "@/components/dashboard/unread-card";
+import { WelcomeSection } from "@/components/dashboard/welcome-section";
+import { UserProfileCard } from "@/components/dashboard/user-profile-card";
 
 export const metadata: Metadata = {
   title: "ダッシュボード | CodeCampas",
@@ -20,14 +22,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20">
-        <h1 className="text-lg font-bold text-gray-900 mb-2">
-          おかえりなさい, {currentUser.name}さん！ 👋
-        </h1>
-        <p className="text-gray-600 text-md">
-          プログラミングの旅を続けていきましょう！
-        </p>
-      </div>
+      <WelcomeSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Progress Overview */}
@@ -53,6 +48,7 @@ export default function Dashboard() {
 
         {/* Recent Activity */}
         <div className="space-y-6">
+          <UserProfileCard />
           <RecentArticlesCard recentMaterials={recentMaterials} />
 
           {mockProgress.unreadCount > 0 && <UnreadCard />}
