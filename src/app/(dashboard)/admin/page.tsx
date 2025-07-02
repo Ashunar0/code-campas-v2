@@ -1,4 +1,10 @@
 import { UserList } from "@/components/admin/user-list";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ユーザー管理 | CodeCampas",
+  description: "ユーザー管理ページ",
+};
 
 export default function AdminUserManagement() {
   return (

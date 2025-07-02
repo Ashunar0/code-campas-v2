@@ -29,7 +29,10 @@ export const SearchFilter = ({
 }: SearchFilterProps) => {
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="px-6 py-2">
+        <p className="text-md font-semibold text-gray-900 mb-2">
+          ユーザーを検索
+        </p>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
