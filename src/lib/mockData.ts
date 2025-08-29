@@ -46,43 +46,43 @@ export const mockUsers: User[] = [
 export const mockChapters: Chapter[] = [
   {
     id: 1,
-    title: "プログラミングの基本",
-    description: "Basic concepts and fundamentals",
+    title: "JavaScript",
+    description: "JavaScriptの基本的な文法と概念",
     materialsCount: 8,
     completedCount: 6,
   },
   {
     id: 2,
-    title: "データ構造",
-    description: "Arrays, objects, and collections",
+    title: "React",
+    description: "Reactの基本的な概念と使い方",
     materialsCount: 12,
     completedCount: 8,
   },
   {
     id: 3,
-    title: "アルゴリズム",
-    description: "Problem-solving and optimization",
+    title: "Next.js",
+    description: "Next.jsの基本的な概念と使い方",
     materialsCount: 10,
     completedCount: 4,
   },
   {
     id: 4,
-    title: "オブジェクト指向プログラミング",
-    description: "Classes, objects, and inheritance",
+    title: "TypeScript",
+    description: "TypeScriptの基本的な概念と使い方",
     materialsCount: 15,
     completedCount: 2,
   },
   {
     id: 5,
-    title: "データベースの基本",
-    description: "SQL and database design",
+    title: "Tailwind CSS",
+    description: "Tailwind CSSの基本的な概念と使い方",
     materialsCount: 9,
     completedCount: 0,
   },
   {
     id: 6,
-    title: "Web開発",
-    description: "HTML, CSS, and JavaScript",
+    title: "Git",
+    description: "Gitの基本的な概念と使い方",
     materialsCount: 18,
     completedCount: 0,
   },
@@ -91,9 +91,10 @@ export const mockChapters: Chapter[] = [
 export const mockMaterials: Material[] = [
   {
     id: "1",
-    title: "プログラミングとは？",
+    title: "変数",
     chapter: 1,
-    chapterTitle: "プログラミングの基本",
+    chapterTitle: "JavaScript",
+    path: "/contents/01_JavaScript/01_variable",
     content: `# What is Programming?
 
 Programming is the process of creating a set of instructions that tell a computer how to perform a task. It's like writing a recipe, but instead of cooking, you're telling a computer what to do.
@@ -128,6 +129,7 @@ The best way to learn programming is by doing. Start with simple exercises and g
     title: "変数とデータ型",
     chapter: 1,
     chapterTitle: "プログラミングの基本",
+    path: "/contents/01_JavaScript/02_variable_and_data_type",
     content: `# Variables and Data Types
 
 Variables are fundamental building blocks in programming. They allow us to store and manipulate data throughout our programs.
@@ -178,6 +180,7 @@ Understanding variables and data types is crucial for effective programming!`,
     title: "制御フロー",
     chapter: 1,
     chapterTitle: "プログラミングの基本",
+    path: "/contents/01_JavaScript/03_control_flow",
     content: `# Control Flow Statements
 
 Control flow statements determine the order in which code is executed. They allow your programs to make decisions and repeat actions.
@@ -252,6 +255,7 @@ Control flow is what makes programs dynamic and responsive!`,
     title: "配列の基本",
     chapter: 2,
     chapterTitle: "データ構造",
+    path: "/contents/01_JavaScript/04_array",
     content: `# Introduction to Arrays
 
 Arrays are one of the most fundamental data structures in programming. They allow you to store multiple values in a single variable.

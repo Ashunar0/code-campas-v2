@@ -59,17 +59,19 @@ export function LoginForm({
     setShowPassword(!showPassword);
   };
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
 
       if (error) {
         toast.error("ログインに失敗しました");
         return;
       }
+
+      console.log(data);
 
       toast.success("ログインが完了しました");
       router.push("/dashboard");

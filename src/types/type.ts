@@ -14,6 +14,7 @@ export interface Material {
   title: string;
   chapter: number;
   chapterTitle: string;
+  path: string;
   content: string;
   isRead: boolean;
   lastUpdated: string;

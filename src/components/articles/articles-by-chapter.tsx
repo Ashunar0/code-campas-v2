@@ -44,9 +44,6 @@ export function ArticlesByChapter({
                         <h3 className="text-lg font-semibold text-gray-900">
                           {chapter.title}
                         </h3>
-                        <p className="text-sm text-gray-600 hidden md:block">
-                          {chapter.description}
-                        </p>
                       </div>
                     </div>
 
