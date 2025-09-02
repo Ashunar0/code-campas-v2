@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { mockMaterials } from "@/lib/mockData";
+import { Materials } from "@/app/(dashboard)/contents/article";
 
 export function ProgressOverviewCard() {
-  const totalMaterials = mockMaterials.length;
-  const readMaterials = mockMaterials.filter((m) => m.isRead).length;
+  const totalMaterials = Materials.length;
+  const readMaterials = Materials.filter((m) => m.isRead).length;
   const overallProgress = Math.round((readMaterials / totalMaterials) * 100);
 
   return (

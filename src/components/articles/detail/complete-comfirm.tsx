@@ -17,9 +17,6 @@ export function CompleteConfirm({
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             この記事を完了としてマークしますか？
           </h3>
-          <p className="text-gray-600 mb-4">
-            この記事を完了としてマークすることで、進捗を追跡し、次のトピックに進むことができます。
-          </p>
           <Button
             onClick={handleMarkAsUnderstood}
             disabled={isCompleting}

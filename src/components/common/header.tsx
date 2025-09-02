@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
+import { Logout } from "./logout";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -127,6 +128,8 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {!user && <Logout />}
     </header>
   );
 };

@@ -10,14 +10,12 @@ export interface User {
 }
 
 export interface Material {
-  id: string;
+  id: number;
   title: string;
   chapter: number;
   chapterTitle: string;
   path: string;
-  content: string;
   isRead: boolean;
-  lastUpdated: string;
   readingTime: number;
 }
 
@@ -32,7 +30,6 @@ export interface Progress {
 export interface Chapter {
   id: number;
   title: string;
-  description: string;
   materialsCount: number;
   completedCount: number;
 }

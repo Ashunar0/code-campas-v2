@@ -3,8 +3,8 @@
 import { SearchAndFilter } from "./search-filter";
 import { ArticlesByChapter } from "./articles-by-chapter";
 import { ArticlesNotFound } from "./articles-not-found";
-import { mockMaterials } from "@/lib/mockData";
-import { mockChapters } from "@/lib/mockData";
+import { Materials } from "@/app/(dashboard)/contents/article";
+import { Chapters } from "@/app/(dashboard)/contents/article";
 import { useState } from "react";
 
 export function ArticlesList() {
@@ -14,7 +14,7 @@ export function ArticlesList() {
   );
   const [filterChapter, setFilterChapter] = useState<string>("all");
 
-  const filteredMaterials = mockMaterials.filter((material) => {
+  const filteredMaterials = Materials.filter((material) => {
     const matchesSearch =
       material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       material.chapterTitle.toLowerCase().includes(searchTerm.toLowerCase());
@@ -30,7 +30,7 @@ export function ArticlesList() {
     return matchesSearch && matchesStatus && matchesChapter;
   });
 
-  const groupedMaterials = mockChapters.reduce((acc, chapter) => {
+  const groupedMaterials = Chapters.reduce((acc, chapter) => {
     const chapterMaterials = filteredMaterials.filter(
       (m) => m.chapter === chapter.id
     );
@@ -41,7 +41,7 @@ export function ArticlesList() {
       };
     }
     return acc;
-  }, {} as Record<number, { chapter: (typeof mockChapters)[0]; materials: typeof mockMaterials }>);
+  }, {} as Record<number, { chapter: (typeof Chapters)[0]; materials: typeof Materials }>);
 
   return (
     <>

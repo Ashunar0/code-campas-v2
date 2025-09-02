@@ -16,8 +16,7 @@ export const BulkActions = ({
       <CardContent className="px-6 py-2">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-700">
-            {selectedUsers.length} user{selectedUsers.length > 1 ? "s" : ""} has
-            been selected.
+            {selectedUsers.length}人のユーザーを選択中
           </p>
           <div className="flex space-x-2">
             <Button
@@ -27,7 +26,7 @@ export const BulkActions = ({
               className="h-8"
             >
               <UserCheck className="h-4 w-4 mr-1" />
-              Approve All
+              すべて承認
             </Button>
             <Button
               variant="outline"
@@ -37,7 +36,7 @@ export const BulkActions = ({
               className="h-8"
             >
               <UserX className="h-4 w-4 mr-1" />
-              Reject All
+              すべて拒否
             </Button>
           </div>
         </div>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ArticlesPage() {
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">記事一覧</h1>
       </div>

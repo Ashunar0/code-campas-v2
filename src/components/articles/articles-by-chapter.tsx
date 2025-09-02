@@ -61,7 +61,7 @@ export function ArticlesByChapter({
                       {materials.map((material) => (
                         <Link
                           key={material.id}
-                          href={`/articles/${material.id}`}
+                          href={material.path}
                           className="block"
                         >
                           <Card className="hover:shadow-md transition-shadow duration-200 border-gray-200 hover:border-primary/50">
