@@ -5,7 +5,6 @@ import { SearchFilter } from "./search-filter";
 import { Users, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { mockUsers } from "@/lib/mockData";
 import { StatsCard } from "./stats-card";
 import { supabase } from "@/lib/supabase";
 import { User as UserType } from "@/types/type";
@@ -18,7 +17,7 @@ export const UserList = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<string>("all");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<UserType[]>([]);
 
   const pendingCount = users.filter((u) => u.status === "pending").length;
   const approvedCount = users.filter((u) => u.status === "approved").length;
