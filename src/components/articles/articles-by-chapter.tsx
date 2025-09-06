@@ -16,7 +16,10 @@ export function ArticlesByChapter({
   groupedMaterials,
 }: {
   groupedMaterials: {
-    [key: string]: { chapter: Chapter; materials: Material[] };
+    [key: string]: {
+      chapter: Chapter;
+      materials: (Material & { isRead: boolean })[];
+    };
   };
 }) {
   return (
@@ -60,8 +63,8 @@ export function ArticlesByChapter({
                     <div className="grid gap-3">
                       {materials.map((material) => (
                         <Link
-                          key={material.id}
-                          href={material.path}
+                          key={material.slug}
+                          href={`/contents/${material.slug}`}
                           className="block"
                         >
                           <Card className="hover:shadow-md transition-shadow duration-200 border-gray-200 hover:border-primary/50">

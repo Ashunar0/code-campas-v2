@@ -12,11 +12,23 @@ import { Filter, BookMarked } from "lucide-react";
 import { mockChapters } from "@/lib/mockData";
 import { useState } from "react";
 
-export function SearchAndFilter() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterChapter, setFilterChapter] = useState("all");
+interface SearchAndFilterProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  filterStatus: "all" | "read" | "unread";
+  setFilterStatus: (status: "all" | "read" | "unread") => void;
+  filterChapter: string;
+  setFilterChapter: (chapter: string) => void;
+}
 
+export function SearchAndFilter({
+  searchTerm,
+  setSearchTerm,
+  filterStatus,
+  setFilterStatus,
+  filterChapter,
+  setFilterChapter,
+}: SearchAndFilterProps) {
   return (
     <Card>
       <CardContent className="px-6 py-2">

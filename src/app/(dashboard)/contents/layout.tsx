@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,8 @@ import { ArticleNotFound } from "@/components/articles/detail/article-not-found"
 import { ArticleHeader } from "@/components/articles/detail/article-header";
 import { CompleteConfirm } from "@/components/articles/detail/complete-comfirm";
 import { Materials } from "@/app/(dashboard)/contents/article";
+import { useAuth } from "@/hooks/useAuth";
+import { getArticleReadStatus, markArticleAsRead } from "@/lib/progress";
 
 export default function ContentsLayout({
   children,
@@ -22,29 +24,70 @@ export default function ContentsLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isRead, setIsRead] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user, userDetails } = useAuth();
 
-  const material = Materials.find((m) => m.path === pathname);
-  const currentIndex = Materials.findIndex((m) => m.path === pathname);
+  // pathnameから/contents/プレフィックスを除去してslugを取得
+  const slug = pathname.replace("/contents/", "");
+  const material = Materials.find((m) => m.slug === slug);
+  const currentIndex = Materials.findIndex((m) => m.slug === slug);
   const previousMaterial =
     currentIndex > 0 ? Materials[currentIndex - 1] : null;
   const nextMaterial =
     currentIndex < Materials.length - 1 ? Materials[currentIndex + 1] : null;
+
+  // ページを開いた時にisRead情報を取得
+  useEffect(() => {
+    const fetchReadStatus = async () => {
+      if (!user?.id || !material) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const readStatus = await getArticleReadStatus(user.id, material.slug);
+        setIsRead(readStatus);
+      } catch (error) {
+        console.error("Error fetching read status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReadStatus();
+  }, [user?.id, material]);
 
   if (!material) {
     return <ArticleNotFound />;
   }
 
   const handleMarkAsUnderstood = async () => {
+    if (!user?.id) {
+      toast.error("ログインが必要です。");
+      return;
+    }
+
     setIsCompleting(true);
 
-    setTimeout(() => {
-      toast.success("完了としてマークしました。");
-      setIsCompleting(false);
+    try {
+      const success = await markArticleAsRead(user.id, material.slug);
+      if (success) {
+        setIsRead(true);
+        toast.success("完了としてマークしました。");
 
-      if (nextMaterial) {
-        router.push("/articles");
+        if (nextMaterial) {
+          router.push("/articles");
+        }
+      } else {
+        toast.error("エラーが発生しました。");
       }
-    }, 1000);
+    } catch (error) {
+      console.error("Error marking as read:", error);
+      toast.error("エラーが発生しました。");
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   return (
@@ -69,7 +112,7 @@ export default function ContentsLayout({
       </Card>
 
       {/* Understanding Confirmation */}
-      {!material.isRead && (
+      {!loading && !isRead && (
         <CompleteConfirm
           handleMarkAsUnderstood={handleMarkAsUnderstood}
           isCompleting={isCompleting}
@@ -80,7 +123,7 @@ export default function ContentsLayout({
       <div className="flex items-center justify-between">
         <div>
           {previousMaterial && (
-            <Link href={previousMaterial.path}>
+            <Link href={`/contents/${previousMaterial.slug}`}>
               <Button variant="outline" className="cursor-pointer">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Prev: {previousMaterial.title}
@@ -91,7 +134,7 @@ export default function ContentsLayout({
 
         <div>
           {nextMaterial && (
-            <Link href={nextMaterial.path}>
+            <Link href={`/contents/${nextMaterial.slug}`}>
               <Button className="cursor-pointer">
                 Next: {nextMaterial.title}
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -102,29 +145,6 @@ export default function ContentsLayout({
       </div>
 
       <Separator className="my-8" />
-
-      {/* Progress Indicator */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
-              Material {currentIndex + 1} of {Materials.length}
-            </span>
-            <span className="text-gray-600">
-              {Math.round(((currentIndex + 1) / Materials.length) * 100)}%
-              through course
-            </span>
-          </div>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${((currentIndex + 1) / Materials.length) * 100}%`,
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

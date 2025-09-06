@@ -1,139 +1,94 @@
 import { Chapter, Material } from "@/types/type";
 
-export const Chapters: Chapter[] = [
+export const Materials: Omit<Material, "isRead">[] = [
   {
-    id: 1,
-    title: "JavaScript",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "01_JavaScript/01_variable",
+    title: "変数",
+    chapter: "01_JavaScript",
+    chapterTitle: "JavaScript",
+    readingTime: 10,
   },
   {
-    id: 2,
-    title: "React",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "01_JavaScript/02_array_and_object",
+    title: "配列とオブジェクト",
+    chapter: "01_JavaScript",
+    chapterTitle: "JavaScript",
+    readingTime: 10,
   },
   {
-    id: 3,
-    title: "Git・GitHub",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "01_JavaScript/03_function",
+    title: "関数",
+    chapter: "01_JavaScript",
+    chapterTitle: "JavaScript",
+    readingTime: 10,
   },
   {
-    id: 4,
-    title: "Firebase",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "01_JavaScript/04_if_and_for",
+    title: "if文とfor文",
+    chapter: "01_JavaScript",
+    chapterTitle: "JavaScript",
+    readingTime: 10,
   },
   {
-    id: 5,
-    title: "Next.js",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "02_React/01_what_is_react",
+    title: "Reactとは",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
   },
   {
-    id: 6,
-    title: "プロジェクト管理",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "02_React/02_basic_of_react",
+    title: "Reactの基本",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
   },
   {
-    id: 7,
-    title: "Tailwind CSS",
-    materialsCount: 8,
-    completedCount: 6,
+    slug: "02_React/03_counter",
+    title: "Reactでカウンターをつくろう",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
+  },
+  {
+    slug: "02_React/04_quiz",
+    title: "Reactでクイズをつくろう",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
+  },
+  {
+    slug: "02_React/05_todo_list",
+    title: "ReactでTodoリストをつくろう",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
+  },
+  {
+    slug: "02_React/06_chat_app",
+    title: "Reactでチャットアプリをつくろう",
+    chapter: "02_React",
+    chapterTitle: "React",
+    readingTime: 10,
   },
 ];
 
-export const Materials: Material[] = [
-  {
-    id: 1,
-    title: "変数",
-    chapter: 1,
-    chapterTitle: "JavaScript",
-    path: "/contents/01_JavaScript/01_variable",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 2,
-    title: "配列とオブジェクト",
-    chapter: 1,
-    chapterTitle: "JavaScript",
-    path: "/contents/01_JavaScript/02_array_and_object",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 3,
-    title: "関数",
-    chapter: 1,
-    chapterTitle: "JavaScript",
-    path: "/contents/01_JavaScript/03_function",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 4,
-    title: "if文とfor文",
-    chapter: 1,
-    chapterTitle: "JavaScript",
-    path: "/contents/01_JavaScript/04_if_and_for",
-    isRead: false,
-    readingTime: 10,
-  },
-  {
-    id: 5,
-    title: "Reactとは",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/01_what_is_react",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 6,
-    title: "Reactの基本",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/02_basic_of_react",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 7,
-    title: "Reactでカウンターをつくろう",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/03_counter",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 8,
-    title: "Reactでクイズをつくろう",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/04_quiz",
-    isRead: true,
-    readingTime: 10,
-  },
-  {
-    id: 9,
-    title: "ReactでTodoリストをつくろう",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/05_todo_list",
-    isRead: false,
-    readingTime: 10,
-  },
-  {
-    id: 10,
-    title: "Reactでチャットアプリをつくろう",
-    chapter: 2,
-    chapterTitle: "React",
-    path: "/contents/02_React/06_chat_app",
-    isRead: false,
-    readingTime: 10,
-  },
-];
+export function buildChapters(progress: Record<string, boolean>) {
+  return Materials.reduce((acc, m) => {
+    const found = acc.find((c) => c.id === m.chapter);
+    const isRead = !!progress[m.slug]; // ← Supabaseから渡される進捗で判定
+
+    if (found) {
+      found.materialsCount++;
+      if (isRead) found.completedCount++;
+    } else {
+      acc.push({
+        id: m.chapter,
+        title: m.chapterTitle,
+        materialsCount: 1,
+        completedCount: isRead ? 1 : 0,
+      });
+    }
+    return acc;
+  }, [] as { id: string; title: string; materialsCount: number; completedCount: number }[]);
+}

@@ -7,28 +7,36 @@ export interface User {
   permission: "admin" | "mentor" | "student";
   createdAt: Date;
   updatedAt: Date;
+  progress?: ProgressRecord[];
+}
+
+export interface ProgressRecord {
+  id: string;
+  userId: string;
+  articleSlug: string;
+  isRead: boolean;
+  updatedAt: Date;
 }
 
 export interface Material {
-  id: number;
+  slug: string;
   title: string;
-  chapter: number;
+  chapter: string;
   chapterTitle: string;
-  path: string;
-  isRead: boolean;
   readingTime: number;
+  isRead?: boolean;
 }
 
 export interface Progress {
   userId: string;
   overall: number;
-  byChapter: Record<number, number>;
+  byChapter: Record<string, number>;
   recentMaterials: string[];
   unreadCount: number;
 }
 
 export interface Chapter {
-  id: number;
+  id: string;
   title: string;
   materialsCount: number;
   completedCount: number;
