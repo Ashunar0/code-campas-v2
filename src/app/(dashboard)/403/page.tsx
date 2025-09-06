@@ -32,11 +32,8 @@ export default function ForbiddenPage() {
             管理者にお問い合わせください。
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center">
-            <p className="text-sm text-gray-500">エラーコード: 403 Forbidden</p>
-          </div>
-          <div className="flex flex-col gap-2">
+        <CardContent>
+          <div className="space-y-4">
             <Button asChild className="w-full">
               <Link href="/dashboard">
                 <ArrowLeft className="mr-2 h-4 w-4" />
