@@ -1,10 +1,4 @@
-"use client";
-
-import { useAuth } from "@/hooks/useAuth";
-
 export const WelcomeSection = () => {
-  const { user } = useAuth();
-
   return (
     <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20">
       <h1 className="text-lg font-bold text-gray-900 mb-2">

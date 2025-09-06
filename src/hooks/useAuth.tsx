@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error || !data) {
+        console.error(error);
         setUserDetails(null);
         return false;
       }
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return true;
     } catch (err) {
+      console.error(err);
       setUserDetails(null);
       return false;
     }

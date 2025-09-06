@@ -1,4 +1,4 @@
-import { Chapter, Material } from "@/types/type";
+import { Material } from "@/types/type";
 
 export const Materials: Omit<Material, "isRead">[] = [
   {

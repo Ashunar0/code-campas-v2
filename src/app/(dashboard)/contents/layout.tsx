@@ -26,7 +26,7 @@ export default function ContentsLayout({
   const [isCompleting, setIsCompleting] = useState(false);
   const [isRead, setIsRead] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user, userDetails } = useAuth();
+  const { user } = useAuth();
 
   // pathnameから/contents/プレフィックスを除去してslugを取得
   const slug = pathname.replace("/contents/", "");
