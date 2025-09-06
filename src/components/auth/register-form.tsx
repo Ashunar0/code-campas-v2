@@ -68,8 +68,6 @@ export function RegisterForm({
           password,
         });
 
-      console.log("signUpData", signUpData);
-
       if (signUpError) {
         toast.error(`登録に失敗しました: ${signUpError.message}`);
         return;
@@ -88,8 +86,8 @@ export function RegisterForm({
         name,
         period: parseInt(period),
         email,
-        status: "approved",
-        permission: "admin",
+        status: "pending",
+        permission: "student",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });

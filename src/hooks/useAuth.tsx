@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error || !data) {
-        console.error("ユーザー詳細情報の取得に失敗:", error?.message);
         setUserDetails(null);
         return false;
       }
@@ -51,9 +50,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
 
       setUserDetails(userWithDates);
+
+      // 承認されていないユーザーは自動的にログアウト
+      if (userWithDates.status !== "approved") {
+        await supabase.auth.signOut();
+        setUser(null);
+        setUserDetails(null);
+        return false;
+      }
+
       return true;
     } catch (err) {
-      console.error("ユーザー詳細取得中のエラー:", err);
       setUserDetails(null);
       return false;
     }

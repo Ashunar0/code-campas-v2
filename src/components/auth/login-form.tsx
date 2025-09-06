@@ -71,7 +71,39 @@ export function LoginForm({
         return;
       }
 
-      console.log(data);
+      if (!data.user) {
+        toast.error("ユーザー情報の取得に失敗しました");
+        return;
+      }
+
+      // ユーザーの承認ステータスをデータベースから取得
+      const { data: userData, error: userError } = await supabase
+        .from("User")
+        .select("status")
+        .eq("id", data.user.id)
+        .single();
+
+      if (userError || !userData) {
+        toast.error("ユーザー情報の取得に失敗しました");
+        return;
+      }
+
+      // 承認ステータスをチェック
+      if (userData.status === "pending") {
+        toast.error(
+          "ユーザー認証が完了していません。管理者の承認をお待ちください。"
+        );
+        await supabase.auth.signOut(); // ログアウトしてセッションを無効化
+        return;
+      }
+
+      if (userData.status === "rejected") {
+        toast.error(
+          "アカウントが拒否されました。管理者にお問い合わせください。"
+        );
+        await supabase.auth.signOut(); // ログアウトしてセッションを無効化
+        return;
+      }
 
       toast.success("ログインが完了しました");
       router.push("/dashboard");
