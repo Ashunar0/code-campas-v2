@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function RecentArticles({ material }: { material: Material }) {
   return (
-    <div key={material.id} className="flex items-start space-x-3">
+    <div key={material.slug} className="flex items-start space-x-3">
       {material.isRead ? (
         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
       ) : (
@@ -12,7 +12,7 @@ export function RecentArticles({ material }: { material: Material }) {
       )}
       <div className="flex-1 min-w-0">
         <Link
-          href={`/articles/${material.id}`}
+          href={`/articles/${material.slug}`}
           className="text-sm font-medium text-gray-900 hover:text-primary transition-colors"
         >
           {material.title}

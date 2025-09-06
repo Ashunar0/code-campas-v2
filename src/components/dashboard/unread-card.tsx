@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
-import { mockProgress } from "@/lib/mockData";
 
 export function UnreadCard() {
   return (
@@ -11,9 +10,7 @@ export function UnreadCard() {
         <CardTitle className="text-primary">新しい記事があります</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-700 mb-3">
-          {mockProgress.unreadCount}件の未読記事があります。
-        </p>
+        <p className="text-sm text-gray-700 mb-3">件の未読記事があります。</p>
         <Link href="/articles">
           <Button size="sm" className="w-full">
             <BookOpen className="w-4 h-4 mr-2" />

@@ -27,11 +27,11 @@ export function RecentArticlesCard({
         <div className="space-y-4">
           {recentMaterials.length > 0 ? (
             recentMaterials.map((material) => (
-              <RecentArticles key={material.id} material={material} />
+              <RecentArticles key={material.slug} material={material} />
             ))
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">
-              No recent materials. Start reading to see your progress!
+              最近の記事はありません。
             </p>
           )}
         </div>
