@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Accordion,
   AccordionContent,
@@ -7,10 +9,11 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CircularProgress } from "@/components/dashboard/circular-progress";
-import { mockProgress } from "@/lib/mockData";
 import { BookOpen, CheckCircle, Circle, Clock } from "lucide-react";
 import Link from "next/link";
 import { Chapter, Material } from "@/types/type";
+import { useAuth } from "@/hooks/useAuth";
+import { useChapters } from "@/hooks/useChapter";
 
 export function ArticlesByChapter({
   groupedMaterials,
@@ -22,6 +25,16 @@ export function ArticlesByChapter({
     };
   };
 }) {
+  const { user } = useAuth();
+  const chapters = useChapters(user?.id || null);
+
+  // チャプターごとの進捗率を計算
+  const getChapterProgress = (chapterId: string) => {
+    const chapter = chapters.find((c) => c.id === chapterId);
+    if (!chapter || chapter.materialsCount === 0) return 0;
+    return Math.round((chapter.completedCount / chapter.materialsCount) * 100);
+  };
+
   return (
     <Accordion
       type="multiple"
@@ -30,7 +43,7 @@ export function ArticlesByChapter({
     >
       {Object.entries(groupedMaterials).map(
         ([chapterId, { chapter, materials }]) => {
-          const chapterProgress = mockProgress.byChapter[chapter.id] || 0;
+          const chapterProgress = getChapterProgress(chapter.id);
 
           return (
             <AccordionItem key={chapterId} value={chapterId}>

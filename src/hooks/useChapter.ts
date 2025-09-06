@@ -1,3 +1,5 @@
+"use client";
+
 // hooks/useChapters.ts
 import { useEffect, useState } from "react";
 import { getUserProgress } from "@/lib/progress";

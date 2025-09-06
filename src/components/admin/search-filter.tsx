@@ -24,8 +24,6 @@ export const SearchFilter = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
-  periodFilter,
-  setPeriodFilter,
 }: SearchFilterProps) => {
   return (
     <Card>
@@ -55,19 +53,6 @@ export const SearchFilter = ({
                 <SelectItem value="pending">承認待ち</SelectItem>
                 <SelectItem value="approved">承認済み</SelectItem>
                 <SelectItem value="rejected">拒否済み</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={periodFilter} onValueChange={setPeriodFilter}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="すべての開講期" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべての開講期</SelectItem>
-                <SelectItem value="1">期間1</SelectItem>
-                <SelectItem value="2">期間2</SelectItem>
-                <SelectItem value="3">期間3</SelectItem>
-                <SelectItem value="4">期間4</SelectItem>
               </SelectContent>
             </Select>
           </div>

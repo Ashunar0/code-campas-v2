@@ -8,17 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, BookMarked } from "lucide-react";
-import { mockChapters } from "@/lib/mockData";
-import { useState } from "react";
+import { Filter } from "lucide-react";
 
 interface SearchAndFilterProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   filterStatus: "all" | "read" | "unread";
   setFilterStatus: (status: "all" | "read" | "unread") => void;
-  filterChapter: string;
-  setFilterChapter: (chapter: string) => void;
 }
 
 export function SearchAndFilter({
@@ -26,8 +22,6 @@ export function SearchAndFilter({
   setSearchTerm,
   filterStatus,
   setFilterStatus,
-  filterChapter,
-  setFilterChapter,
 }: SearchAndFilterProps) {
   return (
     <Card>
@@ -59,21 +53,6 @@ export function SearchAndFilter({
                 <SelectItem value="all">すべて</SelectItem>
                 <SelectItem value="read">完了</SelectItem>
                 <SelectItem value="unread">未読</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterChapter} onValueChange={setFilterChapter}>
-              <SelectTrigger className="w-[160px]">
-                <BookMarked className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="All Chapters" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Chapters</SelectItem>
-                {mockChapters.map((chapter) => (
-                  <SelectItem key={chapter.id} value={chapter.id.toString()}>
-                    Chapter {chapter.id}
-                  </SelectItem>
-                ))}
               </SelectContent>
             </Select>
           </div>

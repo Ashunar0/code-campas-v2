@@ -6,13 +6,15 @@ import { ArticlesByChapter } from "./articles-by-chapter";
 import { ArticlesNotFound } from "./articles-not-found";
 import { Materials, buildChapters } from "@/app/(dashboard)/contents/article";
 import { supabase } from "@/lib/supabase";
+import { ArticleIsLoading } from "./article-isloading";
 
 export function ArticlesList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "read" | "unread">(
     "all"
   );
-  const [filterChapter, setFilterChapter] = useState<string>("all");
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [progress, setProgress] = useState<Record<string, boolean>>({});
@@ -54,6 +56,7 @@ export function ArticlesList() {
 
       setProgress(progressMap);
       setChapters(buildChapters(progressMap)); // Chaptersを動的生成
+      setIsLoading(false);
     })();
   }, [userId]);
 
@@ -74,23 +77,28 @@ export function ArticlesList() {
       (filterStatus === "read" && material.isRead) ||
       (filterStatus === "unread" && !material.isRead);
 
-    const matchesChapter =
-      filterChapter === "all" || material.chapter === filterChapter;
-
-    return matchesSearch && matchesStatus && matchesChapter;
+    return matchesSearch && matchesStatus;
   });
 
   // チャプターごとにグループ化
-  const groupedMaterials = chapters.reduce((acc, chapter) => {
-    const chapterMaterials = filteredMaterials.filter(
-      (m) => m.chapter === chapter.id
-    );
-    if (chapterMaterials.length > 0) {
-      acc[chapter.id] = {
-        chapter,
-        materials: chapterMaterials, // ← filteredMaterials（isRead反映済み）を使う
-      };
+  const groupedMaterials = filteredMaterials.reduce((acc, material) => {
+    const chapterId = material.chapter;
+
+    if (!acc[chapterId]) {
+      // チャプター情報を取得（chapters配列から検索）
+      const chapterInfo = chapters.find((c) => c.id === chapterId);
+      if (chapterInfo) {
+        acc[chapterId] = {
+          chapter: chapterInfo,
+          materials: [],
+        };
+      }
     }
+
+    if (acc[chapterId]) {
+      acc[chapterId].materials.push(material);
+    }
+
     return acc;
   }, {} as Record<string, { chapter: (typeof chapters)[0]; materials: typeof materialsWithProgress }>);
 
@@ -102,18 +110,17 @@ export function ArticlesList() {
         setSearchTerm={setSearchTerm}
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
-        filterChapter={filterChapter}
-        setFilterChapter={setFilterChapter}
       />
 
       {/* Materials by Chapter */}
-      {Object.keys(groupedMaterials).length > 0 ? (
+      {isLoading ? (
+        <ArticleIsLoading />
+      ) : Object.keys(groupedMaterials).length > 0 ? (
         <ArticlesByChapter groupedMaterials={groupedMaterials} />
       ) : (
         <ArticlesNotFound
           setSearchTerm={setSearchTerm}
           setFilterStatus={setFilterStatus}
-          setFilterChapter={setFilterChapter}
         />
       )}
     </>
