@@ -10,6 +10,9 @@ import { Calendar, Mail, User, Shield } from "lucide-react";
 export const UserProfileCard: React.FC = () => {
   const { userDetails, loading } = useAuth();
 
+  const createdAt = userDetails?.createdAt.toDate();
+  const updatedAt = userDetails?.updatedAt.toDate();
+
   if (loading) {
     return (
       <Card>
@@ -128,8 +131,8 @@ export const UserProfileCard: React.FC = () => {
 
         <div className="pt-3 border-t">
           <div className="text-xs text-muted-foreground">
-            <p>登録日: {userDetails.createdAt.toLocaleDateString("ja-JP")}</p>
-            <p>最終更新: {userDetails.updatedAt.toLocaleDateString("ja-JP")}</p>
+            <p>登録日: {createdAt?.toLocaleDateString("ja-JP")}</p>
+            <p>最終更新: {updatedAt?.toLocaleDateString("ja-JP")}</p>
           </div>
         </div>
       </CardContent>
