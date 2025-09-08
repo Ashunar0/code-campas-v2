@@ -100,7 +100,7 @@ export default function ContentsLayout({
 
       {/* Content */}
       <Card>
-        <CardContent className="p-8">
+        <CardContent className="px-8">
           <link
             href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
             rel="stylesheet"

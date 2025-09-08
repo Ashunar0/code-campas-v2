@@ -18,6 +18,7 @@ import { logOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
 import { Logout } from "./logout";
+import { Sidebar } from "./sidebar";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -65,7 +66,7 @@ export const Header: React.FC = () => {
                 );
               })}
 
-              {userDetails?.permission === "admin" && (
+              {userDetails?.permission !== "student" && (
                 <Link
                   href="/admin"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -78,6 +79,10 @@ export const Header: React.FC = () => {
                 </Link>
               )}
             </nav>
+
+            <div className="md:hidden">
+              <Sidebar />
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
