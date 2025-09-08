@@ -14,7 +14,7 @@ import { BookOpen, LayoutDashboard, LogOut, Code } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
+import { logOut } from "@/lib/auth";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
 import { Logout } from "./logout";
@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
   ];
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logOut();
     toast.success("ログアウトしました");
     router.push("/login");
   };
