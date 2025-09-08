@@ -12,7 +12,6 @@ import { UserTable } from "./user-table";
 import { db } from "@/lib/firebase";
 import {
   collection,
-  getDocs,
   doc,
   updateDoc,
   onSnapshot,
@@ -38,7 +37,7 @@ export const UserList = () => {
       q,
       (snapshot) => {
         const data: UserType[] = snapshot.docs.map((docSnap) => {
-          const raw = docSnap.data() as any;
+          const raw = docSnap.data() as UserType;
           return { ...raw, uid: raw?.uid ?? docSnap.id } as UserType;
         });
         setUsers(data);

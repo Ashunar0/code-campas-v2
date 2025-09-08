@@ -56,13 +56,7 @@ export async function markArticleAsRead(
 
     return true;
   } catch (error) {
-    const anyErr = error as any;
-    console.error("Error marking article as read:", {
-      code: anyErr?.code,
-      message: anyErr?.message,
-      uid,
-      articleSlug,
-    });
+    console.error("Error marking article as read:", error);
     return false;
   }
 }
