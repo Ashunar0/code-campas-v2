@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function ProgressOverviewCard() {
   const { user } = useAuth();
   const { totalMaterials, readMaterials, overallProgress, loading, error } =
-    useProgress(user?.id || null);
+    useProgress(user?.uid || null);
 
   if (loading) {
     return (

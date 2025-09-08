@@ -1,16 +1,24 @@
 "use client";
 
 import { SearchFilter } from "./search-filter";
-
 import { Users, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StatsCard } from "./stats-card";
-import { supabase } from "@/lib/supabase";
 import { User as UserType } from "@/types/type";
 import { BulkActions } from "./bulk-actions";
-
 import { UserTable } from "./user-table";
+
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
 
 export const UserList = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,20 +32,24 @@ export const UserList = () => {
   const rejectedCount = users.filter((u) => u.status === "rejected").length;
 
   useEffect(() => {
-    // supabaseからユーザーの一覧を取得
-    const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from("User")
-        .select("*")
-        .order("createdAt", { ascending: false });
-      if (error) {
-        console.error(error);
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, orderBy("period", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data: UserType[] = snapshot.docs.map((docSnap) => {
+          const raw = docSnap.data() as any;
+          return { ...raw, uid: raw?.uid ?? docSnap.id } as UserType;
+        });
+        setUsers(data);
+      },
+      (error) => {
+        console.error("Error subscribing users:", error);
       }
-      setUsers(data as UserType[]);
-    };
+    );
 
-    fetchUsers();
-  }, [users]);
+    return () => unsubscribe();
+  }, []);
 
   // フィルター
   const filteredUsers = users.filter((user) => {
@@ -55,19 +67,26 @@ export const UserList = () => {
 
   const handleBulkAction = async (action: "approve" | "reject") => {
     try {
-      const { error } = await supabase
-        .from("User")
-        .update({ status: action === "approve" ? "approved" : "rejected" })
-        .in("id", selectedUsers);
-
-      if (error) {
-        console.error(error);
-        toast.error("ユーザーのステータス更新に失敗しました");
+      const validUids = selectedUsers.filter(
+        (id) => typeof id === "string" && id.length > 0
+      );
+      if (validUids.length === 0) {
+        toast.error("対象ユーザーが選択されていません");
+        return;
       }
+
+      await Promise.all(
+        validUids.map(async (uid) => {
+          const userRef = doc(db, "users", uid);
+          await updateDoc(userRef, {
+            status: action === "approve" ? "approved" : "rejected",
+          });
+        })
+      );
 
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
-          selectedUsers.includes(u.id)
+          selectedUsers.includes(u.uid)
             ? { ...u, status: action === "approve" ? "approved" : "rejected" }
             : u
         )
@@ -75,7 +94,7 @@ export const UserList = () => {
 
       setSelectedUsers([]);
       toast.success(
-        `${selectedUsers.length}件のユーザーを${
+        `${validUids.length}件のユーザーを${
           action === "approve" ? "承認" : "拒否"
         }しました`
       );
@@ -85,45 +104,34 @@ export const UserList = () => {
     }
   };
 
-  const handleSelectUser = (userId: string, checked: boolean) => {
+  const handleSelectUser = (uid: string, checked: boolean) => {
     if (checked) {
-      setSelectedUsers((prev) => [...prev, userId]);
+      setSelectedUsers((prev) => [...prev, uid]);
     } else {
-      setSelectedUsers((prev) => prev.filter((id) => id !== userId));
+      setSelectedUsers((prev) => prev.filter((id) => id !== uid));
     }
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(filteredUsers.map((u) => u.id));
+      setSelectedUsers(filteredUsers.map((u) => u.uid));
     } else {
       setSelectedUsers([]);
     }
   };
 
-  // ユーザー認証
-  // 対象のユーザーのstatusをapprovedにする
-  const handleUserApprove = async (userId: string) => {
+  const handleUserApprove = async (uid: string) => {
     try {
-      const { error } = await supabase
-        .from("User")
-        .update({
-          status: "approved",
-        })
-        .eq("id", userId);
-
-      console.log("userId", userId);
+      if (!uid) {
+        toast.error("ユーザーIDが不正です");
+        return;
+      }
+      const userRef = doc(db, "users", uid);
+      await updateDoc(userRef, { status: "approved" });
 
       setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId ? { ...u, status: "approved" } : u
-        )
+        prevUsers.map((u) => (u.uid === uid ? { ...u, status: "approved" } : u))
       );
-
-      if (error) {
-        console.error(error);
-        toast.error("ユーザー認証に失敗しました：" + error.message);
-      }
 
       toast.success("ユーザー認証が完了しました");
     } catch (error) {
@@ -132,23 +140,19 @@ export const UserList = () => {
     }
   };
 
-  // ユーザー拒否
-  const handleUserReject = async (userId: string) => {
+  const handleUserReject = async (uid: string) => {
     try {
-      const { error } = await supabase
-        .from("User")
-        .update({ status: "rejected" })
-        .eq("id", userId);
+      if (!uid) {
+        toast.error("ユーザーIDが不正です");
+        return;
+      }
+      const userRef = doc(db, "users", uid);
+      await updateDoc(userRef, { status: "rejected" });
 
       setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId ? { ...u, status: "rejected" } : u
-        )
+        prevUsers.map((u) => (u.uid === uid ? { ...u, status: "rejected" } : u))
       );
-      if (error) {
-        console.error(error);
-        toast.error("ユーザー拒否に失敗しました：" + error.message);
-      }
+
       toast.success("ユーザー拒否が完了しました");
     } catch (error) {
       console.error(error);
@@ -184,6 +188,7 @@ export const UserList = () => {
           icon={<XCircle className="h-8 w-8 text-red-600" />}
         />
       </div>
+
       {/* Filters and Search */}
       <SearchFilter
         searchTerm={searchTerm}

@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 
 // Icons
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeOffIcon, EyeIcon } from "lucide-react";
 
 // Next
 import Link from "next/link";
@@ -35,8 +35,9 @@ import { loginSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-// Supabase
-import { supabase } from "@/lib/supabase";
+// Firebase
+import { logIn, fetchUserDetails, logOut } from "@/lib/auth";
+import { FirebaseError } from "firebase/app";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -61,47 +62,35 @@ export function LoginForm({
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      // 永続ログイン付きでFirebaseログイン
+      const user = await logIn(values.email, values.password);
 
-      if (error) {
-        toast.error("ログインに失敗しました");
-        return;
-      }
-
-      if (!data.user) {
+      if (!user) {
         toast.error("ユーザー情報の取得に失敗しました");
         return;
       }
 
-      // ユーザーの承認ステータスをデータベースから取得
-      const { data: userData, error: userError } = await supabase
-        .from("User")
-        .select("status")
-        .eq("id", data.user.id)
-        .single();
+      // Firestoreから承認ステータスを取得
+      const userDetails = await fetchUserDetails(user.uid);
 
-      if (userError || !userData) {
+      if (!userDetails) {
         toast.error("ユーザー情報の取得に失敗しました");
         return;
       }
 
-      // 承認ステータスをチェック
-      if (userData.status === "pending") {
+      if (userDetails.status === "pending") {
         toast.error(
           "ユーザー認証が完了していません。管理者の承認をお待ちください。"
         );
-        await supabase.auth.signOut(); // ログアウトしてセッションを無効化
+        await logOut(); // Firebaseからログアウト
         return;
       }
 
-      if (userData.status === "rejected") {
+      if (userDetails.status === "rejected") {
         toast.error(
           "アカウントが拒否されました。管理者にお問い合わせください。"
         );
-        await supabase.auth.signOut(); // ログアウトしてセッションを無効化
+        await logOut(); // Firebaseからログアウト
         return;
       }
 
@@ -109,7 +98,14 @@ export function LoginForm({
       router.push("/dashboard");
     } catch (error) {
       console.error(error);
-      toast.error("予期せぬエラーが発生しました。");
+      if (
+        error instanceof FirebaseError &&
+        error.code === "auth/invalid-credential"
+      ) {
+        toast.error("メールアドレスまたはパスワードが間違っています");
+      } else {
+        toast.error("予期せぬエラーが発生しました。");
+      }
     }
   };
 

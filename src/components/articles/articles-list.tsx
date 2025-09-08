@@ -5,7 +5,8 @@ import { SearchAndFilter } from "./search-filter";
 import { ArticlesByChapter } from "./articles-by-chapter";
 import { ArticlesNotFound } from "./articles-not-found";
 import { Materials, buildChapters } from "@/app/(dashboard)/contents/article";
-import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/firebase";
+import { getUserProgress } from "@/lib/progress";
 import { ArticleIsLoading } from "./article-isloading";
 
 export function ArticlesList() {
@@ -15,7 +16,6 @@ export function ArticlesList() {
   );
 
   const [isLoading, setIsLoading] = useState(true);
-
   const [userId, setUserId] = useState<string | null>(null);
   const [progress, setProgress] = useState<Record<string, boolean>>({});
   const [chapters, setChapters] = useState<
@@ -29,35 +29,29 @@ export function ArticlesList() {
 
   // ログインユーザー取得
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUserId(data.user.id);
-    });
+    const user = auth.currentUser;
+    if (user) setUserId(user.uid);
   }, []);
 
-  // ユーザー進捗取得
+  // ユーザー進捗取得（decode 済みの progress を利用）
   useEffect(() => {
     if (!userId) return;
 
-    (async () => {
-      const { data, error } = await supabase
-        .from("progress")
-        .select("article_slug, is_read")
-        .eq("user_id", userId);
-
-      if (error) {
+    const fetchProgress = async () => {
+      try {
+        const progressMap = await getUserProgress(userId);
+        setProgress(progressMap);
+        setChapters(buildChapters(progressMap));
+        setIsLoading(false);
+      } catch (error) {
         console.error("Error fetching progress:", error);
-        return;
+        setProgress({});
+        setChapters([]);
+        setIsLoading(false);
       }
+    };
 
-      const progressMap = data.reduce((acc, row) => {
-        acc[row.article_slug] = row.is_read;
-        return acc;
-      }, {} as Record<string, boolean>);
-
-      setProgress(progressMap);
-      setChapters(buildChapters(progressMap)); // Chaptersを動的生成
-      setIsLoading(false);
-    })();
+    fetchProgress();
   }, [userId]);
 
   // Materialsに進捗をマージ
@@ -85,7 +79,6 @@ export function ArticlesList() {
     const chapterId = material.chapter;
 
     if (!acc[chapterId]) {
-      // チャプター情報を取得（chapters配列から検索）
       const chapterInfo = chapters.find((c) => c.id === chapterId);
       if (chapterInfo) {
         acc[chapterId] = {
@@ -104,7 +97,6 @@ export function ArticlesList() {
 
   return (
     <>
-      {/* Search and Filters */}
       <SearchAndFilter
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -112,7 +104,6 @@ export function ArticlesList() {
         setFilterStatus={setFilterStatus}
       />
 
-      {/* Materials by Chapter */}
       {isLoading ? (
         <ArticleIsLoading />
       ) : Object.keys(groupedMaterials).length > 0 ? (

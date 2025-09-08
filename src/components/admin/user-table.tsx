@@ -129,14 +129,23 @@ export const UserTable = ({
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => {
-                const formatedDate = format(user.createdAt, "yyyy/MM/dd");
+                const createdAt: any = user.createdAt as any;
+                const createdAtDate: Date =
+                  createdAt instanceof Date
+                    ? createdAt
+                    : createdAt?.toDate
+                    ? createdAt.toDate()
+                    : new Date(createdAt);
+                const formatedDate = isNaN(createdAtDate.getTime())
+                  ? "-"
+                  : format(createdAtDate, "yyyy/MM/dd");
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.uid}>
                     <TableCell>
                       <Checkbox
-                        checked={selectedUsers.includes(user.id)}
+                        checked={selectedUsers.includes(user.uid)}
                         onCheckedChange={(checked) =>
-                          onSelectUser(user.id, checked as boolean)
+                          onSelectUser(user.uid, checked as boolean)
                         }
                         className="cursor-pointer"
                       />
@@ -165,7 +174,7 @@ export const UserTable = ({
                           <>
                             <Button
                               size="sm"
-                              onClick={() => onApprove(user.id)}
+                              onClick={() => onApprove(user.uid)}
                               className="h-8 px-2"
                             >
                               <UserCheck className="h-4 w-4" />
@@ -173,7 +182,7 @@ export const UserTable = ({
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => onReject(user.id)}
+                              onClick={() => onReject(user.uid)}
                               className="h-8 px-2"
                             >
                               <UserX className="h-4 w-4" />

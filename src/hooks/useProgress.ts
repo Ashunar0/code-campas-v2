@@ -1,6 +1,5 @@
 "use client";
 
-// hooks/useProgress.ts
 import { useEffect, useState } from "react";
 import { getUserProgress } from "@/lib/progress";
 import { Materials } from "@/app/(dashboard)/contents/article";
@@ -41,7 +40,9 @@ export function useProgress(userId: string | null) {
         const userProgress = await getUserProgress(userId);
         const totalMaterials = Materials.length;
 
-        // ユーザーの進捗データに基づいて読み終わった記事数を計算
+        console.log("userProgress", userProgress);
+        console.log("totalMaterials", totalMaterials);
+
         const readMaterials = Materials.filter(
           (material) => userProgress[material.slug] === true
         ).length;

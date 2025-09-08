@@ -1,107 +1,68 @@
 // lib/progress.ts
-import { supabase } from "@/lib/supabase";
+import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
 
-export async function getUserProgress(userId: string) {
-  const { data, error } = await supabase
-    .from("progress")
-    .select("article_slug, is_read")
-    .eq("user_id", userId);
+// uidのユーザーの全進捗を取得
+export async function getUserProgress(
+  uid: string
+): Promise<Record<string, boolean>> {
+  const progressRef = collection(db, "users", uid, "progress");
+  const snapshot = await getDocs(progressRef);
 
-  if (error) {
-    console.error("Error fetching progress:", error);
-    return {};
-  }
+  const progress: Record<string, boolean> = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    // ドキュメントIDは encodeURIComponent されている可能性があるため decode
+    const slug = decodeURIComponent(doc.id);
+    progress[slug] = data.read ?? false; // readがtrueなら読了
+  });
 
-  return data.reduce(
-    (
-      acc: Record<string, boolean>,
-      row: { article_slug: string; is_read: boolean }
-    ) => {
-      acc[row.article_slug] = row.is_read;
-      return acc;
-    },
-    {} as Record<string, boolean>
-  );
+  return progress;
 }
 
+// 特定の記事の読了状態を取得
 export async function getArticleReadStatus(
-  userId: string,
+  uid: string,
   articleSlug: string
 ): Promise<boolean> {
-  const { data, error } = await supabase
-    .from("progress")
-    .select("is_read")
-    .eq("user_id", userId)
-    .eq("article_slug", articleSlug)
-    .maybeSingle();
+  const safeId = encodeURIComponent(articleSlug);
+  const docRef = doc(db, "users", uid, "progress", safeId);
+  const snap = await getDoc(docRef);
 
-  if (error) {
-    console.error("Error fetching article read status:", {
-      error,
-      userId,
-      articleSlug,
-      errorMessage: error.message,
-      errorDetails: error.details,
-      errorHint: error.hint,
-    });
-    return false;
-  }
+  if (!snap.exists()) return false;
 
-  // レコードが存在しない場合はfalseを返す
-  if (!data) {
-    return false;
-  }
-
-  return data.is_read || false;
+  const data = snap.data();
+  return data.read ?? false;
 }
 
+// 記事を読了済みにマーク
 export async function markArticleAsRead(
-  userId: string,
+  uid: string,
   articleSlug: string
 ): Promise<boolean> {
-  // まず既存のレコードを確認
-  const { data: existingRecord } = await supabase
-    .from("progress")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("article_slug", articleSlug)
-    .maybeSingle();
+  try {
+    const safeId = encodeURIComponent(articleSlug);
+    const docRef = doc(db, "users", uid, "progress", safeId);
 
-  let error;
+    // 存在確認しなくても setDoc({ merge: true }) で更新 or 作成 両方可能
+    await setDoc(
+      docRef,
+      {
+        read: true,
+        updatedAt: new Date(),
+      },
+      { merge: true } // 既存のデータを上書きせずに更新
+    );
 
-  if (existingRecord) {
-    // 既存のレコードを更新
-    const { error: updateError } = await supabase
-      .from("progress")
-      .update({
-        is_read: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", existingRecord.id);
-    error = updateError;
-  } else {
-    // 新しいレコードを作成（UUIDを明示的に生成）
-    const { error: insertError } = await supabase.from("progress").insert({
-      id: crypto.randomUUID(),
-      user_id: userId,
-      article_slug: articleSlug,
-      is_read: true,
-      updated_at: new Date().toISOString(),
-    });
-    error = insertError;
-  }
-
-  if (error) {
+    return true;
+  } catch (error) {
+    const anyErr = error as any;
     console.error("Error marking article as read:", {
-      error,
-      userId,
+      code: anyErr?.code,
+      message: anyErr?.message,
+      uid,
       articleSlug,
-      errorMessage: error.message,
-      errorDetails: error.details,
-      errorHint: error.hint,
     });
     return false;
   }
-
-  return true;
 }

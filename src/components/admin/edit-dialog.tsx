@@ -23,8 +23,10 @@ import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { User as UserType } from "@/types/type";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+import { db } from "@/lib/firebase";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 interface EditDialogProps {
   user: UserType;
@@ -51,24 +53,30 @@ export const EditDialog = ({ user }: EditDialogProps) => {
     },
   });
 
+  // 親のユーザーが更新されたらフォームも同期
+  useEffect(() => {
+    form.reset({
+      name: user.name,
+      email: user.email,
+      period: user.period,
+      status: user.status,
+      permission: user.permission,
+    });
+  }, [user, form]);
+
   const onSubmit = async (values: FormValues) => {
-    // フォームデータでユーザーを更新する
     try {
-      const { error } = await supabase
-        .from("User")
-        .update(values)
-        .eq("id", user.id);
-
-      if (error) {
-        console.error("ユーザー更新に失敗しました:", error);
-      }
-
-      console.log(values);
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        ...values,
+        updatedAt: serverTimestamp(),
+      });
 
       toast.success("ユーザー更新が完了しました");
-      setOpen(false); // 送信成功時にDialogを閉じる
+      setOpen(false);
     } catch (error) {
       console.error("ユーザー更新に失敗しました:", error);
+      toast.error("ユーザー更新に失敗しました");
     }
   };
 
@@ -79,7 +87,10 @@ export const EditDialog = ({ user }: EditDialogProps) => {
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>編集</DialogTitle>
         </DialogHeader>

@@ -18,11 +18,12 @@ import {
 import { toast } from "sonner";
 
 // Icons
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeOffIcon, EyeIcon } from "lucide-react";
 
 // Next
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FirebaseError } from "firebase/app";
 
 // React
 import { useState } from "react";
@@ -35,8 +36,8 @@ import * as z from "zod";
 // Schema
 import { registerSchema } from "@/lib/schema";
 
-// Supabase
-import { supabase } from "@/lib/supabase";
+// Firebase
+import { signUp } from "@/lib/auth";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -61,47 +62,21 @@ export function RegisterForm({
     try {
       const { email, password, name, period } = data;
 
-      // 認証ユーザーの登録
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-      if (signUpError) {
-        toast.error(`登録に失敗しました: ${signUpError.message}`);
-        return;
-      }
-
-      // サインアップ直後のユーザーIDを取得
-      const userId = signUpData.user?.id;
-      if (!userId) {
-        toast.error("ユーザー情報の取得に失敗しました。");
-        return;
-      }
-
-      // カスタムUserテーブルにレコード追加
-      const { error: insertError } = await supabase.from("User").insert({
-        id: userId, // 外部キーなどでauth.usersと紐付けたい場合
-        name,
-        period: parseInt(period),
-        email,
-        status: "pending",
-        permission: "student",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      if (insertError) {
-        toast.error(`ユーザー情報の保存に失敗しました: ${insertError.message}`);
-        return;
-      }
+      // まとめた signUp を呼ぶだけ
+      await signUp(email, password, { name, period: parseInt(period, 10) });
 
       toast.success("登録が完了しました！");
-      router.push("/login"); // メール確認ONならloginへ、OFFならdashboardでもOK
+      router.push("/login");
     } catch (error) {
       console.error(error);
-      toast.error("予期せぬエラーが発生しました。");
+      if (
+        error instanceof FirebaseError &&
+        error.code === "auth/email-already-in-use"
+      ) {
+        toast.error("このユーザーはすでに登録されています");
+      } else {
+        toast.error("予期せぬエラーが発生しました。");
+      }
     }
   };
 

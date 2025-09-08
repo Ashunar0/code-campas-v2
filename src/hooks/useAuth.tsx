@@ -7,8 +7,9 @@ import {
   createContext,
   ReactNode,
 } from "react";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { User as CustomUser } from "@/types/type";
 
 type AuthContextType = {
@@ -18,43 +19,40 @@ type AuthContextType = {
   refreshUserDetails: () => Promise<boolean>;
 };
 
-export const AuthContext = createContext<AuthContextType>({
+const AuthContext = createContext<AuthContextType>({
   user: null,
   userDetails: null,
   loading: true,
   refreshUserDetails: async () => false,
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userDetails, setUserDetails] = useState<CustomUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserDetails = async (userId: string): Promise<boolean> => {
+  const fetchUserDetails = async (uid: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase
-        .from("User")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
 
-      if (error || !data) {
-        console.error(error);
+      if (!snap.exists()) {
         setUserDetails(null);
         return false;
       }
 
+      const data = snap.data();
       const userWithDates: CustomUser = {
         ...data,
-        createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt),
-      };
+        createdAt: data.createdAt?.toDate?.() ?? new Date(),
+        updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
+      } as CustomUser;
 
       setUserDetails(userWithDates);
 
-      // 承認されていないユーザーは自動的にログアウト
+      // 承認されていない場合はログアウト
       if (userWithDates.status !== "approved") {
-        await supabase.auth.signOut();
+        await signOut(auth);
         setUser(null);
         setUserDetails(null);
         return false;
@@ -69,47 +67,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshUserDetails = async (): Promise<boolean> => {
-    if (user?.id) {
-      return await fetchUserDetails(user.id);
+    if (user?.uid) {
+      return await fetchUserDetails(user.uid);
     }
     return false;
   };
 
   useEffect(() => {
-    // 初期セッション取得
-    const initializeAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
 
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser?.id) {
-        await fetchUserDetails(currentUser.id);
+      if (firebaseUser?.uid) {
+        await fetchUserDetails(firebaseUser.uid);
+      } else {
+        setUserDetails(null);
       }
 
       setLoading(false);
-    };
+    });
 
-    initializeAuth();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser?.id) {
-          await fetchUserDetails(currentUser.id);
-        } else {
-          setUserDetails(null);
-        }
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -119,6 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}

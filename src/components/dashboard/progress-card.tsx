@@ -15,8 +15,8 @@ export function ProgressCard() {
     overallProgress,
     loading: progressLoading,
     error: progressError,
-  } = useProgress(user?.id || null);
-  const chapters = useChapters(user?.id || null);
+  } = useProgress(user?.uid || null);
+  const chapters = useChapters(user?.uid || null);
 
   const getProgressColor = (percentage: number) => {
     if (percentage >= 80) return "text-green-600";

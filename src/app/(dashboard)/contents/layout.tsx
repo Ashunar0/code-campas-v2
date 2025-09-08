@@ -40,13 +40,13 @@ export default function ContentsLayout({
   // ページを開いた時にisRead情報を取得
   useEffect(() => {
     const fetchReadStatus = async () => {
-      if (!user?.id || !material) {
+      if (!user?.uid || !material) {
         setLoading(false);
         return;
       }
 
       try {
-        const readStatus = await getArticleReadStatus(user.id, material.slug);
+        const readStatus = await getArticleReadStatus(user.uid, material.slug);
         setIsRead(readStatus);
       } catch (error) {
         console.error("Error fetching read status:", error);
@@ -56,14 +56,14 @@ export default function ContentsLayout({
     };
 
     fetchReadStatus();
-  }, [user?.id, material]);
+  }, [user?.uid, material]);
 
   if (!material) {
     return <ArticleNotFound />;
   }
 
   const handleMarkAsUnderstood = async () => {
-    if (!user?.id) {
+    if (!user?.uid) {
       toast.error("ログインが必要です。");
       return;
     }
@@ -71,7 +71,7 @@ export default function ContentsLayout({
     setIsCompleting(true);
 
     try {
-      const success = await markArticleAsRead(user.id, material.slug);
+      const success = await markArticleAsRead(user.uid, material.slug);
       if (success) {
         setIsRead(true);
         toast.success("完了としてマークしました。");
