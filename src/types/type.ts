@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface User {
   uid: string;
   name: string;
@@ -5,8 +7,8 @@ export interface User {
   period: number;
   status: "pending" | "approved" | "rejected";
   permission: "admin" | "mentor" | "student";
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   progress?: ProgressRecord[];
 }
 

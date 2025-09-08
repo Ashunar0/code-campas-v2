@@ -129,9 +129,8 @@ export const UserTable = ({
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => {
-                const createdAt: Date = user.createdAt as Date;
-                const createdAtDate: Date = createdAt;
-                const formatedDate = format(createdAtDate, "yyyy/MM/dd");
+                const createdAt = user.createdAt.toDate();
+                const formatedDate = format(createdAt, "yyyy/MM/dd");
                 return (
                   <TableRow key={user.uid}>
                     <TableCell>
