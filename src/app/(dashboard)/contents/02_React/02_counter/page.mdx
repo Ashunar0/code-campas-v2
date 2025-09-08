@@ -1,0 +1,177 @@
+## 1. はじめに
+
+今回は、React を使ってカウンターアプリを作ります。「+1」ボタンを押すと数字の表示が増えていくというシンプルな仕様です。
+
+## 2. プロジェクトの準備
+
+任意のディレクトリで以下のコマンドを実行して、React プロジェクトを用意します。
+
+```sh
+npm create vite@latest counter-app-react -- --template react
+```
+
+アプリの名前は「counter-app-react」としました。
+
+```sh
+cd counter-app-react
+npm install
+npm run dev
+```
+
+localhost:5173 で正常に立ち上がれば ok です。
+
+![image.png](/images/image01.png)
+
+今回、CSS は使わないので、App.css と index.css は中身を全て消しておいてください。
+
+App.jsx は中身を消して、以下の状態にしてください。
+
+```jsx
+// src/App.jsx
+const App = () => {
+  return <div>App</div>;
+};
+
+export default App;
+```
+
+これで準備は完了です。
+
+![image.png](/images/image02.png)
+
+## 3. アプリを作ろう
+
+App.jsx を以下のように編集して、UI を作りましょう。
+
+```jsx
+// src/App.jsx
+const App = () => {
+  return (
+    <div>
+      <h1>カウンター</h1>
+      <h2>0</h2>
+      <button>+1</button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+ここから、機能部分を実装します。
+
+### 3-1. イベントの扱い方（onClick）
+
+ボタンを押した時の処理を書いてみましょう。これまで富津の JavaScript では、`onclick`を使っていましたよね。React の場合はどうでしょうか。
+
+先ほど作ったボタンにクリックイベントを割り当てますが、React では、`onclick`ではなく`onClick`と、キャメルケース（単語の繋ぎ目を大文字で繋ぐ方法）で書きます。
+
+:::note warn
+クリックイベントの書き方
+× onclick
+○ onClick
+
+その他のイベントも同様です！（onChange, onInput など）
+:::
+
+ということで、これを踏まえてボタンを押した時の処理を実際に書いてみましょう！
+
+```jsx
+// src/App.jsx
+const App = () => {
+  // ボタンを押した時の処理
+  const handleClick = () => {
+    alert("ボタンが押されたよ！");
+  };
+
+  return (
+    <div>
+      <h1>カウンター</h1>
+      <h2>0</h2>
+      <button onClick={handleClick}>+1</button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+これでボタンを押すとアラートが表示されると思います。React ではこのように、button タグの属性に onClick と記述することでクリック処理を登録できるんです！
+
+![スクリーンショット 2025-04-15 22.40.32.png](/images/image03.png)
+
+### 3-2. 状態変数（useState）
+
+React では、画面に表示するデータや可変の状態を、すべて<strong>状態変数</strong>として管理します。
+
+状態変数は、React で最も重要な要素と言っても過言ではありません。しっかり理解しましょう！
+
+Web アプリには、さまざまな状態が存在しています。たとえば、
+
+- カウンターのカウント
+- テキストボックスに何を入力したか
+- ボタンが押せるか
+
+こうした状態変数は、バニラの JavaScript とは違う、React 特有の概念です。React に`useState`という関数が用意されているので、まずはファイルの先頭で以下のように import する必要があります。
+
+```jsx
+import { useState } from "react";
+```
+
+そして、この`useState`を使って状態変数を定義するときは、配列の形で<strong>1 つ目に状態変数、2 つ目にその状態変数を更新するための関数</strong>を設定します。
+今回のカウンターでは、カウントを状態変数として扱うので、以下のように記述しましょう。
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+この場合、`count`が状態変数、`setCount`がそれを更新するための関数です。関数名は自由に決めることができるのですが、暗黙のルールとして、`set変数名`という名前にします。
+
+また、useSate の()の中には、状態変数の初期値を設定できます。この場合、`count`の初期値を 0 にしたかったので、useState(0)という書き方にしました。
+
+まとめると、useState は以下のような形式で使われます。最初は見慣れないと思いますが、何回か使って徐々に慣らしていきましょう！
+
+:::note warn
+
+<strong>状態変数の宣言</strong>
+
+const [変数名, set 変数名] = useState(初期値)
+:::
+
+では、App.jsx に戻って、ボタンを押した時にカウントアップできるように実装しましょう！
+
+```jsx
+// src/App.jsx
++ import { useState } from "react";
+
+const App = () => {
+  const [count, setCount] = useState(0);
+
+  // ボタンを押した時の処理
+  const handleClick = () => {
+-   alert("ボタンが押されたよ！");
++   setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <h1>カウンター</h1>
+-     <h2>0</h2>
++     <h2>{count}</h2>
+      <button onClick={handleClick}>+1</button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+そしてここも重要な点ですが、React で書いている HTML のようなタグの中（return 以降）では、<strong>`{}`で囲むことで、JavaScript を記述できます！</strong>今回だと、h2 タグの中に`{count}`と書くことで、`count`の値が反映されます。
+
+これで確認してみてください。ボタンを押してカウントが増えれば完成です！！
+
+![スクリーンショット 2025-04-15 22.49.47.png](/images/image04.png)
+
+## 4. おわりに
+
+これでカウンターアプリは完成です！今回新たに登場した、<strong>onClick, 状態変数</strong>は React 特有の書き方で、今後ずっと使い続けるので、ここできっちり理解しちゃってください！

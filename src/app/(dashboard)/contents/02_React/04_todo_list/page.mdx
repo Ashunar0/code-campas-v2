@@ -1,0 +1,559 @@
+## 1. はじめに
+
+今回は、React を使ってシンプルな ToDo アプリを作ってみます！
+「状態管理（useState）」や「イベント処理」「リストの描画（map）」など、React の超基本がギュッと詰まった内容なので、初心者の方にピッタリです。
+
+※もしカウンターアプリやクイズアプリを作ったことがある方は、そこから少しステップアップした内容になります！
+
+## 2. プロジェクトの準備
+
+まずは、React のプロジェクトを作成しましょう。
+
+ターミナル（コマンドプロンプト）を開いて、作業したいフォルダ（例：デスクトップなど）で以下のコマンドを実行します。
+
+```sh
+npm create vite@latest todo-app-react -- --template react
+```
+
+その後、以下のコマンドでプロジェクトのフォルダに移動して、必要な依存をインストールします。
+
+```sh
+cd todo-app-react
+npm install
+npm run dev
+```
+
+ブラウザで `http://localhost:5173` を開いて、「Vite + React」と表示されていれば準備 OK です！
+
+![スクリーンショット 2025-04-17 17.20.36.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/b3b75438-561e-4d37-814b-88fd80d8b477.png)
+
+#### CSS の準備
+
+デフォルトで用意されている CSS（`App.css`と`index.css`）は今回使わないので、中身をすべて削除しておきましょう。
+
+#### App.jsx の初期化
+
+次に、`src/App.jsx` を開いて、以下のように中身を変更してください!
+
+```jsx
+// src/App.jsx
+const App = () => {
+  return <div>App</div>;
+};
+
+export default App;
+```
+
+これで、**React のアプリの土台**が完成しました！
+
+![スクリーンショット 2025-04-17 17.21.55.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/f2f95ad9-2ba2-4e4c-9dcf-e600d08d75e6.png)
+
+## 3. UI を作る
+
+準備ができたら、いよいよアプリを作っていきましょう！
+まずは UI（見た目の部分）から取りかかります。
+
+App.jsx を以下のように書き換えてください 👇
+ここでは特に新しい React の要素は出てこないので、サクッと進めちゃいます！
+
+```jsx
+// src/App.jsx
+import "./App.css";
+
+const App = () => {
+  return (
+    <div>
+      <header>
+        <h1>ToDoアプリ</h1>
+      </header>
+
+      <div className="list-container">
+        <div className="list">
+          <div className="list-header">
+            <div className="list-title">大学</div>
+          </div>
+          <div className="card-container">
+            <div className="card">
+              <div className="task">これ</div>
+              <div className="delete"></div>
+            </div>
+            <div className="card">
+              <div className="task">それ</div>
+              <div className="delete"></div>
+            </div>
+            <div className="card">
+              <div className="task">あれ</div>
+              <div className="delete"></div>
+            </div>
+          </div>
+          <div className="list-footer">
+            <input type="text" />
+            <button>追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+```
+
+HTML 部分がちょっと長めですが、今のところはただの見た目なので気楽に！
+
+ここで一つポイント 💡
+React では、HTML のクラス指定に class は使えません。
+代わりに className と書く必要があります。これは JSX のルールです！
+
+続いて、CSS も当てて見た目を整えましょう！
+今回は React に集中したいので、CSS の解説は省略します。
+
+App.css に以下のスタイルをコピペしてください 👇
+
+```css
+// src/App.css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  background-color: #f8fafd;
+  display: flex;
+  justify-content: space-between;
+}
+header h1 {
+  font-size: 20px;
+  padding-left: 24px;
+}
+.create-list {
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  padding: 0px 24px;
+  gap: 8px;
+}
+.create-list h2 {
+  font-size: 16px;
+  margin-right: 8px;
+}
+.create-list input {
+  width: 180px;
+  height: 32px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.create-list button {
+  width: 72px;
+  height: 32px;
+  margin-left: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.list-container {
+  background-color: #f8fafd;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: start;
+  height: calc(100vh - 64px);
+  padding: 0 12px 12px 12px;
+  overflow-x: auto;
+}
+.list {
+  background-color: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  width: 250px;
+  margin: 0px 8px;
+  padding: 8px;
+  border-radius: 4px;
+}
+.list-header {
+  height: 40px;
+  padding: 8px 0px 0px 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px;
+}
+.card {
+  background-color: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card .delete {
+  z-index: 10;
+  color: red;
+  font-size: 0.8em;
+  margin-right: 8px;
+}
+.card :hover {
+  cursor: pointer;
+}
+.card:hover .delete:after {
+  content: "削除";
+}
+.list-footer {
+  height: 40px;
+  padding: 8px 0px 0px 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.list-footer input {
+  width: 70%;
+  height: 32px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.list-footer button {
+  width: 25%;
+  height: 32px;
+  margin-left: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+```
+
+ブラウザで表示してみると、かなり ToDo アプリっぽくなってるはず！
+デザインは Google カレンダーのタスクっぽいイメージで作ってみました。
+
+![スクリーンショット 2025-04-17 17.29.16.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/c6e41e8a-6c33-4f0d-ac81-bca5de42ffc4.png)
+
+これで UI 部分はひとまず完成です！
+次は、実際にタスクを追加・削除できるように機能をつけていきましょう！
+
+## 4. 機能を実装する
+
+ここからはいよいよ「動く」ToDo アプリを作っていきます！
+前回のカウンターアプリで出てきた、あの２つの主役も大活躍します。
+
+- ボタンを押したときのイベント → onClick
+- 状態を管理する変数 → useState
+
+今回もこれらをガンガン使っていくので、復習しながらやっていきましょー！
+
+### 4-1. タスクを状態変数で管理しよう
+
+まずは、表示するタスクを状態変数として持たせて、あとで追加・削除できるようにします。
+前回の復習通り、useState を使ってこんな感じで書きます 👇
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  const [cards, setCards] = useState(["タスク1", "タスク2", "タスク3"]); // タスクを管理するための状態変数
+
+  return (
+    // 省略
+  );
+};
+
+export default App;
+```
+
+ここでは cards って名前にして、配列でタスクを持っています。
+次はこの配列を画面に表示させていきます！
+
+### 4-2. map 関数で配列を展開しよう
+
+配列の内容を画面に表示させるには、中身を１つ１つ取り出して並べる必要があります。このように、<strong>配列を展開する時に使うのが前回のクイズアプリでも使った「map 関数」です！</strong>
+
+map 関数は、`配列名.map()`の形で使います。
+
+```jsx
+<div className="card-container">
+  {cards.map((card, index) => (
+    <div className="card" key={index}>
+      <p>{card}</p>
+      <div className="delete"></div>
+    </div>
+  ))}
+</div>
+```
+
+ここまで来たら、状態変数の中身がちゃんと表示されてるのが確認できるはず！
+
+スクショみたいに、3 つのタスクが出ていれば OK✨
+
+![スクリーンショット 2025-04-17 19.35.46.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/aedcacde-45f4-4e08-950e-d1ff2abb460b.png)
+
+### 4-3. タスクを追加できるようにしよう
+
+次は、「タスクを追加する機能」を作っていきます！
+`input` に文字を入力して「追加」ボタンを押すと、新しいタスクがリストに追加される仕組みを作ります。
+
+#### 入力された内容を useState で管理しよう！
+
+まずは、フォームの中に入力された文字を状態変数で管理する必要があります。
+新しく inputValue という状態を追加しましょう。
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  const [cards, setCards] = useState(["タスク1", "タスク2", "タスク3"]); // タスクを管理するための状態変数
+  const [inputValue, setInputValue] = useState(""); // 入力値を管理するための状態変数
+
+  return (
+    // 省略
+  );
+};
+
+export default App;
+```
+
+#### input に状態変数を紐づけよう！
+
+フォーム系の要素（input, textarea など）は、
+
+**「今入力されてる文字」** を常に状態に反映させる必要があります。
+
+```jsx
+<input
+  type="text"
+  className="add-todo"
+  placeholder="タスクを追加"
+  value={inputValue} // 入力値を表示
+  onChange={(e) => setInputValue(e.target.value)} // 入力値を更新
+/>
+```
+
+これを App.jsx にも組み込んであげましょう！
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  // 省略
+
+  return (
+    <div>
+      {/*　省略  */}
+          <div className="list-footer">
+            <input
+              type="text"
+              placeholder="タスクを追加"
+              value={inputValue} // 入力値を表示
+              onChange={(e) => setInputValue(e.target.value)} // 入力値を更新
+            />
+            <button className="add-button">追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+```
+
+#### 追加ボタンをクリックしたときの処理を作ろう！
+
+次は「追加」ボタンを押したときの動きを作っていきます。
+onClick イベントで、新しいタスクを今の cards に追加する関数を呼び出します。
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  const [cards, setCards] = useState(["タスク1", "タスク2", "タスク3"]); // タスクを管理するための状態変数
+  const [inputValue, setInputValue] = useState(""); // 入力値を管理するための状態変数
+
+  // タスクを追加する関数
+  const handleCreateCard = () => {
+    if (!inputValue) return; // 入力値が空の場合は何もしない
+
+    const newCards = [...cards, inputValue]; // 配列に新しいタスクを追加
+    setCards(newCards); // cardsを更新
+    setInputValue(""); // 入力フィールドを空にする
+  };
+
+  return (
+    <div>
+      <header>
+        <h1>ToDoアプリ</h1>
+      </header>
+
+      <div className="list-container">
+        <div className="list">
+          {/*　省略  */}
+          <div className="list-footer">
+            <input
+              type="text"
+
+              placeholder="タスクを追加"
+              value={inputValue} // 入力値を表示
+              onChange={(e) => setInputValue(e.target.value)} // 入力値を更新
+            />
+-           <button className="add-button">
++           <button className="add-button" onClick={handleCreateCard}>
+              追加
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+```
+
+##### 「...cards」ってなに？ → スプレッド構文！
+
+```jsx
+[...cards, inputValue];
+```
+
+これは cards の中身をまるっと展開して、最後に inputValue をくっつけた配列を新しく作ってるイメージ。
+実際にこう書くのと同じ意味です 👇
+
+```jsx
+["タスク1", "タスク2", "タスク3", inputValue];
+```
+
+でも毎回「タスク 1〜3」と書くのはしんどいので、<strong>スプレッド構文（...）</strong>を使うと便利＆スッキリ！
+
+これで、input に文字を入れて「追加」ボタンを押すと、ちゃんとタスクが追加されるようになりました！
+
+![Videotogif.gif](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/0ff39bfd-b09c-42cf-99d0-4f37ac789b37.gif)
+
+### 4-4. filter 関数を使って、タスクを削除できるようにしよう
+
+完了したタスク、いつまでも残ってたらスッキリしないですよね。ということで、今回は<strong>「タスク削除機能」</strong>をサクッと実装して
+
+流れは追加ボタンとほぼ同じ。タスクを削除する関数を作って、削除ボタンに onClick で登録します。ただ、削除するときの`cards`の更新で、新要素<strong>フィルター関数</strong>を使います！
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  const [cards, setCards] = useState(["タスク1", "タスク2", "タスク3"]); // タスクを管理するための状態変数
+  const [inputValue, setInputValue] = useState(""); // 入力値を管理するための状態変数
+
+  // タスクを追加する関数
+  const handleCreateCard = () => {
+    if (!inputValue) return; // 入力値が空の場合は何もしない
+
+    const newCards = [...cards, inputValue]; // 現在のタスクに新しいタスクを追加
+    setCards(newCards); // cardsを更新
+    setInputValue(""); // 入力フィールドを空にする
+  };
+
+  // タスクを削除する関数
+  const handleDeleteCard = (cardToDelete) => {
+    const newCards = cards.filter((card) => card !== cardToDelete); // 指定されたタスクを除外
+    setCards(newCards); // cardsを更新
+  };
+
+  return (
+    <div>
+      <header>
+        <h1>ToDoアプリ</h1>
+      </header>
+
+      <div className="list-container">
+        <div className="list">
+          {/*　省略  */}
+          <div className="card-container">
+            {cards.map((card) => (
+              <div className="card">
+                <p className="card-text">{card}</p>
+                <div className="delete"></div>
+                <div
+                  className="delete"
+                  onClick={() => handleDeleteCard(card)}
+                ></div>
+              </div>
+            ))}
+          </div>
+          {/*　省略  */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+```
+
+ここで新たに登場した<strong>filter 関数は、「条件に一致するものだけを残す」関数</strong>です！
+
+```jsx
+const 新しい配列 = 元の配列.filter((要素) => 条件);
+```
+
+今回はこう書きました。
+
+```jsx
+const newCards = cards.filter((card) => card !== cardToDelete);
+```
+
+例えば、cards がこうだったとき：
+
+```jsx
+["タスク1", "タスク2", "タスク3"];
+```
+
+`タスク2` を消したい場合は：
+
+```jsx
+cards.filter((card) => card !== "タスク2");
+```
+
+これで確認すると、きちんとタスクを削除できるはずです！
+
+![Videotogif (1).gif](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/202861/b9c212a2-0fb4-4eac-aa97-550691e385e5.gif)
+
+## 4. おわりに
+
+おつかれさまでした！🎉
+無事に「React で ToDo アプリ」が完成しましたね 👏
+
+今回の記事では
+
+- map 関数
+- スプレッド構文
+- filter 関数
+  …といった、React のコアな考え方をギュッと体験できたと思います。
+
+特に useState を使って、「データが変わると画面も変わる！」っていうリアクティブな動きが見えた瞬間、ちょっとワクワクしませんでしたか？💡
+そう、それこそが React の楽しさの入り口です。
+
+最初は useState とか onChange とか、呪文みたいに感じたかもしれません。
+でも、今日このアプリを動かしたあなたはもう立派な React 使い 🔥
+
+この記事が、「React って面白いかも！」って思えるきっかけになったらめちゃくちゃ嬉しいです。

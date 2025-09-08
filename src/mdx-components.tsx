@@ -3,6 +3,7 @@ import PreWithCopy from "./components/md/PreWithCopy";
 import InlineCode from "./components/md/InlineCode";
 import H1 from "./components/md/H1";
 import H2 from "./components/md/H2";
+import { Img } from "./components/md/Img";
 
 // This file allows you to provide custom React components
 // to be used in MDX files. You can import and use any
@@ -18,6 +19,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     code: (props) => <InlineCode {...props} />,
     h1: (props) => <H1 {...props} />,
     h2: (props) => <H2 {...props} />,
+    img: (props) => <Img {...props} />,
     ...components,
   };
 }

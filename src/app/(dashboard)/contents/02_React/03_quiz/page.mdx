@@ -1,0 +1,381 @@
+この記事では、React 初心者でも楽しく学べる「クイズアプリ」の作り方を丁寧に解説していきます！🔥
+
+「React 超入門」シリーズの第 3 弾として、今回は「React って何ができるの？」が直感的に分かるような実践的なミニアプリを一緒に作っていきましょう！前回のカウンターアプリで使った内容もふんだんに使うので、まだ終わってない人は、まずそちらに取り組んでください！
+
+#### 今回作るもの
+
+今回は、選択式のクイズアプリを React でゼロから作っていきます。
+ボタンをクリックして回答を選び、正解／不正解の判定をするという、シンプルだけど学びが詰まったアプリです！
+
+#### 完成イメージ
+
+完成するとこんな感じのクイズアプリになります！
+
+![Videotogif (2).gif](/images/image05.gif)
+
+## 2. プロジェクトの準備
+
+まずは、React のプロジェクトを作成しましょう。
+
+ターミナル（コマンドプロンプト）を開いて、作業したいフォルダ（例：デスクトップなど）で以下のコマンドを実行します。
+
+```sh
+npm create vite@latest quiz-app-react -- --template react
+```
+
+その後、以下のコマンドでプロジェクトのフォルダに移動して、必要な依存をインストールします。
+
+```sh
+cd quiz-app-react
+npm install
+npm run dev
+```
+
+ブラウザで `http://localhost:5173` を開いて、「Vite + React」と表示されていれば準備 OK です！
+
+![スクリーンショット 2025-04-17 17.20.36.png](/images/image01.png)
+
+#### CSS の準備
+
+デフォルトで用意されている CSS（`App.css`と`index.css`）は、中身をすべて削除しておきましょう。
+
+#### App.jsx の初期化
+
+次に、`src/App.jsx` を開いて、以下のように中身を変更してください!
+
+```jsx
+// src/App.jsx
+const App = () => {
+  return <div>App</div>;
+};
+
+export default App;
+```
+
+これで、**React のアプリの土台**が完成しました！
+
+![スクリーンショット 2025-04-17 17.21.55.png](/images/image02.png)
+
+## 3. UI を作る
+
+まずは、クイズアプリの見た目（UI）をサクッと作っていきましょう！
+
+`src/App.jsx`を以下のように編集してください。
+クイズの内容は、自分の好きなものに変更してもらって構いません！
+
+```jsx
+// src/App.jsx
+import "./App.css";
+
+const App = () => {
+  return (
+    <div>
+      <h1>クイズ</h1>
+      <h2>問題</h2>
+      <p>日本一高い山はどれ？</p>
+      <button>北岳</button>
+      <button>富士山</button>
+      <button>日和山</button>
+      <button>阿蘇山</button>
+      <h3 className="result"></h3>
+      <p className="feedback"></p>
+    </div>
+  );
+};
+
+export default App;
+```
+
+まだ正解／不正解の判定はできないけど、見た目を作る段階ではこれで OK！
+
+そして、`src/App.css`も編集して、軽くですがデザインもつけましょう。
+
+```css
+// src/App.css
+button {
+  background-color: #4caf50; /* Green */
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background-color: #45a049; /* Darker green */
+}
+
+button:active {
+  background-color: #3e8e41; /* Even darker green */
+  transform: translateY(4px);
+}
+```
+
+この状態で、ブラウザを確認してください！こんな見た目になっているはずです！
+
+![スクリーンショット 2025-04-19 15.38.22.png](/images/image06.png)
+
+次のステップでは、これに<strong>動き（ロジック）</strong>を加えて、ボタンを押すと結果が表示されるようにしていきます！
+
+## 4. 回答を選んで結果を表示しよう
+
+前のセクションでは、見た目だけの UI を作りました。
+ここからは、 **「ボタンを押したら、正解かどうかが分かる」** ようにしていきます！
+
+#### 4-1. クイズの内容をオブジェクトで定義しよう
+
+まずはクイズの内容をオブジェクトとしてまとめておくと、コードが見やすく＆管理しやすくなります！
+
+```jsx
+// src/App.jsx
+import "./App.css";
+
+const App = () => {
+  const quiz = {
+    question: "日本一高い山はどれ？",
+    choices: [
+      {
+        text: "北岳",
+        correct: false,
+        feedback: "北岳は南アルプス北部に位置する日本で2番目に高い山です。",
+      },
+      {
+        text: "富士山",
+        correct: true,
+        feedback: "正解！富士山は標高3776mで日本一高い山です。"
+      }
+      {
+        text: "日和山",
+        correct: false,
+        feedback: "日和山は標高が約3メートルで、日本で最も低い山です。",
+      },
+      {
+        text: "八ヶ岳",
+        correct: false,
+        feedback:
+          "10万年前は富士山よりも高かったとされていますが、現在は標高が約2,899mで。",
+      },
+    ],
+  };
+
+  return (
+    {/* 省略 */}
+  );
+};
+
+export default App;
+```
+
+これで「問題」「選択肢の文言」「正解かどうか」「フィードバック文」を全部一括管理できます！
+
+#### 4-2. 表示をオブジェクトから取り出そう
+
+画面表示は、今定義した quiz オブジェクトから呼び出す形式に変更しましょう！
+return 文の中を以下のように書き換えます。
+
+```jsx
+// src/App.jsx
+return (
+  <div>
+    <h1>クイズ</h1>
+    <h2>問題</h2>
+    <p>{quiz.question}</p>
+    <button>{quiz.choices[0].text}</button>
+    <button>{quiz.choices[1].text}</button>
+    <button>{quiz.choices[2].text}</button>
+    <button>{quiz.choices[3].text}</button>
+    <h3 className="result"></h3>
+    <p className="feedback"></p>
+  </div>
+);
+```
+
+これでブラウザを見て、表示が問題ないか確認してみてください 👀
+
+さて、ここで<strong>今回初登場の新要素</strong>をご紹介します。
+button が並んでるこの部分、ほとんど同じものが並んでて少し鬱陶しいですね、、、
+
+```jsx
+  <button>{quiz.choices[0].text}</button>
+  <button>{quiz.choices[1].text}</button>
+  <button>{quiz.choices[2].text}</button>
+  <button>{quiz.choices[3].text}</button>
+```
+
+これをまとめるために使うのが、今回の新要素<strong>「map 関数」</strong>です。
+
+##### 🔰 map 関数って何者？
+
+map 関数`map()` は、配列に入ってる 1 つ 1 つの要素に対して同じ処理をして、結果を新しく並べてくれる関数です。
+
+「選択肢のボタンを、配列から 1 個ずつ取り出して作りたい！」って時に大活躍します！
+
+button を map 関数を使う形に書き換えてみましょう 👇
+
+```jsx
+{
+  quiz.choices.map((choice, index) => (
+    <button key={index}>{choice.text}</button>
+  ));
+}
+```
+
+#### 📌 map 関数を書くときの手順
+
+map 関数は()が多くてわかりづらいですよね、、、自分がこれを書く時に考えてる順番を書いておくので参考にしてください。
+
+たとえばこんな配列があったとする：
+
+```jsx
+const fruits = ["🍎", "🍌", "🍇"];
+```
+
+これを map() を使って画面にリスト表示します 👇
+
+①map 関数を書く
+
+```jsx
+<div>{fruits.map()}</div>
+```
+
+②()の中にアロー関数
+
+```jsx
+<div>{fruits.map(() => {})}</div>
+```
+
+③()に引数、{}に return で表示内容を記述
+
+```jsx
+<div>
+  {fruits.map((fruit, index) => {
+    return <div key={index}>{fruit}</div>;
+  })}
+</div>
+```
+
+④{}内は return 分しかないので{}は省略できる
+　　アロー関数の中身が return だけなら、{}と return を省略して () だけで書けます！
+
+```jsx
+<div>
+  {fruits.map((fruit, index) => (
+    <div key={index}>{fruit}</div>
+  ))}
+</div>
+```
+
+⑤ 完成！
+
+```jsx
+const fruits = ["🍎", "🍌", "🍇"];
+
+<div>
+  {fruits.map((fruit, index) => (
+    <div key={index}>{fruit}</div>
+  ))}
+</div>;
+```
+
+※おまけ
+「どうしても map() の記法で迷子になる！」って人は、雛形として暗記するのもありです 👌
+
+```jsx
+{
+  配列.map((要素) => JSXを返す);
+}
+```
+
+#### 📌 【ちょっと発展】 key 属性って何？
+
+`key={index}` は React が「どの要素がどれかを見分ける」ためのもの！
+`map()` を使うときは、必ず `key` をつけるのが React のルールなので忘れずに！
+
+この書き方でも、先ほどと同じ表示になっているはずです！
+
+#### 4-3. クリック時の動作を実装しよう
+
+次は、ボタンを押したときに結果とフィードバック（解説）を表示する関数を作ります。
+そのためには、結果とフィードバックの内容を格納する変数が必要です。
+
+React で状態変数を定義する時は、**「useState」**を使うんでしたね！
+そして、クリックイベントをボタンに登録するには**onClick**を使います！
+この 2 つは前回の復習です！
+
+```jsx
+// src/App.jsx
+import { useState } from "react";
+import "./App.css";
+
+const App = () => {
+  const quiz = {}; //省略
+
+  const [result, setResult] = useState("");
+  const [feedback, setFeedback] = useState("");
+
+  // ボタンを押した時の処理
+  const handleClick = (choice) => {
+    // 正解か不正解か判定
+    if (choice.correct) {
+      setResult("正解！");
+    } else {
+      setResult("残念！");
+    }
+
+    // フィードバックを表示
+    setFeedback(choice.feedback);
+  };
+
+  return (
+    <div>
+      <h1>クイズ</h1>
+      <h2>問題</h2>
+      <p>{quiz.question}</p>
+      {quiz.choices.map((choice, index) => (
+        <button key={index}>
+        <button
+          key={index}
+          onClick={() => handleClick(choice)}
+        >
+          {choice.text}
+        </button>
+      ))}
+      <h3 className="result"></h3>
+      <p className="feedback"></p>
+      <h3 className="result">{result}</h3>
+      <p className="feedback">{feedback}</p>
+    </div>
+  );
+};
+
+export default App;
+```
+
+これで確認してみてください！ボタンを押したら結果とフィードバックが表示されれば完成です！🎉
+
+![Videotogif (2).gif](/images/image05.gif)
+
+## 5. おわりに
+
+おつかれさまでした！🎉
+ここまで読んでくれたあなた、もう React の第一歩はしっかり踏み出せてます。すごい！
+
+今回の記事では、こんなことができるようになりました 👇
+
+- map() で配列からボタンを量産する
+- オブジェクトでデータを管理する
+- onClick でユーザーの操作に反応する
+
+最初は「map() ってなに！？」「アロー関数のカッコ多すぎ！」ってなりがちだけど、1 つずつ噛み砕けば意外とシンプル。
+React って、触ってるうちにどんどん感覚がつかめてくるので、**「とにかく手を動かす」**のが一番の近道です 💡
+
+React って最初は難しそうに見えるけど、「UI をどう作るか」がハッキリしてる分、目的があるとどんどん楽しくなるライブラリです。
+
+この記事が、「React ちょっとわかってきたかも？」って思うきっかけになったら嬉しいです 😌
+
+このシリーズでは、今後もいくつか React アプリを作っていきたいと思っているのでお楽しみに！！🙌
