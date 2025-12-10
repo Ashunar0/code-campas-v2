@@ -4,7 +4,6 @@ import {
   Auth,
   getAuth,
   initializeAuth,
-  inMemoryPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
 
@@ -34,7 +33,7 @@ export function getAuthInstance(): Auth {
       authInstance = initializeAuth(app, {
         persistence: browserLocalPersistence,
       });
-    } catch (e) {
+    } catch {
       // 既に初期化されている場合はインスタンスを取得
       authInstance = getAuth(app);
     }
