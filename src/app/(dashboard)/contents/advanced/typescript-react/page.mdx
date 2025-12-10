@@ -1,0 +1,123 @@
+# TypeScript + React
+
+## この記事で学ぶこと
+
+- React + TypeScript のセットアップ
+- Props の型定義
+- イベントハンドラの型
+
+---
+
+## セットアップ
+
+```bash
+npm create vite@latest my-app -- --template react-ts
+```
+
+ファイルは `.tsx` 拡張子になります。
+
+---
+
+## Props の型定義
+
+```typescript
+interface Props {
+  title: string;
+  count: number;
+  onIncrement: () => void;
+}
+
+const Counter: React.FC<Props> = ({ title, count, onIncrement }) => {
+  return (
+    <div>
+      <h2>{title}</h2>
+      <p>{count}</p>
+      <button onClick={onIncrement}>+1</button>
+    </div>
+  );
+};
+```
+
+---
+
+## useState の型
+
+```typescript
+// 型推論が効く場合
+const [count, setCount] = useState(0);  // number
+
+// 明示的に指定
+const [user, setUser] = useState<User | null>(null);
+const [items, setItems] = useState<Item[]>([]);
+```
+
+---
+
+## イベントハンドラの型
+
+```typescript
+// input要素
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  console.log(e.target.value);
+};
+
+// button要素
+const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  console.log("clicked");
+};
+
+// form要素
+const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+};
+```
+
+---
+
+## なぜ Props に型をつけるのか
+
+```
+Props に型をつけるメリット：
+├── 渡し忘れをコンパイル時に検出
+├── 間違った型を渡すとエラーに
+├── エディタで Props の補完が効く
+└── コードを見ただけで必要な Props がわかる
+```
+
+---
+
+## まとめ
+
+- React + TypeScript は `--template react-ts` で始められる
+- **Props の型定義**で、コンポーネントの安全性が上がる
+- `useState<T>` で state の型を明示できる
+- イベントハンドラには `React.ChangeEvent<HTMLInputElement>` などの型を使う
+
+---
+
+## Try：型付き Props を作ってみよう
+
+以下のコンポーネントを作成してみましょう。
+
+```tsx
+// Props: title (string), isCompleted (boolean), onToggle (関数)
+interface TodoItemProps {
+  title: string;
+  isCompleted: boolean;
+  onToggle: () => void;
+}
+
+const TodoItem: React.FC<TodoItemProps> = ({ title, isCompleted, onToggle }) => {
+  return (
+    <div onClick={onToggle}>
+      {isCompleted ? "✅" : "⬜"} {title}
+    </div>
+  );
+};
+```
+
+---
+
+## 次の記事へ
+
+[09-06. TypeScript + Firebase](./09-06_TypeScriptとFirebase.md)

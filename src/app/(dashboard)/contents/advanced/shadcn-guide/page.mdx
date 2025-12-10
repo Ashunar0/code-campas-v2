@@ -1,0 +1,126 @@
+# shadcn/ui 完全ガイド
+
+## この記事で学ぶこと
+
+- shadcn/ui のセットアップ
+- コンポーネントのインストール
+- よく使うコンポーネント
+
+---
+
+## セットアップ
+
+```bash
+npx shadcn-ui@latest init
+```
+
+質問に答えて設定を完了します。
+
+---
+
+## コンポーネントのインストール
+
+```bash
+# 個別にインストール
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add input
+```
+
+---
+
+## よく使うコンポーネント
+
+### Button
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+<Button>クリック</Button>
+<Button variant="outline">Outline</Button>
+<Button variant="destructive">削除</Button>
+```
+
+### Card
+
+```tsx
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+<Card>
+  <CardHeader>
+    <CardTitle>タイトル</CardTitle>
+  </CardHeader>
+  <CardContent>
+    コンテンツ
+  </CardContent>
+</Card>
+```
+
+### Dialog
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+
+<Dialog>
+  <DialogTrigger>開く</DialogTrigger>
+  <DialogContent>
+    モーダルの内容
+  </DialogContent>
+</Dialog>
+```
+
+---
+
+## なぜ shadcn/ui を使うのか
+
+```
+shadcn/ui のメリット：
+├── 美しいデザインがすぐに使える
+├── Radix UI ベースで アクセシビリティ対応済み
+├── コードがプロジェクトにコピーされるので カスタマイズ自由
+├── Tailwind CSS と相性が良い
+└── 型定義も組み込まれている
+```
+
+---
+
+## まとめ
+
+- **shadcn/ui** はコピーペースト型のUIライブラリ
+- `npx shadcn-ui init` で初期化
+- 必要なコンポーネントを個別にインストール
+- Button, Card, Dialog などよく使うコンポーネントが揃っている
+
+---
+
+## Try：Button を追加してみよう
+
+1. プロジェクトで shadcn/ui を初期化
+2. Button コンポーネントを追加
+3. 異なる variant を試してみる
+
+```bash
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button
+```
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+export default function App() {
+  return (
+    <div className="space-x-2">
+      <Button>Default</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="destructive">Delete</Button>
+    </div>
+  );
+}
+```
+
+---
+
+## 次の記事へ
+
+[09-09. shadcn/ui + React Hook Form](./09-09_shadcnuiとReactHookForm.md)

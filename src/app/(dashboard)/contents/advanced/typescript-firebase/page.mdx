@@ -1,0 +1,68 @@
+# TypeScript + Firebase
+
+## この記事で学ぶこと
+
+- Firebase の型定義
+- Firestore のデータ型
+- Auth の型
+
+---
+
+## Firestore のデータ型
+
+```typescript
+import { Timestamp } from 'firebase/firestore';
+
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+  userId: string;
+  createdAt: Timestamp;
+}
+```
+
+---
+
+## データ取得時の型付け
+
+```typescript
+import { collection, getDocs } from 'firebase/firestore';
+
+const todosRef = collection(db, 'todos');
+const snapshot = await getDocs(todosRef);
+
+const todos: Todo[] = snapshot.docs.map(doc => ({
+  id: doc.id,
+  ...doc.data(),
+} as Todo));
+```
+
+---
+
+## Auth の型
+
+```typescript
+import { User } from 'firebase/auth';
+
+const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+onAuthStateChanged(auth, (user) => {
+  setCurrentUser(user);
+});
+```
+
+---
+
+## まとめ
+
+- Firestore のデータには **interface** で型を定義する
+- `Timestamp` は Firebase 独自の日時型（JavaScript の Date とは異なる）
+- データ取得時は `as` で型アサーションを行う
+- Auth の `User` 型を使って認証状態を管理
+
+---
+
+## 次の記事へ
+
+[09-07. TypeScript のベストプラクティス](./09-07_TypeScriptのベストプラクティス.md)

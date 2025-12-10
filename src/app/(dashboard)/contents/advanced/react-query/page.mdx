@@ -1,0 +1,85 @@
+# React Query 入門（任意）
+
+## この記事で学ぶこと
+
+- React Query とは
+- SWR との違い
+- 基本的な使い方
+
+---
+
+## React Query とは
+
+**React Query（TanStack Query）** は、SWR と同様のデータフェッチライブラリです。
+
+```bash
+npm install @tanstack/react-query
+```
+
+---
+
+## SWR との違い
+
+| 項目 | SWR | React Query |
+|:----|:----|:-----------|
+| バンドルサイズ | 小さい | やや大きい |
+| 機能 | シンプル | 豊富 |
+| mutation | 手動 | useMutation |
+| 学習コスト | 低い | やや高い |
+
+---
+
+## 基本的な使い方
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+
+function Todos() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['todos'],
+    queryFn: fetchTodos,
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error</div>;
+
+  return (
+    <ul>
+      {data.map(todo => (
+        <li key={todo.id}>{todo.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## どちらを使うべきか
+
+```
+SWR を選ぶ場合：
+├── シンプルなアプリ
+├── バンドルサイズを小さく
+└── 学習コストを抑えたい
+
+React Query を選ぶ場合：
+├── 複雑なキャッシュ管理
+├── mutation が多い
+└── 高度な機能が必要
+```
+
+---
+
+## まとめ
+
+- **React Query（TanStack Query）** は SWR の代替となるライブラリ
+- `useMutation` があり、mutation の処理が書きやすい
+- SWR はシンプルさ重視、React Query は機能の豊富さが特徴
+- どちらを使うかは**プロジェクトの規模と要件**で判断
+
+---
+
+## 次の記事へ
+
+[09-13. Zustand で状態管理](./09-13_Zustandで状態管理.md)

@@ -1,0 +1,104 @@
+# ビルドとデプロイ
+
+## この記事で学ぶこと
+
+- ビルドの実行
+- Vercel でのデプロイ
+- Firebase Hosting との違い
+
+---
+
+## ビルドの実行
+
+### 本番用ビルド
+
+```bash
+npm run build
+```
+
+### 本番サーバーの起動
+
+```bash
+npm start
+```
+
+http://localhost:3000 で本番版を確認できます。
+
+---
+
+## Vercel でのデプロイ
+
+### Vercel とは
+
+Next.js を開発している Vercel 社が提供するホスティングサービスです。Next.js との相性が抜群です。
+
+### デプロイ手順
+
+1. **GitHub にプッシュ**
+
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
+
+2. **Vercel にサインアップ**
+   - https://vercel.com にアクセス
+   - GitHub アカウントでログイン
+
+3. **プロジェクトをインポート**
+   - 「New Project」をクリック
+   - リポジトリを選択
+   - 「Deploy」をクリック
+
+📸 画像メモ: Vercel のデプロイ画面
+
+### 自動デプロイ
+
+main ブランチにプッシュすると、自動的に再デプロイされます。
+
+---
+
+## Firebase Hosting との違い
+
+| 項目 | Vercel | Firebase Hosting |
+|:----|:-------|:-----------------|
+| Next.js 対応 | ◎（公式） | △（設定が必要） |
+| SSR | ◎ | △ |
+| 静的サイト | ◎ | ◎ |
+| 無料枠 | あり | あり |
+| 設定の簡単さ | ◎ | ○ |
+
+**Next.js を使うなら Vercel が最適です。**
+
+---
+
+## 🎯 Try: ビルドを実行
+
+1. `npm run build` を実行
+2. ビルド結果を確認（エラーがあれば修正）
+3. `npm start` で本番モードを体験
+
+---
+
+## まとめ
+
+```
+デプロイの流れ：
+1. npm run build でビルド
+2. GitHub にプッシュ
+3. Vercel でインポート
+4. 自動デプロイ完了
+
+Vercel のメリット：
+├── Next.js 公式
+├── GitHub 連携で自動デプロイ
+├── SSL 自動設定
+└── プレビューデプロイ
+```
+
+---
+
+## 次の記事へ
+
+[07-16. ISR / SSG](./07-16_ISRとSSG.md)

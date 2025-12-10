@@ -1,0 +1,84 @@
+# パフォーマンス最適化（上級）
+
+## この記事で学ぶこと
+
+- React.memo
+- useMemo / useCallback
+- Code Splitting
+
+---
+
+## React.memo
+
+コンポーネントの再レンダリングを防ぎます。
+
+```tsx
+const TodoItem = React.memo(({ todo }) => {
+  return <li>{todo.text}</li>;
+});
+```
+
+Props が変わらなければ再レンダリングされません。
+
+---
+
+## useMemo
+
+計算結果をメモ化します。
+
+```tsx
+const sortedItems = useMemo(() => {
+  return items.sort((a, b) => a.name.localeCompare(b.name));
+}, [items]);
+```
+
+---
+
+## useCallback
+
+関数をメモ化します。
+
+```tsx
+const handleClick = useCallback(() => {
+  console.log('clicked');
+}, []);
+```
+
+---
+
+## Code Splitting
+
+```tsx
+import { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+```
+
+---
+
+## Lighthouse で測定
+
+Chrome DevTools の Lighthouse でパフォーマンスを測定できます。
+
+---
+
+## まとめ
+
+- **React.memo** でコンポーネントの再レンダリングを防ぐ
+- **useMemo** で計算結果、**useCallback** で関数をメモ化
+- **Code Splitting**（lazy + Suspense）で初期ロードを軽量化
+- **Lighthouse** でパフォーマンスを測定
+
+---
+
+## 次の記事へ
+
+[09-18. アクセシビリティ](./09-18_アクセシビリティ.md)

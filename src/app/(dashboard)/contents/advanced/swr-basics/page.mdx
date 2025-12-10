@@ -1,0 +1,95 @@
+# SWR の基礎
+
+## この記事で学ぶこと
+
+- SWR とは
+- 基本的な使い方
+- キャッシュと再検証
+
+---
+
+## SWR とは
+
+**SWR** は、データフェッチのための React Hooks ライブラリです。
+
+```bash
+npm install swr
+```
+
+**stale-while-revalidate**: 古いデータを表示しながら、バックグラウンドで更新
+
+---
+
+## 基本的な使い方
+
+```typescript
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+function Profile() {
+  const { data, error, isLoading } = useSWR('/api/user', fetcher);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error</div>;
+
+  return <div>Hello {data.name}!</div>;
+}
+```
+
+---
+
+## SWR のメリット
+
+```
+✅ 自動的にキャッシュ
+✅ フォーカス時に再検証
+✅ エラー時の再試行
+✅ 重複リクエストの排除
+✅ リアルタイム感
+```
+
+---
+
+## まとめ
+
+- **SWR** はデータフェッチのための React Hooks ライブラリ
+- **stale-while-revalidate**：古いキャッシュを表示しつつ、バックグラウンドで最新データを取得する戦略
+- 自動キャッシュ、フォーカス時の再検証、エラー再試行などが組み込み
+- `useState` + `useEffect` よりも簡潔にデータ取得が書ける
+
+---
+
+## Try：SWR を使ってみよう
+
+JSONPlaceholder API からデータを取得してみましょう。
+
+```tsx
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+function UserList() {
+  const { data, error, isLoading } = useSWR(
+    'https://jsonplaceholder.typicode.com/users',
+    fetcher
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error!</div>;
+
+  return (
+    <ul>
+      {data?.map((user: { id: number; name: string }) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## 次の記事へ
+
+[09-11. SWR + Firestore](./09-11_SWRとFirestore.md)

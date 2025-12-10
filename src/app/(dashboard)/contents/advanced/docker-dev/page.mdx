@@ -1,0 +1,79 @@
+# Docker で開発環境を作る
+
+## この記事で学ぶこと
+
+- Dockerfile の作成
+- docker-compose の使い方
+
+---
+
+## Dockerfile の作成
+
+```dockerfile
+FROM node:18
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5173
+CMD ["npm", "run", "dev"]
+```
+
+---
+
+## docker-compose.yml
+
+```yaml
+version: "3"
+services:
+  app:
+    build: .
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+```
+
+---
+
+## 使い方
+
+```bash
+# 起動
+docker-compose up
+
+# バックグラウンドで起動
+docker-compose up -d
+
+# 停止
+docker-compose down
+
+# ビルドし直して起動
+docker-compose up --build
+```
+
+---
+
+## 開発環境で Docker を使うメリット
+
+```
+✅ npm install のバージョン差異がなくなる
+✅ チーム全員で同じ環境
+✅ 新メンバーもすぐ開発開始できる
+```
+
+---
+
+## まとめ
+
+- **Dockerfile** でアプリケーションの環境を定義
+- **docker-compose** で複数サービスをまとめて管理
+- `docker-compose up` で一発起動、`down` で停止
+- volumes でホストのファイルをコンテナと同期
+
+---
+
+## 次の記事へ
+
+[09-17. パフォーマンス最適化](./09-17_パフォーマンス最適化.md)

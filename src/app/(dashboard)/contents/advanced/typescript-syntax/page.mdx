@@ -1,0 +1,87 @@
+# TypeScript の基本構文
+
+## この記事で学ぶこと
+
+- 変数の型定義
+- 関数の型
+- 配列とオブジェクトの型
+
+---
+
+## 変数の型定義
+
+```typescript
+// 型注釈
+const name: string = "田中";
+const age: number = 25;
+const isActive: boolean = true;
+
+// 配列
+const numbers: number[] = [1, 2, 3];
+const names: Array<string> = ["田中", "佐藤"];
+```
+
+---
+
+## 関数の型
+
+### 引数と戻り値
+
+```typescript
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// アロー関数
+const multiply = (a: number, b: number): number => {
+  return a * b;
+};
+```
+
+### 戻り値がない場合
+
+```typescript
+function greet(name: string): void {
+  console.log(`Hello, ${name}`);
+}
+```
+
+---
+
+## オブジェクトの型
+
+```typescript
+const user: { name: string; age: number; email?: string } = {
+  name: "田中",
+  age: 25,
+};
+
+// ? はオプショナル（任意）
+```
+
+---
+
+## null と undefined
+
+```typescript
+const value: string | null = null;
+const data: number | undefined = undefined;
+```
+
+`|` はユニオン型（複数の型を許容）です。
+
+---
+
+## まとめ
+
+- 変数には `: 型名` で**型注釈**をつけられる
+- 関数は**引数と戻り値**に型を指定する
+- 戻り値がない関数は `void` を使う
+- オブジェクトでは `?` で**オプショナル**なプロパティを定義
+- `|` で**ユニオン型**（複数の型のどれか）を表現
+
+---
+
+## 次の記事へ
+
+[09-03. interface と type](./09-03_interfaceとtype.md)

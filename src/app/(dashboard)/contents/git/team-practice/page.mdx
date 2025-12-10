@@ -1,0 +1,480 @@
+# チーム開発を体験しよう【ハンズオン】
+
+## この記事の目標
+
+- 2〜3人でチーム開発を体験
+- 役割分担して並行開発
+- PR を出し合ってレビュー
+- コンフリクトを解決
+- 振り返りで学びを深める
+
+---
+
+## 準備
+
+### チームを組む
+
+2〜3人でチームを組みます。
+
+```
+理想的な構成：
+├── リーダー（1人）: 全体の調整役
+├── メンバー（1〜2人）: 機能開発
+└── 全員がレビュアーにもなる
+```
+
+### 役割分担を決める
+
+```
+3人チームの例：
+├── Aさん: リーダー＆ヘッダー担当
+├── Bさん: メイン機能担当
+└── Cさん: フッター担当
+
+2人チームの例：
+├── Aさん: リーダー＆ヘッダー/フッター
+└── Bさん: メイン機能
+```
+
+### 開発するもの
+
+シンプルな自己紹介ページを作成します。
+
+```html
+<!-- 目標の成果物 -->
+<header>チーム名</header>
+<main>
+  <section>Aさんの紹介</section>
+  <section>Bさんの紹介</section>
+  <section>Cさんの紹介</section>
+</main>
+<footer>© 2024 Team</footer>
+```
+
+---
+
+## Step 1: リポジトリを作成（リーダー）
+
+### リーダーが行う作業
+
+```bash
+# 1. GitHub でリポジトリを作成
+# - Public で作成
+# - README.md を追加
+# - .gitignore は Node を選択
+
+# 2. ローカルにクローン
+git clone https://github.com/your-team/team-intro.git
+cd team-intro
+
+# 3. 初期ファイルを作成
+```
+
+**index.html:**
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チーム紹介</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ここにヘッダー -->
+    
+    <main>
+        <h1>私たちのチーム</h1>
+        <!-- ここに各メンバーの紹介 -->
+    </main>
+    
+    <!-- ここにフッター -->
+</body>
+</html>
+```
+
+**style.css:**
+```css
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+```
+
+```bash
+# コミットしてプッシュ
+git add .
+git commit -m "初期セットアップ"
+git push origin main
+```
+
+### チームメンバーを招待
+
+1. Settings → Collaborators → Add people
+2. メンバーの GitHub ユーザー名を入力
+3. 招待を送信
+
+📸 画像メモ: Collaborators 招待画面
+
+---
+
+## Step 2: メンバーがクローン
+
+### メンバーが行う作業
+
+```bash
+# 招待を承認
+
+# リポジトリをクローン
+git clone https://github.com/your-team/team-intro.git
+cd team-intro
+
+# 確認
+ls
+# index.html  style.css  README.md
+```
+
+---
+
+## Step 3: Issue を作成（全員）
+
+### タスクを Issue で管理
+
+全員で以下の Issue を作成します：
+
+```markdown
+Issue #1: ヘッダーを作成
+担当: Aさん
+---
+チーム名を表示するヘッダーを作成する
+
+## タスク
+- [ ] header タグを追加
+- [ ] チーム名を表示
+- [ ] スタイルを適用
+```
+
+```markdown
+Issue #2: 自己紹介セクションを作成
+担当: Bさん
+---
+各メンバーの自己紹介セクションを作成する
+
+## タスク
+- [ ] section タグを追加
+- [ ] 名前と紹介文を表示
+- [ ] スタイルを適用
+```
+
+```markdown
+Issue #3: フッターを作成
+担当: Cさん（または Aさん）
+---
+コピーライトを表示するフッターを作成する
+
+## タスク
+- [ ] footer タグを追加
+- [ ] コピーライトを表示
+- [ ] スタイルを適用
+```
+
+---
+
+## Step 4: ブランチで開発（各自）
+
+### 各自がブランチを作成
+
+```bash
+# Aさん
+git checkout main
+git pull origin main
+git checkout -b feature/header
+
+# Bさん
+git checkout main
+git pull origin main
+git checkout -b feature/intro-section
+
+# Cさん
+git checkout main
+git pull origin main
+git checkout -b feature/footer
+```
+
+### 開発してコミット
+
+**Aさん（ヘッダー）:**
+```html
+<!-- index.html に追加 -->
+<header>
+    <h1>Team Awesome</h1>
+</header>
+```
+
+```css
+/* style.css に追加 */
+header {
+    background: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+```
+
+```bash
+git add .
+git commit -m "ヘッダーを作成 (#1)"
+git push -u origin feature/header
+```
+
+**Bさん（自己紹介）:**
+```html
+<!-- index.html の main に追加 -->
+<section class="member">
+    <h2>田中太郎</h2>
+    <p>Webエンジニアを目指しています！</p>
+</section>
+```
+
+**Cさん（フッター）:**
+```html
+<!-- index.html に追加 -->
+<footer>
+    <p>© 2024 Team Awesome</p>
+</footer>
+```
+
+---
+
+## Step 5: PR を作成してレビュー（全員）
+
+### PR を作成
+
+GitHub で Pull Request を作成します。
+
+```markdown
+タイトル: [feature] ヘッダーを作成
+
+## 概要
+チーム名を表示するヘッダーを作成しました。
+
+## 変更内容
+- header タグを追加
+- スタイルを適用
+
+## 関連 Issue
+fixes #1
+
+## スクリーンショット
+（画面キャプチャを添付）
+```
+
+### レビューする
+
+他のメンバーの PR をレビューします。
+
+```
+レビューのポイント：
+├── コードが動くか
+├── スタイルが統一されているか
+├── わかりにくい部分はないか
+├── 良い点を褒める！
+└── 改善点は建設的に
+```
+
+### マージ
+
+承認されたら「Merge pull request」をクリック。
+
+---
+
+## Step 6: コンフリクトを体験（意図的）
+
+### 同じファイルを編集
+
+チームで意図的にコンフリクトを起こしてみましょう。
+
+```
+やり方：
+1. 2人が同じ index.html の同じ箇所を編集
+2. 1人目がマージ
+3. 2人目がマージしようとする
+4. コンフリクト発生！
+```
+
+### 解決する
+
+```bash
+# 最新を取得
+git pull origin main
+
+# コンフリクト発生
+# Auto-merging index.html
+# CONFLICT (content): Merge conflict in index.html
+
+# ファイルを開いてマーカーを確認・編集
+# <<<<<<< HEAD
+# ...
+# =======
+# ...
+# >>>>>>> main
+
+# 解決してコミット
+git add .
+git commit -m "Merge conflict resolved"
+git push
+```
+
+---
+
+## Step 7: 振り返り（全員）
+
+### チームで話し合う
+
+```
+振り返りのフレームワーク（KPT）：
+
+K（Keep: 続けたいこと）
+├── うまくいったこと
+├── 良かった習慣
+└── 効果的だったこと
+
+P（Problem: 問題だったこと）
+├── 困ったこと
+├── 時間がかかったこと
+└── ストレスだったこと
+
+T（Try: 次に試すこと）
+├── 改善できそうなこと
+├── 新しく試すこと
+└── ルール化すること
+```
+
+### 振り返りの例
+
+```markdown
+## 振り返り
+
+### K（良かったこと）
+- Issue を先に作ったのでタスクが明確だった
+- こまめにレビューできた
+- Slack で連絡を取り合えた
+
+### P（問題だったこと）
+- コンフリクトの解決に時間がかかった
+- ブランチ名がバラバラだった
+- PR の説明が雑だった
+
+### T（次に試すこと）
+- ブランチ命名規則を決める
+- PR テンプレートを用意する
+- 朝に main を pull する習慣
+```
+
+---
+
+## 成果物の確認
+
+### 完成した HTML
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チーム紹介</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Team Awesome</h1>
+    </header>
+    
+    <main>
+        <h1>私たちのチーム</h1>
+        
+        <section class="member">
+            <h2>田中太郎</h2>
+            <p>Webエンジニアを目指しています！</p>
+        </section>
+        
+        <section class="member">
+            <h2>鈴木花子</h2>
+            <p>デザインが好きです！</p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2024 Team Awesome</p>
+    </footer>
+</body>
+</html>
+```
+
+### GitHub Pages で公開（任意）
+
+Settings → Pages で main ブランチを選択すると公開できます。
+
+---
+
+## ミニ演習
+
+### Try 1: チーム開発を実践する
+
+この記事の Step 1〜7 を実際にチームで試してみましょう。
+
+**チェックリスト:**
+- [ ] リポジトリを作成した
+- [ ] メンバーを招待した
+- [ ] Issue を作成した
+- [ ] ブランチで開発した
+- [ ] PR を出してレビューを受けた
+- [ ] マージした
+- [ ] コンフリクトを解決した
+- [ ] 振り返りを行った
+
+### Try 2: 機能を追加する
+
+基本のハンズオンが終わったら、以下の機能を追加してみましょう：
+
+- [ ] ナビゲーションメニュー
+- [ ] プロフィール画像
+- [ ] SNS リンク
+- [ ] レスポンシブ対応
+
+---
+
+## まとめ
+
+```
+チーム開発で学んだこと：
+├── 役割分担の大切さ
+├── Issue でタスク管理
+├── ブランチで並行開発
+├── PR でレビュー
+├── コンフリクト解決
+├── コミュニケーションの重要性
+└── 振り返りで改善
+```
+
+### ポイント
+
+```
+✅ 小さい単位で作業する
+✅ こまめにコミット・プッシュ
+✅ レビューを丁寧に
+✅ 困ったらすぐ相談
+✅ 振り返りで次に活かす
+```
+
+---
+
+## 次の記事へ
+
+[06-19. まとめと次のステップ](./06-19_まとめと次のステップ.md)

@@ -1,0 +1,80 @@
+# ジェネリクス入門
+
+## この記事で学ぶこと
+
+- ジェネリクスとは
+- 基本的な使い方
+- React でのジェネリクス
+
+---
+
+## ジェネリクスとは
+
+**ジェネリクス**は、型を変数のように扱える機能です。
+
+```typescript
+// T は型パラメータ
+function identity<T>(value: T): T {
+  return value;
+}
+
+// 使い方
+const result1 = identity<string>("hello");  // string
+const result2 = identity<number>(42);       // number
+```
+
+---
+
+## なぜジェネリクスを使うか
+
+```
+メリット：
+├── 再利用性が高い
+├── 型安全を保てる
+└── any を避けられる
+```
+
+---
+
+## 配列とジェネリクス
+
+```typescript
+// Array<T> はジェネリクス
+const numbers: Array<number> = [1, 2, 3];
+const names: Array<string> = ["田中", "佐藤"];
+```
+
+---
+
+## React でのジェネリクス
+
+### useState
+
+```typescript
+const [user, setUser] = useState<User | null>(null);
+const [items, setItems] = useState<Item[]>([]);
+```
+
+### Props の型
+
+```typescript
+interface Props<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+}
+```
+
+---
+
+## まとめ
+
+- **ジェネリクス**（Generics）は、型をパラメータとして受け取る機能
+- `<T>` で型を変数のように扱い、**再利用性**と**型安全性**を両立
+- `any` を使わずに柔軟な型定義ができる
+- React の `useState<T>` や `Array<T>` もジェネリクス
+
+---
+
+## 次の記事へ
+
+[09-05. TypeScript + React](./09-05_TypeScriptとReact.md)

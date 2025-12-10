@@ -1,0 +1,165 @@
+# Server Components と Client Components
+
+## この記事で学ぶこと
+
+- Server Component とは
+- Client Component とは
+- "use client" ディレクティブ
+- どちらを使うべきか
+
+---
+
+## Server Component とは（デフォルト）
+
+Next.js の App Router では、**すべてのコンポーネントがデフォルトで Server Component** です。
+
+```jsx
+// app/page.jsx（Server Component）
+export default function Home() {
+  // サーバーで実行される
+  console.log("サーバーで実行");
+  
+  return <h1>Hello</h1>;
+}
+```
+
+### Server Component の特徴
+
+```
+✅ サーバーでレンダリングされる
+✅ バンドルサイズが小さい
+✅ データベースに直接アクセス可能
+✅ 秘密情報を安全に扱える
+❌ useState, useEffect は使えない
+❌ onClick などのイベントは使えない
+❌ ブラウザ API は使えない
+```
+
+---
+
+## Client Component とは
+
+インタラクティブな機能（State、イベント）を使うには **Client Component** が必要です。
+
+```jsx
+// components/Counter.jsx（Client Component）
+"use client";
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      クリック: {count}
+    </button>
+  );
+}
+```
+
+### "use client" ディレクティブ
+
+ファイルの先頭に `"use client"` を書くと、そのコンポーネントは Client Component になります。
+
+---
+
+## どちらを使うべきか
+
+### Server Component を使う場合
+
+```
+├── データの表示のみ
+├── 静的なコンテンツ
+├── SEO が重要
+└── パフォーマンスを重視
+```
+
+### Client Component を使う場合
+
+```
+├── useState, useEffect を使う
+├── onClick などのイベント
+├── フォーム入力
+├── ブラウザ API（localStorage など）
+└── サードパーティライブラリ
+```
+
+---
+
+## 使い分けの例
+
+### ページ全体を Server Component に
+
+```jsx
+// app/blog/[id]/page.jsx（Server Component）
+import LikeButton from '@/components/LikeButton';
+
+export default async function BlogPost({ params }) {
+  // サーバーでデータ取得
+  const post = await getPost(params.id);
+  
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+      {/* インタラクティブな部分だけ Client */}
+      <LikeButton postId={post.id} />
+    </article>
+  );
+}
+```
+
+```jsx
+// components/LikeButton.jsx（Client Component）
+"use client";
+
+import { useState } from 'react';
+
+export default function LikeButton({ postId }) {
+  const [liked, setLiked] = useState(false);
+  
+  return (
+    <button onClick={() => setLiked(!liked)}>
+      {liked ? '❤️' : '🤍'}
+    </button>
+  );
+}
+---
+
+## 🎯 Try: Counter コンポーネントを作成
+
+1. `components/Counter.jsx` を作成（上のコード例を参考に）
+2. `"use client"` を忘れずに記述
+3. ページに配置してボタンをクリック
+
+### よくある間違い
+
+`"use client"` を書き忘れると、以下のようなエラーが出ます：
+
+```
+Error: useState can only be used in a Client Component.
+Add the "use client" directive at the top of the file.
+```
+
+---
+
+## まとめ
+
+```
+Server Component（デフォルト）：
+├── パフォーマンスが良い
+├── データ取得に最適
+└── インタラクション不可
+
+Client Component（"use client"）：
+├── useState, useEffect が使える
+├── イベントハンドラが使える
+└── 必要な部分だけに適用
+```
+
+---
+
+## 次の記事へ
+
+[07-08. Server Component でのデータフェッチ](./07-08_ServerComponentでデータフェッチ.md)

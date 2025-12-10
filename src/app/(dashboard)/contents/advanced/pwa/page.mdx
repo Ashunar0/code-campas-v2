@@ -1,0 +1,80 @@
+# PWA（Progressive Web Apps）
+
+## この記事で学ぶこと
+
+- PWA とは
+- manifest.json
+- Service Worker
+
+---
+
+## PWA とは
+
+**PWA** は、Web アプリをネイティブアプリのように動作させる技術です。
+
+```
+特徴：
+├── ホーム画面に追加できる
+├── オフラインで動作
+├── プッシュ通知
+├── 高速な読み込み
+└── インストール可能
+```
+
+---
+
+## manifest.json
+
+```json
+{
+  "name": "My App",
+  "short_name": "App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+---
+
+## Vite で PWA
+
+```bash
+npm install -D vite-plugin-pwa
+```
+
+```typescript
+// vite.config.ts
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      registerType: 'autoUpdate',
+    }),
+  ],
+});
+```
+
+---
+
+## まとめ
+
+- **PWA** は Web アプリをネイティブアプリのように動作させる技術
+- **manifest.json** でアプリの名前、アイコン、色を定義
+- Vite では **vite-plugin-pwa** で簡単に導入できる
+- ホーム画面に追加、オフライン動作が可能に
+
+---
+
+## 次の記事へ
+
+[09-20. CI/CD 入門](./09-20_CICD入門.md)

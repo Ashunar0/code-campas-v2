@@ -1,0 +1,111 @@
+# CI/CD 入門
+
+## この記事で学ぶこと
+
+- CI/CD とは
+- GitHub Actions
+- 自動デプロイ
+
+---
+
+## CI/CD とは
+
+```
+CI（Continuous Integration）：
+└── コードをマージするたびに自動テスト
+
+CD（Continuous Deployment）：
+└── テストが通ったら自動デプロイ
+```
+
+---
+
+## GitHub Actions
+
+`.github/workflows/deploy.yml` を作成
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm install
+      - run: npm run build
+      - run: npm run deploy
+```
+
+---
+
+## よく使うワークフロー
+
+```yaml
+# テスト
+- run: npm test
+
+# ビルド
+- run: npm run build
+
+# Lint
+- run: npm run lint
+```
+
+---
+
+## メリット
+
+```
+✅ 手動デプロイのミスを防げる
+✅ 常にテストが通った状態を維持
+✅ マージするだけで本番に反映
+```
+
+---
+
+## まとめ
+
+- **CI（継続的インテグレーション）** は自動テスト
+- **CD（継続的デリバリー）** は自動デプロイ
+- **GitHub Actions** で `.yml` ファイルにワークフローを定義
+- テスト、ビルド、デプロイを自動化してミスを防ぐ
+
+---
+
+## Try：GitHub Actions を設定してみよう
+
+1. `.github/workflows/test.yml` を作成
+2. push 時にテストを実行
+
+```yaml
+name: Test
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm install
+      - run: npm test
+```
+
+---
+
+## 次の記事へ
+
+[09-21. まとめと今後の学習](./09-21_まとめと今後の学習.md)

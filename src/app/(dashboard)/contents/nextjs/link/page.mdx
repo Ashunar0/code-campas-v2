@@ -1,0 +1,130 @@
+# Link コンポーネントでページ遷移
+
+## この記事で学ぶこと
+
+- next/link の使い方
+- クライアントサイドルーティング
+- prefetch の仕組み
+
+---
+
+## next/link の使い方
+
+### Link コンポーネント
+
+Next.js では `<a>` タグの代わりに `<Link>` コンポーネントを使います。
+
+```jsx
+import Link from 'next/link';
+
+export default function Navigation() {
+  return (
+    <nav className="flex gap-4">
+      <Link href="/">ホーム</Link>
+      <Link href="/about">About</Link>
+      <Link href="/blog">ブログ</Link>
+    </nav>
+  );
+}
+```
+
+### 動的なリンク
+
+```jsx
+<Link href={`/blog/${post.id}`}>
+  {post.title}
+</Link>
+```
+
+---
+
+## なぜ Link を使うのか
+
+### `<a>` タグとの違い
+
+| 方法 | 動作 |
+|:----|:----|
+| `<a href="...">` | ページ全体をリロード |
+| `<Link href="...">` | クライアントサイドで遷移（高速） |
+
+Link を使うと、ページ全体をリロードせずに必要な部分だけ更新されます。
+
+---
+
+## prefetch
+
+### 自動的な先読み
+
+Link が画面に表示されると、Next.js はリンク先のページを自動的に事前読み込み（prefetch）します。
+
+```jsx
+// prefetch を無効にする場合
+<Link href="/heavy-page" prefetch={false}>
+  Heavy Page
+</Link>
+```
+
+---
+
+## 実践：ナビゲーションを作成
+
+### layout.jsx にナビゲーションを追加
+
+```jsx
+// app/layout.jsx
+import Link from 'next/link';
+import './globals.css';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ja">
+      <body>
+        <header className="bg-blue-600 text-white p-4">
+          <nav className="flex gap-6">
+            <Link href="/" className="hover:underline">
+              ホーム
+            </Link>
+            <Link href="/about" className="hover:underline">
+              About
+            </Link>
+            <Link href="/blog" className="hover:underline">
+              ブログ
+            </Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+      </body>
+    </html>
+  );
+}
+```
+
+ブラウザで確認すると、ページ遷移が高速になっていることがわかります。
+
+---
+
+## 🎯 Try: prefetch の動作を確認
+
+1. ナビゲーションにリンクを追加
+2. DevTools の「Network」タブを開く
+3. ページを読み込み、リンクにホバーしたときにリソースが先読みされるか確認
+4. `prefetch={false}` をつけて違いを比較
+
+---
+
+## まとめ
+
+```
+Link のポイント：
+├── import Link from 'next/link'
+├── href でリンク先を指定
+├── クライアントサイドで高速遷移
+├── 自動的に prefetch される
+└── <a> タグより推奨
+```
+
+---
+
+## 次の記事へ
+
+[07-06. レイアウトの使い方](./07-06_レイアウトの使い方.md)

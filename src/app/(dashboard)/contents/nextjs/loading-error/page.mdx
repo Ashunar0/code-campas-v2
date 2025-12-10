@@ -1,0 +1,107 @@
+# loading.jsx と error.jsx
+
+## この記事で学ぶこと
+
+- loading.jsx でローディング UI
+- error.jsx でエラーハンドリング
+- 自動的なエラーバウンダリ
+
+---
+
+## loading.jsx
+
+### ローディング UI を自動表示
+
+`loading.jsx` を配置すると、ページ読み込み中に自動的に表示されます。
+
+```jsx
+// app/posts/loading.jsx
+export default function Loading() {
+  return (
+    <div className="p-8">
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    </div>
+  );
+}
+```
+
+### フォルダ構造
+
+```
+app/
+└── posts/
+    ├── page.jsx      ← データ取得中...
+    └── loading.jsx   ← この間に表示される
+```
+
+---
+
+## error.jsx
+
+### エラー時の UI を表示
+
+`error.jsx` を配置すると、エラー発生時に自動的に表示されます。
+
+```jsx
+// app/posts/error.jsx
+"use client";  // error.jsx は Client Component
+
+export default function Error({ error, reset }) {
+  return (
+    <div className="p-8 text-center">
+      <h2 className="text-xl font-bold text-red-600">
+        エラーが発生しました
+      </h2>
+      <p className="mt-2 text-gray-600">
+        {error.message}
+      </p>
+      <button
+        onClick={reset}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        もう一度試す
+      </button>
+    </div>
+  );
+}
+```
+
+### 注意点
+
+- `error.jsx` は `"use client"` が必須
+- `error` オブジェクトでエラー情報を取得
+- `reset` 関数で再試行
+
+---
+
+## 🎯 Try: ローディングUIを体験
+
+1. `app/posts/loading.jsx` を作成
+2. データ取得を遅延させるコードを追加：
+   ```jsx
+   await new Promise(r => setTimeout(r, 2000));
+   ```
+3. ページにアクセスし、ローディングUIが2秒間表示されることを確認
+
+---
+
+## まとめ
+
+```
+loading.jsx と error.jsx：
+├── loading.jsx: データ取得中に表示
+├── error.jsx: エラー時に表示
+├── 配置するだけで自動適用
+├── error.jsx は "use client" 必須
+└── reset() で再試行可能
+```
+
+---
+
+## 次の記事へ
+
+[07-10. メタデータの設定](./07-10_メタデータの設定.md)

@@ -1,0 +1,178 @@
+# ブログアプリを作ろう【ハンズオン】
+
+## この記事の目標
+
+- Next.js でシンプルなブログを作成
+- 外部 API からデータ取得
+- Vercel にデプロイ
+
+---
+
+## 完成イメージ
+
+```
+ページ構成：
+├── / - トップページ
+├── /about - About ページ
+└── /posts/[id] - 記事詳細
+```
+
+---
+
+## Step 1: プロジェクト作成
+
+```bash
+npx create-next-app@latest my-blog
+cd my-blog
+npm run dev
+```
+
+---
+
+## Step 2: レイアウト作成
+
+```jsx
+// app/layout.jsx
+import Link from 'next/link';
+import './globals.css';
+
+export const metadata = {
+  title: 'My Blog',
+  description: 'Next.jsで作ったブログ',
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ja">
+      <body className="min-h-screen bg-gray-50">
+        <header className="bg-blue-600 text-white p-4">
+          <nav className="max-w-4xl mx-auto flex gap-6">
+            <Link href="/" className="font-bold">My Blog</Link>
+            <Link href="/about">About</Link>
+          </nav>
+        </header>
+        <main className="max-w-4xl mx-auto p-8">
+          {children}
+        </main>
+      </body>
+    </html>
+  );
+}
+```
+
+---
+
+## Step 3: トップページ（記事一覧）
+
+```jsx
+// app/page.jsx
+import Link from 'next/link';
+
+async function getPosts() {
+  const res = await fetch(
+    'https://jsonplaceholder.typicode.com/posts'
+  );
+  return res.json();
+}
+
+export default async function Home() {
+  const posts = await getPosts();
+  
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-8">記事一覧</h1>
+      <div className="grid gap-4">
+        {posts.slice(0, 10).map(post => (
+          <Link 
+            key={post.id}
+            href={`/posts/${post.id}`}
+            className="block p-4 bg-white rounded shadow hover:shadow-md"
+          >
+            <h2 className="font-bold text-lg">{post.title}</h2>
+            <p className="text-gray-600 mt-2 line-clamp-2">
+              {post.body}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Step 4: 記事詳細ページ
+
+```jsx
+// app/posts/[id]/page.jsx
+import Link from 'next/link';
+
+async function getPost(id) {
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/posts/${id}`
+  );
+  return res.json();
+}
+
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.id);
+  return { title: `${post.title} | My Blog` };
+}
+
+export default async function PostPage({ params }) {
+  const post = await getPost(params.id);
+  
+  return (
+    <article>
+      <Link 
+        href="/"
+        className="text-blue-600 hover:underline"
+      >
+        ← 戻る
+      </Link>
+      <h1 className="text-3xl font-bold mt-4 mb-6">
+        {post.title}
+      </h1>
+      <p className="text-gray-700 leading-relaxed">
+        {post.body}
+      </p>
+    </article>
+  );
+}
+```
+
+---
+
+## Step 5: Vercel にデプロイ
+
+1. GitHub にプッシュ
+2. Vercel でインポート
+---
+
+## 🎯 チャレンジ: 機能を追加
+
+ブログアプリに追加機能を実装してみましょう。
+
+- [ ] `/about` ページを追加
+- [ ] `loading.jsx` を作成してローディングUIを表示
+- [ ] 記事詳細ページに `error.jsx` を追加
+
+---
+
+## まとめ
+
+```
+作成したもの：
+├── トップページ（記事一覧）
+├── 記事詳細ページ（動的ルート）
+├── 共通レイアウト
+├── Server Component でデータ取得
+└── Vercel にデプロイ
+```
+
+---
+
+## 次の記事へ
+
+[07-18. Next.js + Firebase の組み合わせ](./07-18_NextjsとFirebase.md)

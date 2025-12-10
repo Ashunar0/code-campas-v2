@@ -1,0 +1,346 @@
+# GitHub リポジトリの作成
+
+## この記事で学ぶこと
+
+- GitHub とは何か
+- リポジトリの作成手順
+- Public と Private の違い
+- README と .gitignore の設定
+- GitHub プロフィールの活用
+
+---
+
+## GitHub とは
+
+**GitHub** は、Git リポジトリをホスティング（保管）するためのWebサービスです。
+
+### GitHub でできること
+
+```
+✅ コードをクラウドに保存（バックアップ）
+✅ チームメンバーとコードを共有
+✅ Pull Request でコードレビュー
+✅ Issue でタスク・バグ管理
+✅ Projects でプロジェクト管理
+✅ GitHub Pages で静的サイト公開
+✅ ポートフォリオとして活用
+```
+
+### 他のサービスとの違い
+
+| サービス | 特徴 |
+|:--------|:-----|
+| GitHub | 最も普及。個人開発からOSSまで |
+| GitLab | CI/CD が強い。自前サーバー可能 |
+| Bitbucket | Atlassian 製品との連携 |
+
+📸 画像メモ: GitHub のトップページ
+
+---
+
+## リポジトリの作成手順
+
+### 1. GitHub にアクセス
+
+1. [github.com](https://github.com) にアクセス
+2. 右上の「+」ボタンをクリック
+3. 「New repository」を選択
+
+📸 画像メモ: GitHub の「New repository」ボタンの位置
+
+### 2. リポジトリ情報を入力
+
+```
+入力項目：
+├── Repository name: プロジェクト名（例: my-todo-app）
+├── Description: 説明文（任意）
+├── Public / Private: 公開範囲
+├── Add a README file: チェック推奨
+├── Add .gitignore: 必要に応じて選択
+└── Choose a license: 必要に応じて選択
+```
+
+📸 画像メモ: リポジトリ作成画面の入力項目
+
+### 3. リポジトリ名のルール
+
+```
+良い例：
+├── my-todo-app（ケバブケース）
+├── react-portfolio
+├── geeksalon-mvp
+└── weather-app
+
+避けるべき例：
+├── MyTodoApp（スペースの代わりに大文字は OK だが統一）
+├── todo app（スペースは使えない）
+├── プロジェクト1（日本語は避ける）
+└── test（意味がない名前）
+```
+
+---
+
+## Public vs Private
+
+### Public リポジトリ
+
+```
+特徴：
+├── 誰でも閲覧可能
+├── コードを公開したい場合
+├── オープンソースプロジェクト
+├── ポートフォリオとして公開
+└── 無料で無制限に作成可能
+
+適している場合：
+├── 就活用ポートフォリオ
+├── 学習成果の公開
+└── OSS への貢献
+```
+
+### Private リポジトリ
+
+```
+特徴：
+├── 招待したユーザーのみ閲覧可能
+├── 非公開でコードを管理
+├── チーム開発で使用
+└── 無料で無制限に作成可能
+
+適している場合：
+├── 企業のプロジェクト
+├── まだ公開したくないコード
+├── 個人的な練習プロジェクト
+└── MVP 開発中のプロジェクト
+```
+
+> **ヒント**: 迷ったら Private で作成し、完成したら Public に変更することもできます。
+
+---
+
+## README の設定
+
+### README.md とは
+
+**README.md** は、プロジェクトの説明書です。リポジトリを開いたときに最初に表示されます。
+
+### README に書くべき内容
+
+```markdown
+# プロジェクト名
+
+プロジェクトの簡単な説明文
+
+## 機能
+
+- 機能1
+- 機能2
+- 機能3
+
+## 技術スタック
+
+- React
+- Tailwind CSS
+- Firebase
+
+## インストール
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+## 使い方
+
+使い方の説明
+
+## スクリーンショット
+
+![スクリーンショット](./screenshot.png)
+
+## 作者
+
+- 名前 - [@Twitterアカウント](https://twitter.com/xxx)
+```
+
+📸 画像メモ: README.md が表示されたリポジトリ画面
+
+---
+
+## .gitignore の設定
+
+### .gitignore とは
+
+**`.gitignore`** は、Git で追跡しないファイル・フォルダを指定するファイルです。
+
+### リポジトリ作成時に選択
+
+GitHub でリポジトリを作成する際に、テンプレートを選択できます。
+
+📸 画像メモ: .gitignore テンプレート選択画面
+
+### Node.js プロジェクトの .gitignore
+
+```
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+```
+
+### 無視すべきファイル
+
+| ファイル/フォルダ | 理由 |
+|:-----------------|:-----|
+| `node_modules/` | サイズが大きい。npm install で再現可能 |
+| `.env` | 秘密情報を含む。公開すると危険 |
+| `dist/`, `build/` | ビルド成果物。再生成可能 |
+| `.DS_Store` | macOS のシステムファイル |
+
+---
+
+## リポジトリの説明とタグ
+
+### Description（説明）
+
+リポジトリの簡単な説明を設定できます。検索結果にも表示されます。
+
+```
+良い例：
+"React で作成した Todo アプリ。Firebase で認証・データ保存を実装"
+"天気予報 API を使った天気アプリ"
+```
+
+### Topics（タグ）
+
+関連するキーワードをタグとして設定できます。
+
+```
+よく使うタグ：
+├── react
+├── javascript
+├── firebase
+├── tailwind-css
+├── next-js
+├── todo-app
+└── portfolio
+```
+
+📸 画像メモ: リポジトリの Settings で Topics を設定する画面
+
+---
+
+## GitHub プロフィールの設定
+
+### プロフィールを充実させる
+
+就職活動でも見られるため、プロフィールを整えておきましょう。
+
+```
+設定すべき項目：
+├── プロフィール画像
+├── 名前
+├── Bio（自己紹介）
+├── Location（場所）
+├── Website（ポートフォリオURL）
+└── Social accounts（SNSリンク）
+```
+
+### プロフィール README
+
+自分のユーザー名と同じ名前のリポジトリを作成すると、プロフィールに README を表示できます。
+
+```markdown
+# Hi there 👋
+
+## About Me
+
+- 🎓 大学でWebについて学んでいます
+- 🌱 現在 React と TypeScript を学習中
+- 💻 GeekSalon でメンター活動をしています
+
+## Skills
+
+![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white)
+![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?logo=javascript&logoColor=black)
+
+## Stats
+
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=YOUR_USERNAME&show_icons=true)
+```
+
+📸 画像メモ: カスタマイズされた GitHub プロフィール例
+
+---
+
+## 実践：リポジトリを作成
+
+### 1. GitHub で新規リポジトリを作成
+
+1. GitHub にログイン
+2. 「+」→「New repository」
+3. 以下の設定で作成：
+   - Repository name: `my-first-repo`
+   - Description: `Git の練習用リポジトリ`
+   - Public を選択
+   - ✅ Add a README file
+   - .gitignore: `Node`
+
+### 2. 作成されたリポジトリを確認
+
+作成後、以下が表示されます：
+
+- README.md（説明ファイル）
+- .gitignore（Node.js 用）
+- リポジトリの URL
+
+📸 画像メモ: 作成直後のリポジトリ画面
+
+---
+
+## まとめ
+
+GitHub リポジトリの作成方法を学びました。
+
+### 重要なポイント
+
+```
+1. リポジトリ作成時の設定
+   - わかりやすい名前（ケバブケース推奨）
+   - 適切な公開範囲（Public/Private）
+   - README.md を追加
+
+2. .gitignore の設定
+   - node_modules/ は必ず除外
+   - .env は絶対に除外
+
+3. プロフィールの充実
+   - ポートフォリオとして見られる意識
+```
+
+次の記事では、ローカルのプロジェクトと GitHub を連携する方法を学びます。
+
+---
+
+## 次の記事へ
+
+[06-04. ローカルとリモートの連携](./06-04_ローカルとリモートの連携.md)

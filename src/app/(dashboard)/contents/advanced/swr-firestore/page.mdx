@@ -1,0 +1,88 @@
+# SWR + Firestore
+
+## この記事で学ぶこと
+
+- Firestore で SWR を使う
+- カスタムフックの作成
+- 楽観的更新
+
+---
+
+## Firestore で SWR を使う
+
+```typescript
+import useSWR from 'swr';
+import { collection, getDocs } from 'firebase/firestore';
+
+const fetchTodos = async () => {
+  const snapshot = await getDocs(collection(db, 'todos'));
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+
+export const useTodos = () => {
+  const { data, error, mutate } = useSWR('todos', fetchTodos);
+
+  return {
+    todos: data,
+    isLoading: !error && !data,
+    isError: error,
+    mutate,
+  };
+};
+```
+
+---
+
+## 使い方
+
+```tsx
+function TodoList() {
+  const { todos, isLoading, isError } = useTodos();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error</div>;
+
+  return (
+    <ul>
+      {todos.map(todo => (
+        <li key={todo.id}>{todo.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## 楽観的更新
+
+```typescript
+const addTodo = async (text: string) => {
+  // 楽観的に UI を更新
+  mutate([...todos, { id: 'temp', text }], false);
+  
+  // 実際に保存
+  await addDoc(collection(db, 'todos'), { text });
+  
+  // 再フェッチ
+  mutate();
+};
+```
+
+---
+
+## まとめ
+
+- Firestore でも SWR を使ってデータをフェッチできる
+- **カスタムフック**（useTodos など）でロジックを再利用
+- **楽観的更新**で、UX を向上させながらデータを更新
+- `mutate()` でキャッシュを再フェッチ
+
+---
+
+## 次の記事へ
+
+[09-12. React Query 入門](./09-12_ReactQuery入門.md)

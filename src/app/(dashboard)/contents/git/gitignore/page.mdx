@@ -1,0 +1,356 @@
+# .gitignore の使い方
+
+## この記事で学ぶこと
+
+- .gitignore とは何か、なぜ必要か
+- 無視すべきファイル・フォルダ
+- .gitignore の書き方
+- 既にコミットしたファイルの除外
+- よくある間違いと対処法
+
+---
+
+## .gitignore とは
+
+### 定義
+
+**`.gitignore`** は、Git で追跡しないファイル・フォルダを指定するファイルです。
+
+### なぜ必要か
+
+```
+.gitignore が必要な理由：
+├── node_modules/ は巨大すぎる（数百MB）
+├── .env には API キーなど機密情報がある
+├── ビルド成果物は再生成可能
+├── OS 固有のファイルは不要
+└── エディタの設定ファイルは個人差がある
+```
+
+> **重要**: `.env` ファイルを GitHub にプッシュすると、API キーやパスワードが世界中に公開されてしまいます。**絶対に避けてください**。
+
+---
+
+## 無視すべきファイル・フォルダ
+
+### Node.js プロジェクトの例
+
+```gitignore
+# 依存関係（npm install で再現可能）
+node_modules/
+
+# ビルド成果物（再生成可能）
+dist/
+build/
+.next/
+
+# 環境変数（機密情報）
+.env
+.env.local
+.env*.local
+
+# エディタ設定（個人差がある）
+.vscode/
+.idea/
+
+# OS 固有のファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+npm-debug.log*
+```
+
+### なぜ無視するのか
+
+| ファイル/フォルダ | 理由 | リスク |
+|:-----------------|:----|:------|
+| `node_modules/` | 巨大（数百MB）。npm install で再現可能 | リポジトリが重くなる |
+| `.env` | API キー、パスワードなど機密情報 | **セキュリティ事故** |
+| `dist/`, `build/` | ビルドで再生成可能 | 差分が無駄に増える |
+| `.DS_Store` | macOS のシステムファイル | 無意味なファイル |
+
+---
+
+## .gitignore の書き方
+
+### 基本構文
+
+```gitignore
+# コメント（# で始まる行）
+ファイル名
+フォルダ名/
+*.拡張子
+!例外（無視しない）
+```
+
+### パターン例
+
+```gitignore
+# 特定のファイル
+secret.txt
+config.local.js
+
+# 特定のフォルダ（/ で終わる）
+logs/
+temp/
+
+# 拡張子でまとめて指定
+*.log
+*.tmp
+*.cache
+
+# 特定フォルダ内の特定ファイル
+config/*.local.js
+
+# サブフォルダ含めてすべて
+**/node_modules/
+
+# 例外（! で無視しない）
+!.env.example
+```
+
+### ワイルドカード
+
+| パターン | 意味 |
+|:--------|:----|
+| `*` | 任意の文字列（/ 以外） |
+| `**` | 任意のディレクトリ |
+| `?` | 任意の1文字 |
+| `[abc]` | a, b, c のいずれか |
+
+---
+
+## .gitignore を作成する
+
+### 1. ファイルを作成
+
+```bash
+# プロジェクトのルートで
+touch .gitignore
+```
+
+### 2. 内容を記述
+
+```gitignore
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Build
+dist/
+build/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+```
+
+### 3. コミット
+
+```bash
+git add .gitignore
+git commit -m ".gitignore を追加"
+```
+
+### テンプレートを使う
+
+GitHub でリポジトリを作成する際、言語に応じたテンプレートを選択できます。
+
+📸 画像メモ: .gitignore テンプレート選択画面
+
+---
+
+## 既にコミットしたファイルの除外
+
+### 問題
+
+`.gitignore` に追加しても、**既にコミットされたファイルは追跡が続きます**。
+
+```
+あるある：
+├── 最初に .gitignore を作り忘れた
+├── node_modules/ をコミットしてしまった
+└── .env をプッシュしてしまった
+```
+
+### 解決方法
+
+```bash
+# 1. キャッシュから削除（ファイルは残る）
+git rm --cached ファイル名
+
+# フォルダの場合（-r オプション）
+git rm --cached -r フォルダ名/
+
+# 例：node_modules を除外
+git rm --cached -r node_modules/
+
+# 2. .gitignore に追加（まだなら）
+echo "node_modules/" >> .gitignore
+
+# 3. コミット
+git add .gitignore
+git commit -m "node_modules を .gitignore に追加"
+```
+
+> **注意**: `git rm --cached` はローカルのファイルは残しますが、リモートからは削除されます。
+
+---
+
+## .env をプッシュしてしまった場合
+
+### 緊急対応
+
+**これは重大なセキュリティ問題です。**
+
+```
+やるべきこと：
+1. すぐにチームに報告
+2. API キーを無効化・再発行
+3. 履歴からファイルを削除
+4. .gitignore に追加
+```
+
+### 履歴からの削除
+
+```bash
+# 履歴から完全に削除（上級者向け）
+git filter-branch --force --index-filter \
+  "git rm --cached --ignore-unmatch .env" \
+  --prune-empty --tag-name-filter cat -- --all
+
+# 強制プッシュ
+git push origin --force --all
+```
+
+> **重要**: 履歴から削除しても、既に誰かがダウンロードしていた可能性があります。API キーは必ず再発行してください。
+
+---
+
+## よくある間違いと対処法
+
+### 間違い1: .gitignore を後から追加したのに効かない
+
+**原因**: 既にコミット済みのファイルは追跡が続く
+
+**対処法**:
+```bash
+git rm --cached -r フォルダ名/
+git commit -m ".gitignore を適用"
+```
+
+### 間違い2: .gitignore 自体を無視してしまう
+
+**症状**: .gitignore がリポジトリにない
+
+**対処法**:
+```bash
+# .gitignore を確認
+cat .gitignore
+
+# .gitignore 自体は追跡する（書き方に注意）
+```
+
+### 間違い3: パスの書き方が間違っている
+
+**症状**: 特定のファイルだけ無視されない
+
+**対処法**:
+```gitignore
+# ルートのみ
+/config.js
+
+# すべてのディレクトリ
+**/config.js
+
+# 特定のディレクトリ
+src/config.js
+```
+
+---
+
+## .env.example の活用
+
+### 機密情報を共有せずに設定を共有
+
+```bash
+# .env（Git で無視）
+API_KEY=sk-abc123...
+DATABASE_URL=postgres://user:pass@host/db
+
+# .env.example（Git にコミット）
+API_KEY=your_api_key_here
+DATABASE_URL=your_database_url_here
+```
+
+### .gitignore の設定
+
+```gitignore
+.env
+.env.local
+!.env.example
+```
+
+---
+
+## ミニ演習
+
+### Try 1: .gitignore を作成する
+
+以下の手順で .gitignore を作成してみましょう：
+
+1. 新しいプロジェクトフォルダを作成
+2. `git init` で初期化
+3. `.gitignore` ファイルを作成
+4. `node_modules/` と `.env` を追加
+5. コミット
+
+**確認ポイント:**
+- [ ] .gitignore が作成できた
+- [ ] node_modules/ が無視されている
+- [ ] .env が無視されている
+
+### Try 2: 既にコミットしたファイルを除外する
+
+1. テスト用ファイル `secret.txt` を作成してコミット
+2. `.gitignore` に `secret.txt` を追加
+3. `git rm --cached secret.txt` を実行
+4. 再度コミットして除外されたことを確認
+
+---
+
+## まとめ
+
+```
+.gitignore のポイント：
+├── node_modules/ は必ず除外
+├── .env はセキュリティ上必須
+├── ビルド成果物は除外
+├── チーム全員で同じ設定を使う
+├── 既にコミットしたものは git rm --cached
+└── .env.example で設定を共有
+```
+
+### チェックリスト
+
+```
+新しいプロジェクトで確認：
+- [ ] .gitignore を作成した
+- [ ] node_modules/ を追加した
+- [ ] .env を追加した
+- [ ] ビルドフォルダを追加した
+- [ ] OS 固有ファイルを追加した
+```
+
+---
+
+## 次の記事へ
+
+[06-12. Git のよく使うコマンド](./06-12_Gitのよく使うコマンド.md)

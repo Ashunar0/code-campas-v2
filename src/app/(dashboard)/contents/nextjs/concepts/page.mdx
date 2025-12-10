@@ -1,0 +1,168 @@
+# Next.js の基本概念
+
+## この記事で学ぶこと
+
+- Next.js とは何か
+- React フレームワークとしての位置づけ
+- Next.js の主要機能
+- Pages Router vs App Router
+
+---
+
+## Next.js とは何か
+
+### React のフレームワーク
+
+**Next.js** は React をベースにした Web アプリケーションフレームワークです。React の機能を拡張し、本番環境向けの機能を提供します。
+
+```
+React のみ：
+├── UI の構築
+├── コンポーネント
+└── State 管理
+
+Next.js：
+├── React の全機能
+├── + ルーティング
+├── + サーバーサイドレンダリング
+├── + API Routes
+├── + 画像最適化
+└── + 自動最適化
+```
+
+### 開発元
+
+Next.js は **Vercel** 社が開発しています。Vercel はホスティングサービスも提供しており、Next.js との相性が抜群です。
+
+---
+
+## Next.js の特徴
+
+### 1. ファイルベースルーティング
+
+ファイル構造がそのままURLになります。
+
+```
+app/
+├── page.jsx          → /
+├── about/
+│   └── page.jsx      → /about
+├── blog/
+│   └── page.jsx      → /blog
+│   └── [id]/
+│       └── page.jsx  → /blog/1, /blog/2, ...
+```
+
+React Router の設定が不要で、直感的にルートを作成できます。
+
+### 2. サーバーサイドレンダリング（SSR）
+
+```
+クライアントサイドレンダリング（CSR）：
+ブラウザでJSが実行 → HTMLを生成 → 表示
+├── 初期表示が遅い
+└── SEOに弱い
+
+サーバーサイドレンダリング（SSR）：
+サーバーでHTMLを生成 → ブラウザに送信 → 表示
+├── 初期表示が速い
+└── SEOに強い
+```
+
+### 3. 静的サイト生成（SSG）
+
+ビルド時に HTML を生成し、CDN（Content Delivery Network: 世界中のサーバーからコンテンツを高速配信するネットワーク）から配信できます。
+
+### 4. API Routes
+
+フロントエンドと同じプロジェクトで API を作成できます。
+
+### 5. 画像最適化
+
+`next/image` コンポーネントで自動的に画像を最適化します。
+
+---
+
+## Pages Router vs App Router
+
+Next.js には2つのルーティング方式があります。
+
+### Pages Router（旧方式）
+
+```
+pages/
+├── index.js     → /
+├── about.js     → /about
+└── api/
+    └── hello.js → /api/hello
+```
+
+### App Router（新方式・推奨）
+
+```
+app/
+├── page.jsx     → /
+├── about/
+│   └── page.jsx → /about
+└── api/
+    └── hello/
+        └── route.js → /api/hello
+```
+
+### なぜ App Router を使うのか
+
+```
+App Router の利点：
+├── Server Components がデフォルト
+├── より柔軟なレイアウト
+├── データフェッチが簡単
+├── ストリーミング対応
+└── 今後の主流（推奨）
+```
+
+**このコースでは App Router を使用します。**
+
+---
+
+## React との使い分け
+
+### React（Vite）を選ぶ場合
+
+```
+├── シンプルな SPA
+├── 管理画面
+├── SEO が不要
+├── 学習目的
+└── Firebase Hosting でデプロイ
+```
+
+### Next.js を選ぶ場合
+
+```
+├── ブログ・メディアサイト
+├── ECサイト
+├── SEO が重要
+├── ランディングページ
+└── 複数ページのサイト
+```
+
+---
+
+## まとめ
+
+```
+Next.js の特徴：
+├── React ベースのフレームワーク
+├── ファイルベースルーティング
+├── SSR/SSG 対応
+├── App Router が推奨
+└── SEO・パフォーマンスに強い
+```
+
+次の記事では、Next.js プロジェクトを作成します。
+
+---
+
+## 次の記事へ
+
+[07-02. Next.js プロジェクトの作成](./07-02_Nextjsプロジェクトの作成.md)

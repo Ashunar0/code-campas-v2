@@ -1,0 +1,360 @@
+# ブランチを使った開発
+
+## この記事で学ぶこと
+
+- ブランチとは何か
+- なぜブランチを使うのか
+- ブランチの作成と切り替え
+- ブランチ名の命名規則
+- main ブランチを守る重要性
+
+---
+
+## ブランチとは何か
+
+### ブランチ = 作業の分岐
+
+**ブランチ**は、メインのコードに影響を与えずに、独立した作業空間を作る機能です。
+
+```
+main（本番用）
+  │
+  ├── feature/login     ← ログイン機能を開発中
+  │
+  ├── feature/signup    ← 会員登録機能を開発中
+  │
+  └── fix/header-bug    ← ヘッダーのバグを修正中
+```
+
+### ブランチのイメージ
+
+```
+                 feature/login
+                      ↓
+              ● ─── ● ─── ●
+             /
+● ─── ● ─── ● ─────────────── ● ─── ●  ← main
+             \               /
+              ● ─── ● ─── ●
+                      ↑
+               feature/signup
+```
+
+各ブランチで独立して作業し、完成したら main にマージします。
+
+---
+
+## なぜブランチを使うのか
+
+### ブランチなしの問題
+
+```
+問題点：
+├── 開発途中の不完全なコードが main に混ざる
+├── 複数人が同じファイルを編集すると衝突
+├── バグが発生しても原因特定が困難
+└── 「動かない」状態が続いて開発が止まる
+```
+
+### ブランチありのメリット
+
+```
+メリット：
+├── main は常に動作する状態を保てる
+├── 各自が独立して開発できる
+├── 問題があればブランチごと破棄可能
+├── レビューを受けてからマージできる
+└── 誰が何の作業をしているか明確
+```
+
+---
+
+## ブランチの作成
+
+### ブランチを作成する
+
+```bash
+# 新しいブランチを作成
+git branch feature/add-login
+
+# 作成と同時に切り替え（よく使う）
+git checkout -b feature/add-login
+
+# または（Git 2.23+）
+git switch -c feature/add-login
+```
+
+### コマンドの意味
+
+```
+git checkout -b feature/add-login
+             │  │
+             │  └── ブランチ名
+             └── branch を create
+
+git switch -c feature/add-login
+           │  │
+           │  └── ブランチ名
+           └── create
+```
+
+---
+
+## ブランチの切り替え
+
+### 別のブランチに移動
+
+```bash
+# ブランチを切り替え
+git checkout main
+git checkout feature/add-login
+
+# または（Git 2.23+）
+git switch main
+git switch feature/add-login
+```
+
+### 現在のブランチを確認
+
+```bash
+# ブランチ一覧（現在のブランチに * がつく）
+git branch
+
+# 出力例
+* feature/add-login
+  main
+```
+
+### リモートブランチも含めて確認
+
+```bash
+git branch -a
+
+# 出力例
+* feature/add-login
+  main
+  remotes/origin/main
+  remotes/origin/feature/signup
+```
+
+---
+
+## ブランチ名の命名規則
+
+### 推奨するプレフィックス
+
+| プレフィックス | 用途 | 例 |
+|:--------------|:-----|:---|
+| `feature/` | 新機能の追加 | `feature/add-login` |
+| `fix/` | バグ修正 | `fix/header-layout` |
+| `docs/` | ドキュメント更新 | `docs/update-readme` |
+| `refactor/` | リファクタリング | `refactor/api-hooks` |
+| `style/` | スタイル修正 | `style/button-design` |
+
+### 良いブランチ名の例
+
+```
+feature/add-login-form
+feature/implement-search
+fix/home-scroll-issue
+fix/login-validation
+docs/setup-guide
+```
+
+### 避けるべきブランチ名
+
+```
+test          ← 何をテストしているか不明
+my-branch     ← 抽象的すぎる
+bug           ← どのバグか不明
+ログイン       ← 日本語は避ける
+add_Login     ← 大文字やアンダースコアは避ける
+```
+
+---
+
+## ブランチの実践的な流れ
+
+### 1. 最新の main から始める
+
+```bash
+# main ブランチに切り替え
+git checkout main
+
+# 最新を取得
+git pull origin main
+```
+
+### 2. 新しいブランチを作成
+
+```bash
+# 機能ブランチを作成して切り替え
+git checkout -b feature/add-login
+```
+
+### 3. 作業してコミット
+
+```bash
+# ファイルを編集...
+
+# 変更をコミット
+git add .
+git commit -m "ログインフォームのUIを作成"
+
+# さらに作業...
+git add .
+git commit -m "バリデーションを追加"
+```
+
+### 4. ブランチをプッシュ
+
+```bash
+# リモートにブランチをプッシュ
+git push -u origin feature/add-login
+```
+
+📸 画像メモ: GitHub にプッシュされたブランチの画面
+
+---
+
+## main ブランチを守る
+
+### なぜ main を直接編集しないのか
+
+```
+main ブランチは本番環境！
+
+直接編集すると：
+├── レビューなしでコードが入る
+├── バグがあると即座に影響
+├── 誰がいつ変更したか追いにくい
+└── 元に戻すのが大変
+```
+
+### 正しい流れ
+
+```
+1. main から feature ブランチを作成
+2. feature ブランチで開発
+3. Pull Request を作成
+4. レビューを受ける
+5. 承認されたら main にマージ
+```
+
+### 設定で保護する
+
+GitHub の設定で、main への直接プッシュを禁止できます。
+
+📸 画像メモ: GitHub の Branch protection rules 設定画面
+
+---
+
+## VSCode でのブランチ操作
+
+### ブランチの確認と切り替え
+
+1. 画面左下のブランチ名をクリック
+2. ブランチ一覧が表示される
+3. 切り替えたいブランチを選択
+
+📸 画像メモ: VSCode 左下のブランチ表示
+
+### 新しいブランチの作成
+
+1. 左下のブランチ名をクリック
+2. 「+ Create new branch...」を選択
+3. ブランチ名を入力
+
+### Source Control パネル
+
+Source Control パネル（左サイドバーの分岐アイコン）でも操作できます。
+
+```
+操作できること：
+├── 変更のステージング
+├── コミット
+├── プッシュ/プル
+└── ブランチの切り替え
+```
+
+---
+
+## 実践：ブランチを使って開発
+
+### シナリオ
+
+Todo アプリにタスクの削除機能を追加します。
+
+### 1. main から開始
+
+```bash
+git checkout main
+git pull origin main
+```
+
+### 2. ブランチを作成
+
+```bash
+git checkout -b feature/delete-task
+```
+
+### 3. 機能を実装（例）
+
+```javascript
+// TaskItem.jsx に削除ボタンを追加
+function TaskItem({ task, onDelete }) {
+  return (
+    <div className="task-item">
+      <span>{task.title}</span>
+      <button onClick={() => onDelete(task.id)}>
+        削除
+      </button>
+    </div>
+  );
+}
+```
+
+### 4. コミット
+
+```bash
+git add .
+git commit -m "タスク削除機能を追加"
+```
+
+### 5. プッシュ
+
+```bash
+git push -u origin feature/delete-task
+```
+
+---
+
+## まとめ
+
+ブランチを使うことで、安全に開発を進められます。
+
+### 基本コマンド
+
+| コマンド | 説明 |
+|:--------|:-----|
+| `git branch` | ブランチ一覧を表示 |
+| `git checkout -b <name>` | ブランチを作成して切り替え |
+| `git checkout <name>` | ブランチを切り替え |
+| `git push -u origin <name>` | ブランチをプッシュ |
+
+### ブランチの使い方
+
+```
+1. main は常に安定した状態に保つ
+2. 機能ごとにブランチを作成
+3. 命名規則に従う（feature/、fix/など）
+4. 完成したら Pull Request を作成
+```
+
+次の記事では、ブランチをマージする方法を学びます。
+
+---
+
+## 次の記事へ
+
+[06-06. マージの基礎](./06-06_マージの基礎.md)

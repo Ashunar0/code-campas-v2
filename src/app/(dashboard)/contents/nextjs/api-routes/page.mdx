@@ -1,0 +1,108 @@
+# API Routes（任意）
+
+## この記事で学ぶこと
+
+- Route Handlers とは
+- API ルートの作成
+- GET / POST の実装
+
+---
+
+## Route Handlers とは
+
+Next.js では、フロントエンドと同じプロジェクトで API を作成できます。
+
+```
+app/
+└── api/
+    └── hello/
+        └── route.js  → GET /api/hello
+```
+
+---
+
+## GET リクエスト
+
+```javascript
+// app/api/hello/route.js
+export async function GET() {
+  return Response.json({
+    message: 'Hello from API!'
+  });
+}
+```
+
+### アクセス
+
+```
+GET http://localhost:3000/api/hello
+
+Response: { "message": "Hello from API!" }
+```
+
+---
+
+## POST リクエスト
+
+```javascript
+// app/api/posts/route.js
+export async function POST(request) {
+  const data = await request.json();
+  
+  // データベースに保存する処理など
+  console.log(data);
+  
+  return Response.json({
+    success: true,
+    data: data
+  });
+}
+```
+
+---
+
+## クライアントからの呼び出し
+
+```jsx
+"use client";
+
+async function createPost() {
+  const res = await fetch('/api/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: 'New Post' }),
+  });
+  const data = await res.json();
+  console.log(data);
+}
+```
+
+---
+
+## 🎯 Try: 簡単なAPIを作成
+
+現在時刻を返す API を作ってみましょう。
+
+1. `app/api/time/route.js` を作成
+2. 以下のコードを記述：
+   ```javascript
+   export async function GET() {
+     return Response.json({ time: new Date().toISOString() });
+   }
+   ```
+3. http://localhost:3000/api/time にアクセスして確認
+
+```
+API Routes：
+├── app/api/*/route.js で定義
+├── GET(), POST() 関数をエクスポート
+├── Response.json() でレスポンス
+├── fetch で呼び出し
+└── Firebase を使うなら不要な場合も
+```
+
+---
+
+## 次の記事へ
+
+[07-13. 環境変数の使い方](./07-13_環境変数の使い方.md)

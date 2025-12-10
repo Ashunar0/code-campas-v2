@@ -1,0 +1,159 @@
+# ファイルベースルーティング
+
+## この記事で学ぶこと
+
+- 動的ルート（Dynamic Routes）
+- params の取得
+- ネストされたルート
+
+---
+
+## 動的ルート
+
+### [id] で動的なURLを作成
+
+ブログの記事ページなど、ID ごとに変わるページを作るには角括弧 `[]` を使います。
+
+```
+app/
+└── blog/
+    ├── page.jsx        → /blog
+    └── [id]/
+        └── page.jsx    → /blog/1, /blog/2, ...
+```
+
+### 実装例
+
+```jsx
+// app/blog/[id]/page.jsx
+export default function BlogPost({ params }) {
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold">
+        記事 ID: {params.id}
+      </h1>
+    </div>
+  );
+}
+```
+
+### アクセス例
+
+- `/blog/1` → params.id = "1"
+- `/blog/hello` → params.id = "hello"
+
+---
+
+## params の取得
+
+### params オブジェクト
+
+動的セグメントの値は、コンポーネントの props として `params` で受け取れます。
+
+```jsx
+// app/posts/[postId]/page.jsx
+export default function Post({ params }) {
+  console.log(params); // { postId: "123" }
+  
+  return <div>投稿ID: {params.postId}</div>;
+}
+```
+
+### 複数の動的セグメント
+
+```
+app/shop/[category]/[product]/page.jsx
+→ /shop/electronics/phone
+→ params = { category: "electronics", product: "phone" }
+```
+
+---
+
+## 実践：ブログ詳細ページ
+
+### 1. フォルダ構造を作成
+
+```
+app/
+└── blog/
+    ├── page.jsx         # 記事一覧
+    └── [id]/
+        └── page.jsx     # 記事詳細
+```
+
+### 2. 一覧ページ
+
+```jsx
+// app/blog/page.jsx
+import Link from 'next/link';
+
+export default function BlogList() {
+  const posts = [
+    { id: 1, title: "Next.js入門" },
+    { id: 2, title: "App Routerの使い方" },
+  ];
+
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">ブログ一覧</h1>
+      <ul className="space-y-2">
+        {posts.map(post => (
+          <li key={post.id}>
+            <Link href={`/blog/${post.id}`} className="text-blue-600 hover:underline">
+              {post.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### 3. 詳細ページ
+
+```jsx
+// app/blog/[id]/page.jsx
+export default function BlogPost({ params }) {
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold">
+        記事 {params.id}
+      </h1>
+      <p className="mt-4">
+        この記事の内容です...
+      </p>
+    </div>
+  );
+}
+```
+
+---
+
+## 🎯 Try: 2階層の動的ルートを作成
+
+`/products/[category]/[id]` のような2階層の動的ルートを作ってみましょう。
+
+1. `app/products/[category]/[id]/page.jsx` を作成
+2. `params.category` と `params.id` を両方表示
+3. `/products/electronics/123` にアクセスして確認
+
+---
+
+## まとめ
+
+```
+動的ルーティング：
+├── [id] フォルダで動的URL
+├── params で値を取得
+├── 複数の動的セグメントも可能
+└── ブログ、商品ページなどに活用
+```
+
+次の記事では、Link コンポーネントでのページ遷移を学びます。
+
+---
+
+## 次の記事へ
+
+[07-05. Link コンポーネントでページ遷移](./07-05_Linkコンポーネント.md)

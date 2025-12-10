@@ -1,0 +1,127 @@
+# interface と type
+
+## この記事で学ぶこと
+
+- interface の使い方
+- type alias の使い方
+- どちらを使うべきか
+
+---
+
+## interface の使い方
+
+オブジェクトの型を定義します。
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age?: number;  // オプショナル
+}
+
+const user: User = {
+  id: "1",
+  name: "田中",
+  email: "tanaka@example.com",
+};
+```
+
+---
+
+## type alias の使い方
+
+型に別名をつけます。
+
+```typescript
+type Status = "pending" | "completed" | "cancelled";
+
+type Todo = {
+  id: string;
+  text: string;
+  status: Status;
+};
+```
+
+---
+
+## interface vs type
+
+| 項目 | interface | type |
+|:----|:---------|:-----|
+| オブジェクト型 | ◎ | ◎ |
+| ユニオン型 | × | ◎ |
+| 拡張 | extends | & |
+| 宣言のマージ | ◎ | × |
+
+### どちらを使うか
+
+```
+推奨：
+├── オブジェクトの型 → interface
+├── ユニオン型 → type
+└── チームで統一する
+```
+
+---
+
+## 拡張（継承）
+
+```typescript
+// interface
+interface Animal {
+  name: string;
+}
+interface Dog extends Animal {
+  breed: string;
+}
+
+// type
+type Animal = { name: string };
+type Dog = Animal & { breed: string };
+```
+
+---
+
+## まとめ
+
+- **interface** はオブジェクトの型を定義するのに最適
+- **type alias** はユニオン型など幅広い型に使える
+- どちらも同じことができるが、**チームで統一**することが大事
+- 拡張は `extends`（interface）または `&`（type）で行う
+
+---
+
+## Try：User 型を定義してみよう
+
+以下の User 型を interface と type の両方で定義してみましょう。
+
+```typescript
+// これを interface と type で書いてみよう
+// - id: 文字列
+// - name: 文字列
+// - email: 文字列
+// - age: 数値（オプション）
+
+// interface版
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age?: number;
+}
+
+// type版
+type UserType = {
+  id: string;
+  name: string;
+  email: string;
+  age?: number;
+};
+```
+
+---
+
+## 次の記事へ
+
+[09-04. ジェネリクス入門](./09-04_ジェネリクス入門.md)

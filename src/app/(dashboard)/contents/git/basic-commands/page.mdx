@@ -1,0 +1,365 @@
+# Git の基本操作
+
+## この記事で学ぶこと
+
+- git init でリポジトリを初期化
+- git status で状態を確認
+- git add でステージング
+- git commit でコミット
+- git log で履歴確認
+- VSCode での Git 操作
+
+---
+
+## git init（初期化）
+
+### リポジトリを作成する
+
+新しいプロジェクトで Git を使い始めるには、`git init` コマンドを実行します。
+
+```bash
+# プロジェクトフォルダに移動
+cd my-project
+
+# Git リポジトリを初期化
+git init
+```
+
+実行結果：
+
+```
+Initialized empty Git repository in /path/to/my-project/.git/
+```
+
+### 初期化されたことを確認
+
+```bash
+# 隠しフォルダ .git が作成される
+ls -la
+
+# 出力例
+drwxr-xr-x  3 user user  96  1月  1 12:00 .git
+-rw-r--r--  1 user user 123  1月  1 12:00 index.html
+```
+
+> **注意**: `.git` フォルダは Git が変更履歴を管理するための重要なフォルダです。削除しないでください。
+
+---
+
+## git status（状態確認）
+
+### 現在の状態を確認する
+
+`git status` コマンドで、現在の作業状態を確認できます。
+
+```bash
+git status
+```
+
+### 状態の種類
+
+**1. まだ何もコミットしていない場合:**
+
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        index.html
+        style.css
+```
+
+**2. ファイルをステージングした場合:**
+
+```
+On branch main
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   index.html
+        new file:   style.css
+```
+
+**3. ファイルを編集した場合:**
+
+```
+On branch main
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+        modified:   index.html
+```
+
+📸 画像メモ: git status の各状態の出力例
+
+---
+
+## git add（ステージング）
+
+### ファイルをステージングエリアに追加
+
+コミットするファイルを選んでステージングエリアに追加します。
+
+```bash
+# 特定のファイルを追加
+git add index.html
+
+# 複数のファイルを追加
+git add index.html style.css
+
+# カレントディレクトリ以下のすべてのファイルを追加
+git add .
+```
+
+### よく使うパターン
+
+```bash
+# すべての変更をステージング（最もよく使う）
+git add .
+
+# 特定の拡張子のファイルだけ
+git add *.html
+
+# 特定のフォルダ内のファイル
+git add src/
+```
+
+### ステージングの取り消し
+
+間違えてステージングした場合は、取り消せます：
+
+```bash
+# 特定のファイルのステージングを取り消し
+git restore --staged index.html
+
+# すべてのステージングを取り消し
+git restore --staged .
+```
+
+---
+
+## git commit（コミット）
+
+### コミットを作成する
+
+ステージングしたファイルをコミットとして記録します。
+
+```bash
+# コミットメッセージをつけてコミット
+git commit -m "初期コミット"
+```
+
+### コミットメッセージの書き方
+
+**良いコミットメッセージ:**
+
+```bash
+git commit -m "ヘッダーにナビゲーションを追加"
+git commit -m "ログインフォームのバリデーションを修正"
+git commit -m "READMEにインストール手順を追記"
+```
+
+**悪いコミットメッセージ:**
+
+```bash
+git commit -m "修正"        # 何を修正したかわからない
+git commit -m "あ"          # 意味がわからない
+git commit -m "作業中"      # 具体性がない
+```
+
+### コミットメッセージのルール
+
+```
+推奨するルール：
+├── 何を変更したかを簡潔に書く
+├── 日本語でOK（チームのルールに従う）
+├── 1行目は50文字以内を目安
+└── 動詞から始める（〜を追加、〜を修正、〜を削除）
+
+例：
+├── "ユーザー登録機能を追加"
+├── "ヘッダーのレイアウトを修正"
+├── "不要なコメントを削除"
+└── "READMEを更新"
+```
+
+### add と commit を一度に
+
+すでに追跡中のファイルなら、`-a` オプションで一度にできます：
+
+```bash
+# 追跡中のファイルをすべて add して commit
+git commit -am "スタイルを調整"
+```
+
+> **注意**: 新規ファイルは `-a` では追加されません。必ず `git add` が必要です。
+
+---
+
+## git log（履歴確認）
+
+### コミット履歴を確認する
+
+```bash
+# 履歴を表示
+git log
+
+# 出力例
+commit a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+Author: Your Name <your@email.com>
+Date:   Mon Jan 1 12:00:00 2024 +0900
+
+    ヘッダーにナビゲーションを追加
+
+commit b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1
+Author: Your Name <your@email.com>
+Date:   Mon Jan 1 11:00:00 2024 +0900
+
+    初期コミット
+```
+
+### 便利なオプション
+
+```bash
+# 1行表示（見やすい）
+git log --oneline
+
+# 出力例
+a1b2c3d ヘッダーにナビゲーションを追加
+b2c3d4e 初期コミット
+
+# 最新の5件だけ表示
+git log -n 5
+
+# グラフ表示（ブランチの分岐がわかる）
+git log --oneline --graph
+```
+
+---
+
+## VSCode での Git 操作
+
+### Source Control パネル
+
+VSCode には Git の GUI が組み込まれています。
+
+📸 画像メモ: VSCode の Source Control パネルのスクリーンショット
+
+### 基本的な操作
+
+**1. ファイルをステージング:**
+- 変更ファイルの横にある `+` ボタンをクリック
+- または、ファイルを右クリック → 「Stage Changes」
+
+**2. コミット:**
+- メッセージボックスにコミットメッセージを入力
+- `✓` ボタンをクリック（または `Cmd + Enter`）
+
+**3. 差分を確認:**
+- 変更されたファイルをクリック
+- 左右に変更前後が表示される
+
+### コマンドパレットから操作
+
+`Cmd + Shift + P`（Windows: `Ctrl + Shift + P`）でコマンドパレットを開き、「Git:」と入力すると Git コマンドが表示されます。
+
+```
+Git: Commit
+Git: Stage All Changes
+Git: Unstage All Changes
+Git: Push
+Git: Pull
+```
+
+---
+
+## 実践：最初のコミット
+
+### 1. プロジェクトを作成
+
+```bash
+# フォルダを作成して移動
+mkdir my-first-git
+cd my-first-git
+
+# Git を初期化
+git init
+```
+
+### 2. ファイルを作成
+
+```bash
+# index.html を作成
+echo '<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Git</title>
+</head>
+<body>
+    <h1>Hello Git!</h1>
+</body>
+</html>' > index.html
+```
+
+### 3. 状態を確認
+
+```bash
+git status
+
+# 出力
+Untracked files:
+        index.html
+```
+
+### 4. ステージングしてコミット
+
+```bash
+# ステージング
+git add .
+
+# コミット
+git commit -m "初期コミット"
+```
+
+### 5. 履歴を確認
+
+```bash
+git log --oneline
+
+# 出力
+a1b2c3d 初期コミット
+```
+
+🎉 これで最初のコミットが完了しました！
+
+---
+
+## まとめ
+
+Git の基本操作は4つのコマンドで行えます。
+
+### よく使うコマンド
+
+| コマンド | 説明 |
+|:--------|:-----|
+| `git init` | リポジトリを初期化 |
+| `git status` | 現在の状態を確認 |
+| `git add .` | 変更をステージング |
+| `git commit -m "メッセージ"` | コミットを作成 |
+| `git log --oneline` | 履歴を確認 |
+
+### 基本の流れ
+
+```
+編集 → git add → git commit → 繰り返し
+```
+
+次の記事では、GitHub にリポジトリを作成する方法を学びます。
+
+---
+
+## 次の記事へ
+
+[06-03. GitHub リポジトリの作成](./06-03_GitHubリポジトリの作成.md)

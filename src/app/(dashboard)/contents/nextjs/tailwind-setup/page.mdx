@@ -1,0 +1,97 @@
+# Tailwind CSS の設定
+
+## この記事で学ぶこと
+
+- Next.js + Tailwind の組み合わせ
+- globals.css の編集
+- カスタムフォントの設定
+
+---
+
+## Next.js + Tailwind
+
+`create-next-app` で Tailwind を選択すると、自動的に設定されます。
+
+```
+設定済みファイル：
+├── tailwind.config.js
+├── postcss.config.js
+└── app/globals.css
+```
+
+---
+
+## globals.css
+
+```css
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* カスタムスタイル */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+```
+
+---
+
+## カスタムフォント（next/font）
+
+Google Fonts を最適化して読み込めます。
+
+```jsx
+// app/layout.jsx
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ja">
+      <body className={inter.className}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+### 日本語フォント
+
+```jsx
+import { Noto_Sans_JP } from 'next/font/google';
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+});
+```
+
+---
+
+## 🎯 Try: 日本語フォントを設定
+
+1. `Noto_Sans_JP` をインポート
+2. `app/layout.jsx` でフォントを適用
+3. 日本語テキストが正しく表示されることを確認
+
+---
+
+## まとめ
+
+```
+Tailwind の設定：
+├── create-next-app で自動設定
+├── globals.css に @tailwind ディレクティブ
+├── next/font で Web フォント最適化
+└── tailwind.config.js でカスタマイズ
+```
+
+---
+
+## 次の記事へ
+
+[07-15. ビルドとデプロイ](./07-15_ビルドとデプロイ.md)

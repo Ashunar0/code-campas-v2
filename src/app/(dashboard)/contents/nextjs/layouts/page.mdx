@@ -1,0 +1,119 @@
+# レイアウトの使い方
+
+## この記事で学ぶこと
+
+- layout.jsx の詳細
+- ルートレイアウト
+- 入れ子のレイアウト
+- レイアウトの特徴
+
+---
+
+## layout.jsx とは
+
+**layout.jsx** は、ページ間で共有される UI を定義するファイルです。
+
+```
+用途：
+├── ヘッダー
+├── フッター
+├── サイドバー
+├── ナビゲーション
+└── 共通のスタイル
+```
+
+---
+
+## ルートレイアウト（必須）
+
+`app/layout.jsx` は必須で、`<html>` と `<body>` タグを含める必要があります。
+
+```jsx
+// app/layout.jsx
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ja">
+      <body>
+        <header>ヘッダー</header>
+        {children}
+        <footer>フッター</footer>
+      </body>
+    </html>
+  );
+}
+```
+
+---
+
+## 入れ子のレイアウト
+
+特定のセクションに別のレイアウトを適用できます。
+
+```
+app/
+├── layout.jsx           ← 全体のレイアウト
+├── page.jsx
+└── dashboard/
+    ├── layout.jsx       ← dashboard 専用レイアウト
+    └── page.jsx
+```
+
+```jsx
+// app/dashboard/layout.jsx
+export default function DashboardLayout({ children }) {
+  return (
+    <div className="flex">
+      <aside className="w-64 bg-gray-100 p-4">
+        サイドバー
+      </aside>
+      <main className="flex-1 p-4">
+        {children}
+      </main>
+    </div>
+  );
+}
+```
+
+### 結果
+
+`/dashboard` にアクセスすると、ルートレイアウト + ダッシュボードレイアウトが適用されます。
+
+---
+
+## レイアウトの特徴
+
+### 再レンダリングされない
+
+レイアウトはページ遷移時に再レンダリングされません。効率的です。
+
+### State が保持される
+
+レイアウト内の State は、ページ遷移後も保持されます。これにより、サイドバーの開閉状態などを維持できます。
+
+---
+
+## 🎯 Try: 入れ子レイアウトを体験
+
+1. `app/dashboard/layout.jsx` を作成（サイドバー付き）
+2. `app/dashboard/page.jsx` を作成
+3. `app/dashboard/settings/page.jsx` を作成
+4. `/dashboard/settings` にアクセスし、両方のレイアウトが適用されることを確認
+
+---
+
+## まとめ
+
+```
+layout.jsx のポイント：
+├── 共通 UI を定義
+├── ルートレイアウトは必須
+├── 入れ子で特定セクションに適用
+├── 再レンダリングされない
+└── {children} にページが入る
+```
+
+---
+
+## 次の記事へ
+
+[07-07. Server Components と Client Components](./07-07_ServerとClientComponents.md)

@@ -1,0 +1,116 @@
+# メタデータの設定
+
+## この記事で学ぶこと
+
+- メタデータとは
+- 静的メタデータ
+- 動的メタデータ
+
+---
+
+## メタデータとは
+
+**メタデータ**は、ページの情報（タイトル、説明など）を検索エンジンに伝えるものです。
+
+```html
+<title>My App</title>
+<meta name="description" content="Welcome to my app">
+```
+
+---
+
+## 静的メタデータ
+
+### metadata オブジェクトをエクスポート
+
+```jsx
+// app/page.jsx
+export const metadata = {
+  title: 'ホーム | My App',
+  description: 'My App へようこそ',
+};
+
+export default function Home() {
+  return <h1>ホーム</h1>;
+}
+```
+
+### 各ページにメタデータを設定
+
+```jsx
+// app/about/page.jsx
+export const metadata = {
+  title: 'About | My App',
+  description: 'このサイトについて',
+};
+
+export default function About() {
+  return <h1>About</h1>;
+}
+```
+
+---
+
+## 動的メタデータ
+
+### generateMetadata 関数
+
+動的ルートでは、params を使ってメタデータを生成できます。
+
+```jsx
+// app/blog/[id]/page.jsx
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.id);
+  
+  return {
+    title: `${post.title} | My Blog`,
+    description: post.excerpt,
+  };
+}
+
+export default async function BlogPost({ params }) {
+  const post = await getPost(params.id);
+  return <h1>{post.title}</h1>;
+}
+```
+
+---
+
+## layout.jsx での共通設定
+
+```jsx
+// app/layout.jsx
+export const metadata = {
+  title: {
+    default: 'My App',
+    template: '%s | My App',  // 子ページで上書き可能
+  },
+  description: 'Welcome to my app',
+};
+```
+
+---
+
+## 🎯 Try: メタデータを設定
+
+1. 各ページに `metadata` を設定
+2. ブラウザのタブにタイトルが反映されることを確認
+3. DevTools の「Elements」タブで `<head>` 内の `<title>` と `<meta>` を確認
+
+---
+
+## まとめ
+
+```
+メタデータの設定：
+├── export const metadata で静的設定
+├── generateMetadata() で動的設定
+├── title, description は SEO に重要
+└── layout.jsx で共通設定
+```
+
+---
+
+## 次の記事へ
+
+[07-11. Image コンポーネント](./07-11_Imageコンポーネント.md)

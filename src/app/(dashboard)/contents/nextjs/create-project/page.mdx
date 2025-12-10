@@ -1,0 +1,146 @@
+# Next.js プロジェクトの作成
+
+## この記事で学ぶこと
+
+- Next.js のインストール
+- インストール時の選択肢
+- プロジェクト構造の確認
+- 開発サーバーの起動
+
+---
+
+## Next.js のインストール
+
+### create-next-app を使う
+
+```bash
+npx create-next-app@latest my-next-app
+```
+
+### 選択肢への回答
+
+インストール時にいくつかの質問があります。
+
+```
+✔ Would you like to use TypeScript? → No
+✔ Would you like to use ESLint? → Yes
+✔ Would you like to use Tailwind CSS? → Yes
+✔ Would you like to use `src/` directory? → No
+✔ Would you like to use App Router? → Yes
+✔ Would you like to customize the default import alias? → No
+```
+
+📸 画像メモ: create-next-app のターミナル出力
+
+---
+
+## 選択肢の説明
+
+| 選択肢 | 推奨 | 理由 |
+|:------|:---:|:----|
+| TypeScript | No | 今回はJSのみ（任意） |
+| ESLint | Yes | コード品質向上 |
+| Tailwind CSS | Yes | スタイリングが簡単 |
+| `src/` directory | No | シンプルに保つ |
+| App Router | Yes | 新しい推奨方式 |
+| import alias | No | デフォルトで十分 |
+
+---
+
+## プロジェクト構造の確認
+
+```
+my-next-app/
+├── app/
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.jsx
+│   └── page.jsx
+├── public/
+│   └── (静的ファイル)
+├── .eslintrc.json
+├── next.config.js
+├── package.json
+├── postcss.config.js
+└── tailwind.config.js
+```
+
+### 重要なファイル
+
+| ファイル | 役割 |
+|:--------|:----|
+| `app/page.jsx` | トップページ（/） |
+| `app/layout.jsx` | 共通レイアウト |
+| `app/globals.css` | グローバルスタイル |
+| `next.config.js` | Next.js の設定 |
+| `tailwind.config.js` | Tailwind の設定 |
+
+---
+
+## 開発サーバーの起動
+
+### サーバーを起動
+
+```bash
+cd my-next-app
+npm run dev
+```
+
+### ブラウザで確認
+
+http://localhost:3000 にアクセスします。
+
+📸 画像メモ: Next.js の初期画面
+
+---
+
+## page.jsx を編集
+
+### シンプルにする
+
+```jsx
+// app/page.jsx
+export default function Home() {
+  return (
+    <main className="p-8">
+      <h1 className="text-3xl font-bold">
+        Hello Next.js!
+      </h1>
+      <p className="mt-4 text-gray-600">
+        Next.js の学習を始めましょう
+      </p>
+    </main>
+  );
+}
+```
+
+ファイルを保存すると、自動的にブラウザが更新されます（**Hot Reload**: ファイル保存時に自動でブラウザを更新する機能）。
+
+---
+
+## 🎯 Try: 変更を体験しよう
+
+1. `app/page.jsx` の `<h1>` タグの中身を「Welcome to Next.js!」に変更
+2. ファイルを保存し、ブラウザが自動更新されることを確認
+3. 背景色を変えてみよう：`<main className="p-8 bg-blue-50">` に変更
+
+---
+
+## まとめ
+
+```
+プロジェクト作成の流れ：
+1. npx create-next-app@latest
+2. 選択肢に回答
+3. cd でフォルダに移動
+4. npm run dev で起動
+5. http://localhost:3000 で確認
+```
+
+次の記事では、App Router の基礎を学びます。
+
+---
+
+## 次の記事へ
+
+[07-03. App Router の基礎](./07-03_AppRouterの基礎.md)

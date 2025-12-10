@@ -1,0 +1,294 @@
+# GitHub の便利機能
+
+## この記事で学ぶこと
+
+- Issues の使い方（概要）
+- Projects でタスク管理（概要）
+- GitHub Actions の概要
+- GitHub Pages でサイト公開
+- その他の便利機能
+
+---
+
+## Issues の使い方
+
+### Issue とは
+
+**Issue** は、タスク、バグ報告、機能要望などを管理する機能です。
+
+```
+Issue の用途：
+├── タスク管理（やること）
+├── バグ報告
+├── 機能要望
+├── 質問・議論
+└── ドキュメント作成
+```
+
+### 詳しい使い方
+
+[06-14. Issue 管理](./06-14_Issue管理.md) で詳しく解説しています。
+
+---
+
+## Projects でタスク管理
+
+### Projects とは
+
+**Projects** は、Issue をカンバン形式で管理できる機能です。
+
+```
+カンバン方式：
+├── 📋 Backlog（バックログ）
+├── 📝 To Do（未着手）
+├── 🏃 In Progress（作業中）
+├── 👀 Review（レビュー中）
+└── ✅ Done（完了）
+```
+
+📸 画像メモ: Projects のカンバンボード
+
+### 詳しい使い方
+
+[06-15. GitHub Projects でタスク管理](./06-15_GitHubProjectsでタスク管理.md) で詳しく解説しています。
+
+---
+
+## GitHub Actions
+
+### GitHub Actions とは
+
+**GitHub Actions** は、CI/CD（継続的インテグレーション/デプロイ）を自動化する機能です。
+
+```
+自動化できること：
+├── プッシュ時にテストを自動実行
+├── PR 時にコードの品質チェック
+├── main マージ時に自動デプロイ
+├── 定期実行（毎日のバックアップなど）
+└── ラベル付けなどの自動化
+```
+
+### いつ使うか
+
+```
+MVP 開発では：
+├── まずは使わなくてもOK
+├── チーム開発が軌道に乗ったら検討
+└── デプロイを自動化したいときに導入
+
+本格的な開発では：
+├── テストの自動実行
+├── コードフォーマットのチェック
+├── 本番環境への自動デプロイ
+```
+
+### 基本的なワークフロー例
+
+```yaml
+# .github/workflows/test.yml
+name: Test
+
+# いつ実行するか
+on: [push, pull_request]
+
+# 何をするか
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm test
+```
+
+### ワークフローファイルの場所
+
+```
+プロジェクト/
+├── .github/
+│   └── workflows/
+│       ├── test.yml
+│       └── deploy.yml
+└── その他のファイル
+```
+
+📸 画像メモ: Actions タブでの実行結果
+
+---
+
+## GitHub Pages
+
+### GitHub Pages とは
+
+静的サイトを**無料で**ホスティングできる機能です。
+
+```
+活用例：
+├── ポートフォリオサイト
+├── プロジェクトのドキュメント
+├── 簡単な Web アプリ
+├── ブログ
+└── ランディングページ
+```
+
+### いつ使うか
+
+```
+GitHub Pages に向いている：
+├── 静的サイト（HTML/CSS/JS のみ）
+├── React でビルドしたサイト
+├── ドキュメントサイト
+└── ポートフォリオ
+
+GitHub Pages に向いていない：
+├── サーバーサイドの処理が必要
+├── データベースが必要
+├── 認証機能が必要
+→ これらは Vercel や Firebase を使う
+```
+
+### 設定方法
+
+1. Settings → Pages を開く
+2. Source を選択
+   - Branch: `main`
+   - Folder: `/ (root)` または `/docs`
+3. Save をクリック
+
+公開 URL: `https://username.github.io/repo-name/`
+
+📸 画像メモ: Pages 設定画面
+
+### React プロジェクトの公開
+
+```bash
+# 1. ビルド
+npm run build
+
+# 2. build または dist フォルダをプッシュ
+
+# 3. Pages の設定で該当フォルダを指定
+```
+
+> **Tip**: React や Next.js のプロジェクトは Vercel の方が簡単にデプロイできます。
+
+---
+
+## その他の便利機能
+
+### Wiki
+
+プロジェクトのドキュメントを作成できます。
+
+```
+Wiki に書くこと：
+├── セットアップ手順
+├── 開発ルール
+├── アーキテクチャ説明
+└── FAQ
+```
+
+### Discussions
+
+Issue よりカジュアルな議論・Q&A ができます。
+
+```
+Discussions に向いている：
+├── アイデアの議論
+├── 質問への回答
+├── お知らせ
+└── フィードバック収集
+```
+
+### Releases
+
+バージョンをタグ付けして公開できます。
+
+```
+使い方：
+├── v1.0.0 などのタグを作成
+├── リリースノートを書く
+├── ダウンロード可能なアセットを添付
+└── ユーザーに新機能を伝える
+```
+
+### Gist
+
+コードスニペットを共有できます。
+
+```
+Gist に向いている：
+├── ちょっとしたコード片
+├── 設定ファイルのサンプル
+├── チートシート
+└── メモ書き
+```
+
+---
+
+## ミニ演習
+
+### Try 1: GitHub Pages でサイトを公開する
+
+1. 新しいリポジトリを作成
+2. `index.html` を作成してプッシュ
+3. Settings → Pages で main ブランチを設定
+4. 公開された URL にアクセス
+
+**index.html の例:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Portfolio</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>This is my first GitHub Pages site.</p>
+</body>
+</html>
+```
+
+### Try 2: 各機能を確認する
+
+リポジトリの各タブを開いて、何ができるか確認してみましょう：
+
+- [ ] Issues タブを開いた
+- [ ] Projects タブを開いた
+- [ ] Actions タブを開いた
+- [ ] Settings → Pages を開いた
+
+---
+
+## まとめ
+
+GitHub にはコード管理以外にも便利な機能があります。
+
+### MVP 開発で活用すべき機能
+
+| 機能 | 用途 | 優先度 |
+|:----|:----|:------:|
+| Issues | タスク管理 | ⭐⭐⭐ |
+| Projects | 進捗可視化 | ⭐⭐⭐ |
+| Pull Request | コードレビュー | ⭐⭐⭐ |
+| GitHub Pages | 成果物の公開 | ⭐⭐ |
+| Actions | 自動化 | ⭐ |
+
+### ポイント
+
+```
+✅ まずは Issues と Projects を使う
+✅ PR でコードレビューを習慣化
+✅ Pages はポートフォリオに便利
+✅ Actions は余裕があれば導入
+```
+
+---
+
+## 次の記事へ
+
+[06-14. Issue 管理](./06-14_Issue管理.md)

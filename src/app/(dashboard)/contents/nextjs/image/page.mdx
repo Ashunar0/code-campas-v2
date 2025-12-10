@@ -1,0 +1,127 @@
+# Image コンポーネント
+
+## この記事で学ぶこと
+
+- next/image の使い方
+- 自動最適化
+- 外部画像の設定
+
+---
+
+## next/image の使い方
+
+### Image コンポーネント
+
+```jsx
+import Image from 'next/image';
+
+export default function Profile() {
+  return (
+    <Image
+      src="/profile.jpg"
+      alt="プロフィール画像"
+      width={200}
+      height={200}
+    />
+  );
+}
+```
+
+### なぜ Image を使うのか
+
+```
+✅ 自動で画像を最適化（WebP変換など）
+✅ レスポンシブ対応
+✅ 遅延読み込み（Lazy Loading）
+✅ レイアウトシフト防止
+```
+
+---
+
+## priority 属性
+
+### ファーストビューの画像に
+
+ページ上部の重要な画像には `priority` をつけます。
+
+```jsx
+<Image
+  src="/hero.jpg"
+  alt="ヒーロー画像"
+  width={1200}
+  height={600}
+  priority
+/>
+```
+
+---
+
+## fill プロパティ
+
+### 親要素いっぱいに広げる
+
+```jsx
+<div className="relative w-full h-64">
+  <Image
+    src="/banner.jpg"
+    alt="バナー"
+    fill
+    className="object-cover"
+  />
+</div>
+```
+
+親要素に `position: relative` が必要です。
+
+---
+
+## 外部画像の設定
+
+### next.config.js で許可
+
+外部 URL の画像を使う場合は設定が必要です。
+
+```javascript
+// next.config.js
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.example.com',
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;
+```
+
+---
+
+## 🎯 Try: Image コンポーネントを使う
+
+1. `public/` フォルダに画像を配置（例: `public/hero.jpg`）
+2. `Image` コンポーネントで表示
+3. DevTools の「Network」タブで画像が WebP 形式に変換されていることを確認
+```
+
+---
+
+## まとめ
+
+```
+Image コンポーネント：
+├── import Image from 'next/image'
+├── width, height は必須
+├── 自動で最適化される
+├── priority で先読み
+├── fill で親要素いっぱいに
+└── 外部画像は next.config.js で設定
+```
+
+---
+
+## 次の記事へ
+
+[07-12. API Routes](./07-12_APIRoutes.md)

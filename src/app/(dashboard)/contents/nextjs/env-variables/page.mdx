@@ -1,0 +1,104 @@
+# 環境変数の使い方
+
+## この記事で学ぶこと
+
+- .env.local の作成
+- 環境変数の定義
+- NEXT_PUBLIC_ プレフィックス
+
+---
+
+## .env.local の作成
+
+プロジェクトルートに `.env.local` ファイルを作成します。
+
+```
+my-next-app/
+├── app/
+├── .env.local  ← ここ
+└── ...
+```
+
+---
+
+## 環境変数の定義
+
+```bash
+# .env.local
+DATABASE_URL=postgresql://localhost:5432/mydb
+API_SECRET=super_secret_key
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+---
+
+## NEXT_PUBLIC_ プレフィックス
+
+| プレフィックス | 使用場所 |
+|:-------------|:--------|
+| なし | サーバーのみ（秘密情報） |
+| `NEXT_PUBLIC_` | クライアントでも使用可能 |
+
+```javascript
+// サーバーのみ
+const dbUrl = process.env.DATABASE_URL;
+
+// クライアントでも使える
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+```
+
+---
+
+## Firebase 設定を環境変数で管理
+
+```bash
+# .env.local
+NEXT_PUBLIC_FIREBASE_API_KEY=xxx
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=xxx
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=xxx
+```
+
+```javascript
+// lib/firebase.js
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+};
+```
+
+---
+
+## 注意点
+
+```
+⚠️ .env.local は .gitignore に含める
+⚠️ 秘密情報に NEXT_PUBLIC_ をつけない
+⚠️ 変更後はサーバー再起動が必要
+```
+
+---
+
+## 🎯 Try: 環境変数を体験
+
+1. `.env.local` を作成し、`NEXT_PUBLIC_APP_NAME=MyApp` を設定
+2. ページで `process.env.NEXT_PUBLIC_APP_NAME` を表示
+3. `NEXT_PUBLIC_` を外して `APP_SECRET=xxx` にし、クライアントで表示されないことを確認
+
+---
+
+## まとめ
+
+```
+環境変数のポイント：
+├── .env.local に定義
+├── NEXT_PUBLIC_ でクライアントに公開
+├── 秘密情報には NEXT_PUBLIC_ をつけない
+└── .gitignore に含める
+```
+
+---
+
+## 次の記事へ
+
+[07-14. Tailwind CSS の設定](./07-14_TailwindCSSの設定.md)

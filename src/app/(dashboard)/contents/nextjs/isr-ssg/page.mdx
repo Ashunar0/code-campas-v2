@@ -1,0 +1,88 @@
+# ISR / SSG（任意）
+
+## この記事で学ぶこと
+
+- SSG（静的サイト生成）
+- ISR（増分静的再生成）
+- レンダリング方式の使い分け
+
+---
+
+## SSG（Static Site Generation）
+
+### ビルド時に HTML を生成
+
+```jsx
+// app/blog/[id]/page.jsx
+
+// ビルド時に生成するページを指定
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map(post => ({
+    id: post.id.toString()
+  }));
+}
+
+export default async function BlogPost({ params }) {
+  const post = await getPost(params.id);
+  return <h1>{post.title}</h1>;
+}
+```
+
+---
+
+## ISR（Incremental Static Regeneration）
+
+### 指定時間ごとに再生成
+
+```jsx
+// app/posts/page.jsx
+
+// 60秒ごとに再生成
+export const revalidate = 60;
+
+export default async function PostsPage() {
+  const posts = await getPosts();
+  return (
+    <ul>
+      {posts.map(post => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## レンダリング方式の比較
+
+| 方式 | 生成タイミング | 用途 |
+|:----|:-------------|:----|
+| SSG | ビルド時 | 変更が少ないページ |
+| ISR | 指定時間ごと | 定期更新があるページ |
+| SSR | リクエスト時 | リアルタイム性が必要 |
+
+### 💡 なぜ SSG/ISR を使うのか？
+
+- **高速表示**: 事前生成された HTML を配信するため高速
+- **コスト削減**: サーバー負荷が軽減される
+- **SEO 向上**: 検索エンジンがコンテンツを認識しやすい
+
+---
+
+## まとめ
+
+```
+SSG/ISR のポイント：
+├── SSG: ビルド時に静的生成（高速）
+├── ISR: 定期的に再生成（バランス）
+├── revalidate で更新間隔を指定
+└── MVP では深追いしなくて OK
+```
+
+---
+
+## 次の記事へ
+
+[07-17. ブログアプリを作ろう【ハンズオン】](./07-17_ブログアプリを作ろう.md)

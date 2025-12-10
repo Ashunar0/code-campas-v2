@@ -1,0 +1,68 @@
+# API 設計（任意）
+
+## この記事で学ぶこと
+
+- API エンドポイントの考え方
+- REST API の基礎
+- Firebase では不要な理由
+
+---
+
+## REST API の基礎
+
+### CRUD と HTTP メソッド
+
+| 操作 | HTTP | エンドポイント例 |
+|:----|:-----|:--------------|
+| 取得（一覧） | GET | /api/todos |
+| 取得（詳細） | GET | /api/todos/:id |
+| 作成 | POST | /api/todos |
+| 更新 | PUT/PATCH | /api/todos/:id |
+| 削除 | DELETE | /api/todos/:id |
+
+---
+
+## Firebase では API 設計は不要
+
+Firebase SDK を使う場合、API エンドポイントは不要です。
+
+```javascript
+// SDK で直接操作
+import { collection, getDocs, addDoc } from 'firebase/firestore';
+
+// 取得
+const snapshot = await getDocs(collection(db, 'todos'));
+
+// 作成
+await addDoc(collection(db, 'todos'), { text: '...' });
+```
+
+---
+
+## 外部 API を使う場合
+
+外部 API を使う場合は、エンドポイントを整理しておくと便利です。
+
+```
+使用する API:
+├── OpenWeatherMap
+│   └── GET /weather?q={city}
+└── JSONPlaceholder
+    └── GET /posts
+```
+
+---
+
+## まとめ
+
+この記事では、API 設計の基礎を学びました。
+
+- REST API では **HTTP メソッド（GET / POST / PUT / DELETE）** で操作を表現
+- **Firebase SDK を使う場合は API 設計は不要**
+- 外部 API を使う場合はエンドポイントを整理しておく
+
+---
+
+## 次の記事へ
+
+[08-12. タスク分割の基礎](./08-12_タスク分割の基礎.md)

@@ -1,0 +1,115 @@
+# TypeScript の基礎
+
+## この記事で学ぶこと
+
+- TypeScript とは
+- なぜ TypeScript を使うのか
+- 型の基本
+
+---
+
+## TypeScript とは
+
+**TypeScript** は、JavaScript に「型」を追加した言語です。
+
+```
+JavaScript:
+const name = "田中";  // 型の情報なし
+
+TypeScript:
+const name: string = "田中";  // string型
+```
+
+---
+
+## なぜ TypeScript を使うのか
+
+```
+メリット：
+├── バグを事前に発見できる
+├── エディタの補完が効く
+├── リファクタリングしやすい
+├── ドキュメント代わりになる
+└── 大規模開発に向いている
+```
+
+---
+
+## 型の基本
+
+### プリミティブ型
+
+```typescript
+const name: string = "田中";
+const age: number = 25;
+const isActive: boolean = true;
+```
+
+### 配列
+
+```typescript
+const numbers: number[] = [1, 2, 3];
+const names: string[] = ["田中", "佐藤"];
+```
+
+### オブジェクト
+
+```typescript
+const user: { name: string; age: number } = {
+  name: "田中",
+  age: 25,
+};
+```
+
+---
+
+## 型推論
+
+TypeScript は値から型を推論できます。
+
+```typescript
+const name = "田中";  // string と推論される
+const age = 25;       // number と推論される
+```
+
+明示的に書かなくても推論されることが多いです。
+
+---
+
+## まとめ
+
+- **TypeScript** は JavaScript に型を追加した言語
+- 型があると**バグを事前に発見**でき、エディタの補完も効く
+- **プリミティブ型**（string, number, boolean）、配列、オブジェクトに型をつけられる
+- TypeScript は値から**型を推論**できるので、すべてに型を書く必要はない
+
+---
+
+## Try：型を書いてみよう
+
+以下のコードに型を追加してみましょう。
+
+```typescript
+// 1. 変数に型をつけてみよう
+const message = "Hello";           // → string
+const count = 10;                  // → number
+const isCompleted = false;         // → boolean
+
+// 2. 配列に型をつけてみよう
+const fruits = ["apple", "banana"]; // → string[]
+
+// 3. オブジェクトに型をつけてみよう
+const product = {
+  name: "Laptop",
+  price: 1000,
+};
+// → { name: string; price: number }
+```
+
+> 💡 **ヒント**: エディタで変数にカーソルを合わせると、推論された型が表示されます。
+
+---
+
+## 次の記事へ
+
+[09-02. TypeScript の基本構文](./09-02_TypeScriptの基本構文.md)

@@ -1,0 +1,395 @@
+# ローカルとリモートの連携
+
+## この記事で学ぶこと
+
+- git remote add でリモートを登録
+- git push でリモートに送信
+- git pull でリモートから取得
+- git clone でリポジトリをコピー
+- SSH と HTTPS の違い
+
+---
+
+## 2つの始め方
+
+GitHub とローカルを連携する方法は2つあります。
+
+### パターン1: ローカルから始める
+
+```
+1. ローカルでプロジェクトを作成
+2. git init で初期化
+3. GitHub で空のリポジトリを作成
+4. git remote add で連携
+5. git push でアップロード
+```
+
+### パターン2: GitHub から始める
+
+```
+1. GitHub でリポジトリを作成
+2. git clone でローカルにコピー
+3. ファイルを編集
+4. git push でアップロード
+```
+
+---
+
+## git remote add（リモートを登録）
+
+### ローカルから始める場合
+
+既存のローカルプロジェクトに GitHub リポジトリを登録します。
+
+```bash
+# リモートリポジトリを登録
+git remote add origin https://github.com/username/repo-name.git
+```
+
+### コマンドの意味
+
+```
+git remote add origin <URL>
+    │       │    │     │
+    │       │    │     └── リポジトリの URL
+    │       │    └── リモートの名前（慣例的に origin）
+    │       └── 追加する
+    └── リモート関連のコマンド
+```
+
+### リモートの確認
+
+```bash
+# 登録されているリモートを確認
+git remote -v
+
+# 出力例
+origin  https://github.com/username/repo-name.git (fetch)
+origin  https://github.com/username/repo-name.git (push)
+```
+
+---
+
+## git push（プッシュ）
+
+### リモートに変更を送信
+
+ローカルのコミットを GitHub にアップロードします。
+
+```bash
+# 初回プッシュ（-u オプションで追跡設定）
+git push -u origin main
+
+# 2回目以降（追跡設定済みなら省略可）
+git push
+```
+
+### `-u` オプションの意味
+
+```
+git push -u origin main
+         │   │     │
+         │   │     └── ブランチ名
+         │   └── リモート名
+         └── upstream を設定（追跡ブランチを設定）
+```
+
+`-u` を一度つけると、次回から `git push` だけでプッシュできます。
+
+### プッシュの流れ
+
+```
+【ローカル】                    【GitHub】
+     │                              │
+  コミット1 ─────push────────→ コミット1
+  コミット2 ─────────────────→ コミット2
+  コミット3 ─────────────────→ コミット3
+     │                              │
+```
+
+📸 画像メモ: git push 後の GitHub リポジトリ画面
+
+---
+
+## git pull（プル）
+
+### リモートの変更を取得
+
+GitHub の変更をローカルに取り込みます。
+
+```bash
+# リモートの変更を取得してマージ
+git pull origin main
+
+# 追跡設定済みなら省略可
+git pull
+```
+
+### プルの流れ
+
+```
+【ローカル】                    【GitHub】
+     │                              │
+  コミット1                     コミット1
+  コミット2   ←────pull──────  コミット2
+     │                         コミット3 （新しい）
+     ↓                              │
+  コミット3 が追加される
+```
+
+### チーム開発での重要性
+
+```
+作業を始める前に必ず pull する！
+
+理由：
+├── 他のメンバーの変更を取り込む
+├── コンフリクトを事前に防ぐ
+└── 最新の状態で開発を始める
+```
+
+---
+
+## git clone（クローン）
+
+### リポジトリをコピー
+
+GitHub のリポジトリをローカルにコピーします。
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/username/repo-name.git
+
+# 特定のフォルダ名でクローン
+git clone https://github.com/username/repo-name.git my-folder
+```
+
+### クローンで行われること
+
+```
+git clone の自動処理：
+├── フォルダを作成
+├── git init を実行
+├── git remote add origin を実行
+├── すべてのコミット履歴をダウンロード
+└── 最新の状態をチェックアウト
+```
+
+### 実践例
+
+```bash
+# GeekSalon のサンプルリポジトリをクローン
+git clone https://github.com/geeksalon/sample-app.git
+
+# フォルダに移動
+cd sample-app
+
+# ファイルを確認
+ls
+```
+
+---
+
+## SSH と HTTPS
+
+### HTTPS（推奨・初心者向け）
+
+```bash
+# HTTPS でクローン
+git clone https://github.com/username/repo-name.git
+```
+
+```
+特徴：
+├── 設定が簡単
+├── 毎回認証が必要（キャッシュ可能）
+├── ファイアウォールに強い
+└── GitHub Personal Access Token が必要
+```
+
+### SSH（中級者向け）
+
+```bash
+# SSH でクローン
+git clone git@github.com:username/repo-name.git
+```
+
+```
+特徴：
+├── 一度設定すれば認証不要
+├── 公開鍵/秘密鍵を使用
+├── 設定がやや複雑
+└── より安全
+```
+
+### どちらを使うか
+
+```
+初心者：HTTPS で始める
+中級者：SSH に移行すると便利
+
+このコースでは HTTPS を使用します
+```
+
+---
+
+## 実践：ローカルから GitHub へ
+
+### 1. ローカルでプロジェクトを作成
+
+```bash
+# フォルダを作成
+mkdir my-github-project
+cd my-github-project
+
+# Git を初期化
+git init
+
+# ファイルを作成
+echo "# My GitHub Project" > README.md
+echo "console.log('Hello!');" > app.js
+
+# コミット
+git add .
+git commit -m "初期コミット"
+```
+
+### 2. GitHub でリポジトリを作成
+
+1. GitHub で「New repository」
+2. Repository name: `my-github-project`
+3. **README は追加しない**（すでにローカルにあるため）
+4. 「Create repository」
+
+### 3. リモートを登録してプッシュ
+
+```bash
+# リモートを登録
+git remote add origin https://github.com/YOUR_USERNAME/my-github-project.git
+
+# メインブランチ名を確認・変更
+git branch -M main
+
+# プッシュ
+git push -u origin main
+```
+
+### 4. GitHub で確認
+
+ブラウザでリポジトリを開き、ファイルがアップロードされていることを確認します。
+
+📸 画像メモ: プッシュ後の GitHub リポジトリ画面
+
+---
+
+## 実践：GitHub からクローン
+
+### 1. リポジトリをクローン
+
+```bash
+# 既存のリポジトリをクローン
+git clone https://github.com/YOUR_USERNAME/my-github-project.git
+
+# フォルダに移動
+cd my-github-project
+```
+
+### 2. ファイルを編集してプッシュ
+
+```bash
+# ファイルを編集
+echo "console.log('Updated!');" >> app.js
+
+# 変更をコミット
+git add .
+git commit -m "app.js を更新"
+
+# プッシュ
+git push
+```
+
+---
+
+## よくあるエラーと解決策
+
+### エラー1: Permission denied
+
+```
+error: Permission denied to user
+```
+
+**原因**: 認証情報が正しくない
+
+**解決策**:
+```bash
+# 認証情報を再設定
+git config --global credential.helper store
+git push  # ユーザー名とトークンを入力
+```
+
+### エラー2: rejected（updates were rejected）
+
+```
+error: failed to push some refs to ...
+hint: Updates were rejected because the remote contains work that you do not have locally.
+```
+
+**原因**: リモートに新しい変更がある
+
+**解決策**:
+```bash
+# まず pull してから push
+git pull origin main
+git push
+```
+
+### エラー3: repository not found
+
+```
+remote: Repository not found.
+```
+
+**原因**: URL が間違っている、またはアクセス権がない
+
+**解決策**:
+```bash
+# リモート URL を確認
+git remote -v
+
+# 正しい URL に修正
+git remote set-url origin https://github.com/correct/url.git
+```
+
+---
+
+## まとめ
+
+ローカルとリモートの連携方法を学びました。
+
+### 基本コマンド
+
+| コマンド | 説明 |
+|:--------|:-----|
+| `git remote add origin <URL>` | リモートを登録 |
+| `git push -u origin main` | 初回プッシュ |
+| `git push` | 変更をプッシュ |
+| `git pull` | 変更を取得 |
+| `git clone <URL>` | リポジトリをコピー |
+
+### 開発の流れ
+
+```
+朝：git pull（最新を取得）
+　↓
+作業：ファイルを編集
+　↓
+夕方：git add → git commit → git push
+```
+
+次の記事では、ブランチを使った開発について学びます。
+
+---
+
+## 次の記事へ
+
+[06-05. ブランチを使った開発](./06-05_ブランチを使った開発.md)

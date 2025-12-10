@@ -1,0 +1,73 @@
+# TypeScript のベストプラクティス
+
+## この記事で学ぶこと
+
+- any を避ける
+- 便利な構文
+- Utility Types
+
+---
+
+## any を避ける
+
+```typescript
+// ❌ any は型チェックを無効にする
+const data: any = fetchData();
+
+// ✅ unknown を使う
+const data: unknown = fetchData();
+if (typeof data === 'string') {
+  console.log(data.toUpperCase());
+}
+```
+
+---
+
+## Optional Chaining
+
+```typescript
+// user が null でも安全にアクセス
+const name = user?.profile?.name;
+```
+
+---
+
+## Nullish Coalescing
+
+```typescript
+// null または undefined の場合のみデフォルト値
+const value = data ?? 'default';
+```
+
+---
+
+## Utility Types
+
+```typescript
+// Partial: すべてのプロパティをオプションに
+type PartialUser = Partial<User>;
+
+// Required: すべてのプロパティを必須に
+type RequiredUser = Required<User>;
+
+// Pick: 特定のプロパティのみ抽出
+type UserName = Pick<User, 'name' | 'email'>;
+
+// Omit: 特定のプロパティを除外
+type UserWithoutId = Omit<User, 'id'>;
+```
+
+---
+
+## まとめ
+
+- `any` は型チェックを無効にするので避け、**`unknown`** を使う
+- **Optional Chaining**（`?.`）で null でも安全にアクセス
+- **Nullish Coalescing**（`??`）で null/undefined のデフォルト値を設定
+- **Utility Types**（Partial, Required, Pick, Omit）で既存の型を変換
+
+---
+
+## 次の記事へ
+
+[09-08. shadcn/ui 完全ガイド](./09-08_shadcnui完全ガイド.md)

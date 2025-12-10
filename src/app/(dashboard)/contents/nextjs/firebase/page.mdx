@@ -1,0 +1,94 @@
+# Next.js + Firebase の組み合わせ（任意）
+
+## この記事で学ぶこと
+
+- Next.js で Firebase を使う
+- Firebase SDK の初期化
+- Client Component で認証
+
+---
+
+## Next.js で Firebase を使う
+
+### Firebase SDK のインストール
+
+```bash
+npm install firebase
+```
+
+### Firebase の初期化
+
+```javascript
+// lib/firebase.js
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+```
+
+---
+
+## Client Component で認証
+
+認証機能は Client Component で実装します。
+
+```jsx
+// components/LoginButton.jsx
+"use client";
+
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+
+export default function LoginButton() {
+  const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
+  
+  return (
+    <button onClick={handleLogin}>
+      Google でログイン
+    </button>
+  );
+}
+```
+
+---
+
+## 注意点
+
+```
+Next.js + Firebase の注意点：
+├── 認証は Client Component で
+├── 環境変数は NEXT_PUBLIC_ をつける
+├── Server Component では Admin SDK を使う
+│   （Admin SDK: サーバー側で使う管理者用SDK、セキュリティルールをバイパス可能）
+└── SSR との相性に注意
+```
+
+---
+
+## まとめ
+
+```
+Next.js + Firebase：
+├── 基本的な使い方は React と同じ
+├── Client Component で認証・操作
+├── 環境変数で設定を管理
+└── 深追いは上級編で
+```
+
+---
+
+## 次の記事へ
+
+[07-19. まとめと次のステップ](./07-19_まとめと次のステップ.md)

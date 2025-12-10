@@ -1,0 +1,122 @@
+# Firestore のデータ構造を設計する
+
+## この記事で学ぶこと
+
+- コレクション構造の決定
+- 実例：Todo アプリ
+- 設計のポイント
+
+---
+
+## 実例：Todo アプリ
+
+### users コレクション
+
+```
+users/
+  {userId}/
+    name: "田中太郎"
+    email: "tanaka@example.com"
+    createdAt: Timestamp
+```
+
+### todos コレクション
+
+```
+todos/
+  {todoId}/
+    text: "買い物に行く"
+    completed: false
+    userId: "abc123"        ← 所有者
+    createdAt: Timestamp
+    updatedAt: Timestamp
+```
+
+---
+
+## なぜ userId を含めるか
+
+```
+メリット：
+├── ユーザーごとのデータを取得できる
+├── セキュリティルールで制御できる
+└── 誰のデータかわかる
+```
+
+```javascript
+// このユーザーの Todo だけ取得
+const q = query(
+  collection(db, "todos"),
+  where("userId", "==", currentUser.uid)
+);
+```
+
+---
+
+## サブコレクション vs トップレベル
+
+### トップレベルコレクション（推奨）
+
+```
+todos/
+  {todoId}/
+    userId: "abc123"
+    ...
+```
+
+### サブコレクション
+
+```
+users/
+  {userId}/
+    todos/         ← サブコレクション
+      {todoId}/
+        ...
+```
+
+**MVP ではトップレベルがシンプルでおすすめです。**
+
+---
+
+## タイムスタンプ
+
+```javascript
+import { serverTimestamp } from 'firebase/firestore';
+
+const todo = {
+  text: "...",
+  createdAt: serverTimestamp(),
+  updatedAt: serverTimestamp(),
+};
+```
+
+---
+
+## 💡 Try: コレクション構造を設計しよう
+
+あなたのアプリに必要なコレクションを1つ選び、以下のフォーマットで設計してみましょう：
+
+```
+コレクション名/
+  {ドキュメントID}/
+    フィールド1: 値の例
+    フィールド2: 値の例
+    userId: "..."
+    createdAt: Timestamp
+```
+
+---
+
+## まとめ
+
+この記事では、Firestore のデータ構造設計を学びました。
+
+- `userId` を含めることで**ユーザーごとのデータ取得**とセキュリティ制御が可能
+- MVP では **トップレベルコレクション**がシンプルでおすすめ
+- `createdAt` / `updatedAt` には **serverTimestamp()** を使う
+
+---
+
+## 次の記事へ
+
+[08-10. データ設計の実例](./08-10_データ設計の実例.md)

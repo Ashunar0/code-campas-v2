@@ -1,0 +1,113 @@
+# Vitest でテスト（任意）
+
+## この記事で学ぶこと
+
+- Vitest とは
+- 単体テストの書き方
+- コンポーネントのテスト
+
+---
+
+## Vitest とは
+
+**Vitest** は、Vite ベースの高速なテストフレームワークです。
+
+```bash
+npm install -D vitest
+```
+
+---
+
+## 単体テストの書き方
+
+```typescript
+// utils.ts
+export function add(a: number, b: number): number {
+  return a + b;
+}
+
+// utils.test.ts
+import { describe, it, expect } from 'vitest';
+import { add } from './utils';
+
+describe('add function', () => {
+  it('should add two numbers', () => {
+    expect(add(1, 2)).toBe(3);
+  });
+
+  it('should handle negative numbers', () => {
+    expect(add(-1, 1)).toBe(0);
+  });
+});
+```
+
+---
+
+## テストの実行
+
+```bash
+npx vitest        # ウォッチモード
+npx vitest run    # 一度だけ実行
+```
+
+---
+
+## React コンポーネントのテスト
+
+```bash
+npm install -D @testing-library/react @testing-library/jest-dom
+```
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Button } from './Button';
+
+it('renders button text', () => {
+  render(<Button>Click me</Button>);
+  expect(screen.getByText('Click me')).toBeInTheDocument();
+});
+```
+
+---
+
+## まとめ
+
+- **Vitest** は Vite ベースの高速なテストフレームワーク
+- `describe` でグループ化、`it` でテストケースを書く
+- `expect` で結果を検証
+- **@testing-library/react** と組み合わせてコンポーネントをテスト
+
+---
+
+## Try：簡単なテストを書いてみよう
+
+1. 計算関数を作成
+2. テストを書く
+3. `npx vitest` で実行
+
+```typescript
+// math.ts
+export function multiply(a: number, b: number): number {
+  return a * b;
+}
+
+// math.test.ts
+import { describe, it, expect } from 'vitest';
+import { multiply } from './math';
+
+describe('multiply function', () => {
+  it('should multiply two numbers', () => {
+    expect(multiply(3, 4)).toBe(12);
+  });
+
+  it('should return 0 when one number is 0', () => {
+    expect(multiply(5, 0)).toBe(0);
+  });
+});
+```
+
+---
+
+## 次の記事へ
+
+[09-15. Docker の基礎](./09-15_Dockerの基礎.md)
