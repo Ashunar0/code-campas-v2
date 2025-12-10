@@ -1,4 +1,3 @@
-# よくあるエラーと解決策
 
 > 📌 **この記事で学ぶこと**
 >
@@ -26,9 +25,9 @@
 2. それでもダメなら PC を**再起動**
 3. それでもダメなら Node.js を**再インストール**
 
-<!--
+{/*
 📸 画像メモ: command not found エラーの画面
--->
+*/}
 
 ### 「npm ERR! code EACCES」（Mac）
 
@@ -61,9 +60,9 @@ sudo chown -R $(whoami) ~/.npm
 npm install --legacy-peer-deps
 ```
 
-<!--
+{/*
 📸 画像メモ: ERESOLVE エラーの画面
--->
+*/}
 
 ### 「npm ERR! network」
 
@@ -114,9 +113,9 @@ netstat -ano | findstr :5173
 taskkill /PID <PID> /F
 ```
 
-<!--
+{/*
 📸 画像メモ: Port already in use エラーの画面
--->
+*/}
 
 ### 「Module not found」
 
@@ -201,9 +200,9 @@ npm install
 2. Google で検索
 3. Stack Overflow や Qiita などの記事を参考にする
 
-<!--
+{/*
 📸 画像メモ: エラーメッセージを Google 検索している様子
--->
+*/}
 
 ### 5. node_modules を削除して再インストール
 
@@ -260,4 +259,4 @@ npm ERR! ...
 
 ## 🔗 次のステップ
 
-エラー対処法がわかったら、[まとめとチェックリスト](./00-08_まとめとチェックリスト.md) で環境構築が完了しているか確認しましょう！
+エラー対処法がわかったら、まとめとチェックリスト で環境構築が完了しているか確認しましょう！

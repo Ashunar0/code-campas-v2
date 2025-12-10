@@ -1,4 +1,3 @@
-# State 管理の設計
 
 > 📌 **この記事で学ぶこと**
 >
@@ -62,11 +61,11 @@ function AuthProvider({ children }) {
 React のデータは**上から下へ**流れます（Props）。
 兄弟コンポーネント間でデータを共有したいときは、**共通の親**に State を置くことで、両方の子にデータを渡せます。
 
-<!--
+{/*
 📸 画像メモ: State のリフトアップの図
 - 親コンポーネントに State があり、矢印で子コンポーネントに Props が流れる図
 - ItemForm と ItemList が共通の State を参照している様子
--->
+*/}
 
 ```jsx
 // 親
@@ -256,4 +255,4 @@ function TodoForm({ onAdd }) {
 
 ## 🔗 次のステップ
 
-State 管理がわかったら、[CRUD の基礎](./04-05_CRUDの基礎.md) に進みましょう！
+State 管理がわかったら、CRUD の基礎 に進みましょう！
