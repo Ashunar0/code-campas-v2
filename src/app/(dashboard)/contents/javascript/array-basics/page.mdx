@@ -1,0 +1,272 @@
+# 配列の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - 配列とは何か
+> - 配列の作成と要素へのアクセス
+> - 配列の基本操作
+> - スプレッド構文
+
+## 配列とは？
+
+**配列**は、複数の値をまとめて管理するためのデータ構造です。
+
+```javascript
+// 配列を使わない場合
+const fruit1 = "りんご";
+const fruit2 = "バナナ";
+const fruit3 = "みかん";
+
+// 配列を使う場合
+const fruits = ["りんご", "バナナ", "みかん"];
+```
+
+配列を使うと、関連するデータをひとまとめにできます。
+
+## 配列の作成
+
+```javascript
+// 空の配列
+const empty = [];
+
+// 値を入れた配列
+const numbers = [1, 2, 3, 4, 5];
+const fruits = ["りんご", "バナナ", "みかん"];
+const mixed = [1, "hello", true, null]; // 異なる型も入れられる
+```
+
+## 要素へのアクセス
+
+配列の各要素には**インデックス（番号）**でアクセスします。
+インデックスは **0 から始まる**ことに注意！
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+
+console.log(fruits[0]); // "りんご"
+console.log(fruits[1]); // "バナナ"
+console.log(fruits[2]); // "みかん"
+console.log(fruits[3]); // undefined（存在しない）
+```
+
+<!--
+📸 画像メモ: インデックスの図解
+- fruits[0] = "りんご"
+- fruits[1] = "バナナ"
+- fruits[2] = "みかん"
+-->
+
+## 配列の長さ
+
+`length` プロパティで配列の要素数を取得できます。
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+console.log(fruits.length); // 3
+```
+
+### 最後の要素を取得
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+const lastIndex = fruits.length - 1;
+console.log(fruits[lastIndex]); // "みかん"
+```
+
+## 配列の操作
+
+### push（末尾に追加）
+
+```javascript
+const fruits = ["りんご", "バナナ"];
+fruits.push("みかん");
+console.log(fruits); // ["りんご", "バナナ", "みかん"]
+```
+
+### pop（末尾から削除）
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+const removed = fruits.pop();
+console.log(removed); // "みかん"
+console.log(fruits); // ["りんご", "バナナ"]
+```
+
+### unshift（先頭に追加）
+
+```javascript
+const fruits = ["りんご", "バナナ"];
+fruits.unshift("みかん");
+console.log(fruits); // ["みかん", "りんご", "バナナ"]
+```
+
+### shift（先頭から削除）
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+const removed = fruits.shift();
+console.log(removed); // "りんご"
+console.log(fruits); // ["バナナ", "みかん"]
+```
+
+| メソッド | 位置 | 動作 |
+| -------- | ---- | ---- |
+| push     | 末尾 | 追加 |
+| pop      | 末尾 | 削除 |
+| unshift  | 先頭 | 追加 |
+| shift    | 先頭 | 削除 |
+
+## slice（一部を切り出す）
+
+元の配列を**変更せずに**、一部を切り出した新しい配列を作ります。
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+console.log(numbers.slice(1, 3)); // [2, 3]（インデックス1から3の前まで）
+console.log(numbers.slice(2)); // [3, 4, 5]（インデックス2から最後まで）
+console.log(numbers.slice(-2)); // [4, 5]（後ろから2つ）
+
+console.log(numbers); // [1, 2, 3, 4, 5]（元の配列は変わらない）
+```
+
+## splice（削除・挿入）
+
+元の配列を**変更して**、要素を削除・挿入します。
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん", "ぶどう"];
+
+// インデックス1から2つ削除
+fruits.splice(1, 2);
+console.log(fruits); // ["りんご", "ぶどう"]
+
+// 挿入
+const colors = ["赤", "青", "緑"];
+colors.splice(1, 0, "黄"); // インデックス1に挿入、削除は0個
+console.log(colors); // ["赤", "黄", "青", "緑"]
+```
+
+## スプレッド構文（...）⭐
+
+配列を展開するための便利な構文。React でよく使います！
+
+### 配列のコピー
+
+```javascript
+const original = [1, 2, 3];
+const copy = [...original];
+
+console.log(copy); // [1, 2, 3]
+console.log(original === copy); // false（別の配列）
+```
+
+### 配列の結合
+
+```javascript
+const arr1 = [1, 2];
+const arr2 = [3, 4];
+const combined = [...arr1, ...arr2];
+
+console.log(combined); // [1, 2, 3, 4]
+```
+
+### 配列に要素を追加（元の配列を変更しない）
+
+```javascript
+const fruits = ["りんご", "バナナ"];
+
+// 末尾に追加
+const newFruits = [...fruits, "みかん"];
+console.log(newFruits); // ["りんご", "バナナ", "みかん"]
+
+// 先頭に追加
+const anotherFruits = ["ぶどう", ...fruits];
+console.log(anotherFruits); // ["ぶどう", "りんご", "バナナ"]
+```
+
+> 💡 React では状態（state）を更新するときに、元の配列を変更せずに新しい配列を作る必要があります。
+> スプレッド構文はそのために必須！
+
+## includes（要素が含まれているか）
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+
+console.log(fruits.includes("バナナ")); // true
+console.log(fruits.includes("ぶどう")); // false
+```
+
+## indexOf（要素の位置を取得）
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+
+console.log(fruits.indexOf("バナナ")); // 1
+console.log(fruits.indexOf("ぶどう")); // -1（見つからない場合）
+```
+
+## 配列の操作まとめ
+
+| メソッド      | 説明            | 元の配列を変更 |
+| ------------- | --------------- | -------------- |
+| push/pop      | 末尾に追加/削除 | ⭕ 変更する    |
+| unshift/shift | 先頭に追加/削除 | ⭕ 変更する    |
+| slice         | 一部を切り出し  | ❌ 変更しない  |
+| splice        | 削除・挿入      | ⭕ 変更する    |
+| [...arr]      | コピー          | ❌ 変更しない  |
+| includes      | 含まれているか  | ❌ 変更しない  |
+| indexOf       | 位置を取得      | ❌ 変更しない  |
+
+## ミニ演習：slice と splice の違いを確認しよう
+
+Console で以下を試して、**元の配列がどうなるか**確認しましょう：
+
+```javascript
+// slice は元の配列を変更しない
+const arr1 = [1, 2, 3, 4, 5];
+const sliced = arr1.slice(1, 3);
+console.log("sliced:", sliced); // [2, 3]
+console.log("arr1:", arr1); // [1, 2, 3, 4, 5] ← 変わらない！
+
+// splice は元の配列を変更する
+const arr2 = [1, 2, 3, 4, 5];
+const spliced = arr2.splice(1, 2);
+console.log("spliced:", spliced); // [2, 3]
+console.log("arr2:", arr2); // [1, 4, 5] ← 変わった！
+```
+
+> ⚠️ **React での注意**: State の配列を操作するときは、元の配列を変更しない `slice` やスプレッド構文を使います。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+// 1. 配列を作成して、最後の要素を取得
+const colors = ["赤", "青", "緑", "黄"];
+// ここに続きを書く
+
+// 2. スプレッド構文で配列をコピーして、要素を追加
+const original = [1, 2, 3];
+// ここに続きを書く
+
+// 3. 特定の要素が含まれているかチェック
+const members = ["田中", "佐藤", "鈴木"];
+// 「佐藤」が含まれているか確認
+```
+
+## まとめ
+
+- **配列**は複数の値をまとめて管理
+- インデックスは **0 から始まる**
+- `length` で要素数を取得
+- `push`/`pop` で末尾、`unshift`/`shift` で先頭を操作
+- `slice` は元の配列を変更しない、`splice` は変更する
+- **スプレッド構文（...）**で配列をコピー・結合（React で必須）
+
+---
+
+## 🔗 次のステップ
+
+配列の基礎がわかったら、[配列の高階関数](./02-05_配列の高階関数.md) に進みましょう！

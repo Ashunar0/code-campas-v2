@@ -1,6 +1,12 @@
-import { FirebaseApp, initializeApp } from "firebase/app";
+import { FirebaseApp, initializeApp, getApps } from "firebase/app";
 import { Firestore, getFirestore } from "firebase/firestore";
-import { Auth, getAuth } from "firebase/auth";
+import {
+  Auth,
+  getAuth,
+  initializeAuth,
+  inMemoryPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,8 +17,30 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app: FirebaseApp = initializeApp(firebaseConfig);
+const app: FirebaseApp = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
 const db: Firestore = getFirestore(app);
-const auth: Auth = getAuth(app);
 
-export { app, db, auth };
+// Authの遅延初期化（SSR環境でのlocalStorageエラーを防ぐ）
+let authInstance: Auth | null = null;
+
+export function getAuthInstance(): Auth {
+  // クライアントサイドでのみ初期化
+  if (typeof window === "undefined") {
+    throw new Error("Firebase Auth can only be used on the client side");
+  }
+
+  if (!authInstance) {
+    try {
+      authInstance = initializeAuth(app, {
+        persistence: browserLocalPersistence,
+      });
+    } catch (e) {
+      // 既に初期化されている場合はインスタンスを取得
+      authInstance = getAuth(app);
+    }
+  }
+
+  return authInstance;
+}
+
+export { app, db };

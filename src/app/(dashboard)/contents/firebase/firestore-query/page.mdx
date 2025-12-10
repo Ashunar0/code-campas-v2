@@ -1,0 +1,190 @@
+# Firestore のクエリ
+
+> 📌 **この記事で学ぶこと**
+>
+> - where で条件指定
+> - orderBy で並び替え
+> - limit で取得数制限
+> - 複合クエリ
+
+## where で条件指定
+
+**where** を使うと、条件に合うドキュメントだけを取得できます。
+
+```javascript
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+// 未完了の Todo だけ取得
+const q = query(collection(db, "todos"), where("done", "==", false));
+
+const snapshot = await getDocs(q);
+```
+
+### 比較演算子
+
+| 演算子           | 意味                       |
+| ---------------- | -------------------------- |
+| `==`             | 等しい                     |
+| `!=`             | 等しくない                 |
+| `<`              | 小さい                     |
+| `<=`             | 以下                       |
+| `>`              | 大きい                     |
+| `>=`             | 以上                       |
+| `in`             | 配列のいずれかに一致       |
+| `not-in`         | 配列のいずれにも一致しない |
+| `array-contains` | 配列に含まれる             |
+
+### 例
+
+```javascript
+// 特定ユーザーの Todo
+where("userId", "==", "user123");
+
+// 価格が 1000 以上
+where("price", ">=", 1000);
+
+// カテゴリが react または javascript
+where("category", "in", ["react", "javascript"]);
+
+// タグに "重要" が含まれる
+where("tags", "array-contains", "重要");
+```
+
+## orderBy で並び替え
+
+```javascript
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
+
+// 作成日時の新しい順
+const q = query(collection(db, "todos"), orderBy("createdAt", "desc"));
+```
+
+| 順序                | 意味             |
+| ------------------- | ---------------- |
+| `asc`（デフォルト） | 昇順（小さい順） |
+| `desc`              | 降順（大きい順） |
+
+## limit で取得数制限
+
+```javascript
+import { collection, query, limit, getDocs } from "firebase/firestore";
+
+// 最新10件だけ取得
+const q = query(
+  collection(db, "todos"),
+  orderBy("createdAt", "desc"),
+  limit(10)
+);
+```
+
+## 複合クエリ
+
+複数の条件を組み合わせます。
+
+```javascript
+const q = query(
+  collection(db, "todos"),
+  where("userId", "==", "user123"),
+  where("done", "==", false),
+  orderBy("createdAt", "desc"),
+  limit(20)
+);
+```
+
+## インデックスの自動作成
+
+複合クエリを初めて実行すると、エラーが出ることがあります。
+
+```
+FirebaseError: The query requires an index...
+```
+
+エラーメッセージに含まれる**リンクをクリック**すると、インデックスを自動作成できます。
+
+> 💡 **インデックスとは？**
+>
+> データベースの検索を高速化するための索引です。
+> 本の巨順のように、特定のフィールドで絞り込むクエリを高速に実行できるようにします。
+> Firestore は複合クエリを使うときにインデックスが必要になることがあります。
+
+<!--
+📸 画像メモ: インデックス作成画面
+-->
+
+## 実践例：フィルター + 検索
+
+```jsx
+import { useState, useEffect } from "react";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+function TodoList({ userId }) {
+  const [todos, setTodos] = useState([]);
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      let q = query(
+        collection(db, "todos"),
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc")
+      );
+
+      if (filter === "active") {
+        q = query(
+          collection(db, "todos"),
+          where("userId", "==", userId),
+          where("done", "==", false),
+          orderBy("createdAt", "desc")
+        );
+      } else if (filter === "completed") {
+        q = query(
+          collection(db, "todos"),
+          where("userId", "==", userId),
+          where("done", "==", true),
+          orderBy("createdAt", "desc")
+        );
+      }
+
+      const snapshot = await getDocs(q);
+      setTodos(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    };
+
+    fetchTodos();
+  }, [userId, filter]);
+
+  // UI...
+}
+```
+
+## クエリの制限
+
+Firestore のクエリには制限があります：
+
+- `!=` や `not-in` は 1 つのフィールドにのみ
+- `orderBy` のフィールドに `where` を使う場合、インデックスが必要
+- 複数の `array-contains` は使えない
+
+## まとめ
+
+- **where** で条件を指定
+- **orderBy** で並び替え
+- **limit** で取得数を制限
+- 複合クエリは**インデックス**が必要な場合あり
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `where("done", "==", false)` を使って未完了の Todo だけを取得してみましょう
+> 2. `orderBy("createdAt", "desc")` で新しい順に並べ替えてみましょう
+> 3. `where` と `orderBy` を組み合わせた複合クエリを試してみましょう
+>
+> **確認ポイント**: インデックス作成のリンクが表示されたら、クリックして作成しましょう
+
+---
+
+## 🔗 次のステップ
+
+クエリがわかったら、[Firebase Authentication の基礎](./05-09_FirebaseAuthenticationの基礎.md) に進みましょう！

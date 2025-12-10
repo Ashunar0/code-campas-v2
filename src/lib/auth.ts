@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase";
+import { getAuthInstance, db } from "./firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -15,11 +15,11 @@ export async function signUp(
   extraData: { name: string; period: number }
 ) {
   // 永続ログインに設定
-  await setPersistence(auth, browserLocalPersistence);
+  await setPersistence(getAuthInstance(), browserLocalPersistence);
 
   // Firebase Auth にユーザー作成
   const userCredential = await createUserWithEmailAndPassword(
-    auth,
+    getAuthInstance(),
     email,
     password
   );
@@ -61,10 +61,10 @@ export async function signUp(
 // ログイン（ブラウザ閉じてもログイン状態を保持）
 export async function logIn(email: string, password: string) {
   // 永続セッションを設定
-  await setPersistence(auth, browserLocalPersistence);
+  await setPersistence(getAuthInstance(), browserLocalPersistence);
 
   const userCredential = await signInWithEmailAndPassword(
-    auth,
+    getAuthInstance(),
     email,
     password
   );
@@ -73,7 +73,7 @@ export async function logIn(email: string, password: string) {
 
 // ログアウト
 export async function logOut() {
-  await signOut(auth);
+  await signOut(getAuthInstance());
 }
 
 // Firestore のユーザー詳細取得

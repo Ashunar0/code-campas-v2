@@ -1,0 +1,176 @@
+# 認証状態の管理
+
+> 📌 **この記事で学ぶこと**
+>
+> - onAuthStateChanged
+> - Context API で認証状態を管理
+> - useAuth カスタムフック
+
+## onAuthStateChanged
+
+**onAuthStateChanged** は、認証状態の変化を監視するリスナーです。
+
+```javascript
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // ログイン中
+      console.log("ログイン中:", user.email);
+    } else {
+      // ログアウト
+      console.log("ログアウト");
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
+```
+
+## AuthContext の作成
+
+アプリ全体で認証状態を共有するため、Context を使います。
+
+> 💡 **Context とは？**
+>
+> React の状態管理の仕組みで、Props を使わずにコンポーネント間でデータを共有できます。
+> Chapter 4 で学んだ内容です。忘れていたら [Context API でグローバル状態管理](../04_React応用/04-11_ContextAPIでグローバル状態管理.md) を復習しましょう。
+
+**src/contexts/AuthContext.jsx**
+
+```jsx
+import { createContext, useContext, useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../lib/firebase";
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const value = {
+    currentUser,
+    loading,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+}
+```
+
+## AuthProvider で囲む
+
+**src/main.jsx**
+
+```jsx
+import { AuthProvider } from "./contexts/AuthContext";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+```
+
+## useAuth を使う
+
+```jsx
+import { useAuth } from "./contexts/AuthContext";
+
+function Header() {
+  const { currentUser } = useAuth();
+
+  return (
+    <header>
+      {currentUser ? (
+        <p>ようこそ、{currentUser.email} さん</p>
+      ) : (
+        <p>ログインしてください</p>
+      )}
+    </header>
+  );
+}
+```
+
+## ユーザー情報
+
+`currentUser` には以下の情報が含まれます：
+
+| プロパティ    | 内容                   |
+| ------------- | ---------------------- |
+| uid           | ユーザーの一意な ID    |
+| email         | メールアドレス         |
+| displayName   | 表示名                 |
+| photoURL      | プロフィール画像の URL |
+| emailVerified | メール確認済みか       |
+
+```jsx
+const { currentUser } = useAuth();
+
+console.log(currentUser.uid); // "abc123..."
+console.log(currentUser.email); // "user@example.com"
+console.log(currentUser.displayName); // "田中太郎"
+```
+
+## ローディング中の表示
+
+認証状態の確認中は、ローディング画面を表示します。
+
+```jsx
+export function AuthProvider({ children }) {
+  // ...
+
+  // ローディング中はchildrenを表示しない
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? <div className="loading">読み込み中...</div> : children}
+    </AuthContext.Provider>
+  );
+}
+```
+
+## まとめ
+
+- **onAuthStateChanged** で認証状態を監視
+- **AuthContext** でアプリ全体に共有
+- **useAuth** でどこからでもアクセス
+- ローディング中は UI を待機
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `AuthContext.jsx` を作成し、`main.jsx` で `AuthProvider` で囲みましょう
+> 2. 任意のコンポーネントで `useAuth()` を使って `currentUser` を表示
+> 3. ログイン/ログアウトすると、表示が切り替わることを確認
+>
+> **確認ポイント**: ページをリロードしてもログイン状態が保持されますか？
+
+---
+
+## 🔗 次のステップ
+
+認証状態の管理ができたら、[認証ガード](./05-13_認証ガード.md) に進みましょう！

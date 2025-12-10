@@ -1,0 +1,195 @@
+# イベントハンドリング
+
+> 📌 **この記事で学ぶこと**
+>
+> - onClick, onChange, onSubmit
+> - イベントハンドラの書き方
+> - イベントオブジェクト
+> - e.preventDefault()
+
+## イベントとは？
+
+**イベント**は、ユーザーの操作（クリック、入力、送信など）のことです。
+
+React では、イベントが発生したときに実行する関数（**イベントハンドラ**）を指定します。
+
+## onClick
+
+要素がクリックされたときに実行されます。
+
+```jsx
+function App() {
+  const handleClick = () => {
+    console.log("クリックされました！");
+  };
+
+  return <button onClick={handleClick}>クリック</button>;
+}
+```
+
+### インラインで書く場合
+
+```jsx
+<button onClick={() => console.log("クリック！")}>クリック</button>
+```
+
+> 💡 処理が複数行になる場合は、関数として定義した方が読みやすいです。
+
+## onChange
+
+入力値が変わったときに実行されます。
+
+```jsx
+import { useState } from "react";
+
+function App() {
+  const [text, setText] = useState("");
+
+  const handleChange = (e) => {
+    setText(e.target.value);
+  };
+
+  return <input type="text" value={text} onChange={handleChange} />;
+}
+```
+
+### e.target.value
+
+`e.target.value` で入力された値を取得できます。
+
+```jsx
+<input onChange={(e) => setName(e.target.value)} />
+```
+
+## onSubmit
+
+フォームが送信されたときに実行されます。
+
+```jsx
+function App() {
+  const [name, setName] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // ページのリロードを防ぐ
+    console.log(`送信: ${name}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button type="submit">送信</button>
+    </form>
+  );
+}
+```
+
+### e.preventDefault()
+
+フォームのデフォルト動作（ページのリロード）を防ぎます。
+React のフォームでは**必須**です。
+
+## イベントオブジェクト
+
+イベントハンドラの引数には、**イベントオブジェクト（e）** が渡されます。
+
+```jsx
+const handleClick = (e) => {
+  console.log(e); // イベントオブジェクト全体
+  console.log(e.target); // イベントが発生した要素
+  console.log(e.type); // イベントの種類（"click" など）
+};
+```
+
+### よく使うプロパティ
+
+| プロパティ           | 説明                    |
+| -------------------- | ----------------------- |
+| `e.target`           | イベントが発生した要素  |
+| `e.target.value`     | input の値              |
+| `e.target.checked`   | checkbox のチェック状態 |
+| `e.preventDefault()` | デフォルト動作を防ぐ    |
+
+## 主なイベント一覧
+
+| イベント       | 発生タイミング       |
+| -------------- | -------------------- |
+| `onClick`      | クリック             |
+| `onChange`     | 値が変わった         |
+| `onSubmit`     | フォーム送信         |
+| `onFocus`      | フォーカスが当たった |
+| `onBlur`       | フォーカスが外れた   |
+| `onKeyDown`    | キーを押した         |
+| `onKeyUp`      | キーを離した         |
+| `onMouseEnter` | マウスが乗った       |
+| `onMouseLeave` | マウスが離れた       |
+
+## 引数を渡す
+
+イベントハンドラに引数を渡したい場合は、アロー関数でラップします。
+
+```jsx
+// ❌ 間違い（すぐに実行されてしまう）
+<button onClick={handleClick(id)}>
+
+// ⭕ 正しい（クリック時に実行される）
+<button onClick={() => handleClick(id)}>
+```
+
+### 実践例：削除ボタン
+
+```jsx
+const [todos, setTodos] = useState([
+  { id: 1, text: "買い物" },
+  { id: 2, text: "掃除" },
+]);
+
+const handleDelete = (id) => {
+  setTodos(todos.filter((todo) => todo.id !== id));
+};
+
+return (
+  <ul>
+    {todos.map((todo) => (
+      <li key={todo.id}>
+        {todo.text}
+        <button onClick={() => handleDelete(todo.id)}>削除</button>
+      </li>
+    ))}
+  </ul>
+);
+```
+
+## 実践例：State を更新するイベント
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <button onClick={() => setCount(count - 1)}>-1</button>
+      <button onClick={() => setCount(0)}>リセット</button>
+    </div>
+  );
+}
+```
+
+## まとめ
+
+- **onClick** でクリックイベント
+- **onChange** で入力変更イベント
+- **onSubmit** でフォーム送信イベント
+- イベント名は**キャメルケース**
+- `e.target.value` で入力値を取得
+- `e.preventDefault()` でデフォルト動作を防ぐ
+- 引数を渡すときは**アロー関数**でラップ
+
+---
+
+## 🔗 次のステップ
+
+イベントハンドリングがわかったら、[リスト描画](./03-07_リスト描画.md) に進みましょう！

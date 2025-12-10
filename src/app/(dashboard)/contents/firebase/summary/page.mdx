@@ -1,0 +1,124 @@
+# まとめと次のステップ
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firebase で学んだことの振り返り
+> - MVP 開発に必要な機能
+> - 次の章への準備
+
+## この章で学んだこと
+
+Firebase 章、おつかれさまでした！🔥
+
+これで **MVP 開発に必要なスキル** が揃いました！
+
+### Firestore（データベース）
+
+| 操作   | 関数                        |
+| ------ | --------------------------- |
+| 取得   | getDocs, getDoc, onSnapshot |
+| 追加   | addDoc, setDoc              |
+| 更新   | updateDoc                   |
+| 削除   | deleteDoc                   |
+| クエリ | where, orderBy, limit       |
+
+### Authentication（認証）
+
+| 機能         | 関数                           |
+| ------------ | ------------------------------ |
+| ユーザー登録 | createUserWithEmailAndPassword |
+| ログイン     | signInWithEmailAndPassword     |
+| ログアウト   | signOut                        |
+| 認証状態監視 | onAuthStateChanged             |
+
+### Storage（ファイル保存）
+
+| 機能         | 関数           |
+| ------------ | -------------- |
+| アップロード | uploadBytes    |
+| URL 取得     | getDownloadURL |
+| 削除         | deleteObject   |
+
+### Hosting（デプロイ）
+
+```bash
+npm run build
+firebase deploy --only hosting
+```
+
+## チェックリスト
+
+- [ ] Firebase プロジェクトを作成できる
+- [ ] Firestore で CRUD 操作ができる
+- [ ] ユーザー登録・ログインを実装できる
+- [ ] 認証状態を管理できる
+- [ ] 認証ガードを実装できる
+- [ ] 画像アップロードができる
+- [ ] Firebase Hosting でデプロイできる
+
+## MVP 開発に必要な機能
+
+React + Firebase で以下の機能が実装できるようになりました：
+
+- ✅ **ユーザー認証**（登録・ログイン・ログアウト）
+- ✅ **データの CRUD**（追加・取得・更新・削除）
+- ✅ **リアルタイム更新**
+- ✅ **画像アップロード**
+- ✅ **ユーザーごとのデータ管理**
+- ✅ **デプロイして公開**
+
+## これまでの道のり
+
+| Chapter       | 内容                      |
+| ------------- | ------------------------- |
+| 0: 環境構築   | Node.js, VSCode, Git      |
+| 1: HTML/CSS   | 見た目の基礎              |
+| 2: JavaScript | プログラミングの基礎      |
+| 3: React 基礎 | コンポーネント、State     |
+| 4: React 応用 | CRUD、実践スキル          |
+| 5: Firebase   | バックエンド連携 ← 今ここ |
+| 6: Git/GitHub | チーム開発 ← 次           |
+
+## 次の章へ
+
+次は **Chapter 6: Git/GitHub** です。
+
+学ぶこと：
+
+- Git の基本操作
+- ブランチの使い方
+- GitHub でのコード共有
+- チーム開発のワークフロー
+
+チームでの開発や、ポートフォリオの公開に必須のスキルです！
+
+## よくある質問
+
+### Q: Firestore と Realtime Database の違いは？
+
+**A**: Firestore が新しく、より高機能です。
+新規プロジェクトでは Firestore を推奨。
+
+### Q: セキュリティルールは本番で必須？
+
+**A**: 必須です。
+テストモードのまま公開すると、誰でもデータを読み書きできてしまいます。
+
+### Q: 無料枠を超えると課金される？
+
+**A**: はい。ただし、個人の学習用途なら無料枠で十分です。
+Firebase Console で使用量を確認できます。
+
+## 📚 もっと学びたい人へ
+
+Firebase をさらに深く学びたい場合は、以下のリソースがおすすめです：
+
+- [Firebase 公式ドキュメント](https://firebase.google.com/docs?hl=ja) — 最も信頼できる情報源
+- [Firebase Console](https://console.firebase.google.com/) — 実際に触って学ぶ
+- [Firestore セキュリティルール完全ガイド](https://firebase.google.com/docs/firestore/security/get-started?hl=ja) — 本番運用時に必須
+
+---
+
+## 🔗 次のステップ
+
+準備ができたら、[Chapter 6: Git/GitHub](../06_Git/06-00_はじめに.md) に進みましょう！

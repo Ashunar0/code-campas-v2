@@ -1,0 +1,364 @@
+# タスク管理アプリを作ろう（簡易版）【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - 配列の State 操作（追加・削除・更新）
+> - コンポーネント分割
+> - フォーム処理
+
+> 🎓 **Week 4 ゼミ対応**
+
+## 完成イメージ
+
+機能：
+
+- タスクの追加
+- タスクの削除
+- 完了/未完了の切り替え
+- タスク一覧の表示
+
+<!--
+📸 画像メモ: タスク管理アプリの完成画面
+-->
+
+## Step 1: プロジェクトの準備
+
+```bash
+cd ~/Desktop/webex
+npm create vite@latest todo-app -- --template react
+cd todo-app
+npm install
+npm run dev
+```
+
+## Step 2: App.jsx を作成
+
+**src/App.jsx**
+
+```jsx
+import { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: "React を学ぶ", done: false },
+    { id: 2, text: "買い物に行く", done: true },
+  ]);
+  const [inputText, setInputText] = useState("");
+
+  // タスクを追加
+  const addTodo = (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    const newTodo = {
+      id: Date.now(),
+      text: inputText,
+      done: false,
+    };
+    setTodos([...todos, newTodo]);
+    setInputText("");
+  };
+
+  // 完了/未完了を切り替え
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      )
+    );
+  };
+
+  // タスクを削除
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  return (
+    <div className="app">
+      <h1>📝 タスク管理</h1>
+
+      <form onSubmit={addTodo} className="todo-form">
+        <input
+          type="text"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="新しいタスクを入力..."
+        />
+        <button type="submit">追加</button>
+      </form>
+
+      <ul className="todo-list">
+        {todos.map((todo) => (
+          <li key={todo.id} className={todo.done ? "done" : ""}>
+            <span onClick={() => toggleTodo(todo.id)}>{todo.text}</span>
+            <button onClick={() => deleteTodo(todo.id)}>削除</button>
+          </li>
+        ))}
+      </ul>
+
+      {todos.length === 0 && <p className="empty">タスクがありません</p>}
+
+      <p className="count">
+        {todos.filter((t) => !t.done).length} 件の未完了タスク
+      </p>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## Step 3: スタイルを追加
+
+**src/App.css**
+
+```css
+.app {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.todo-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+}
+
+.todo-form input:focus {
+  border-color: #667eea;
+}
+
+.todo-form button {
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.todo-list li span {
+  cursor: pointer;
+  flex: 1;
+}
+
+.todo-list li.done span {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo-list li button {
+  padding: 8px 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+}
+
+.count {
+  text-align: center;
+  color: #666;
+  margin-top: 24px;
+}
+```
+
+## Step 4: コンポーネントに分割
+
+より大きなアプリになると、コンポーネントを分割します。
+
+**src/components/TodoForm.jsx**
+
+```jsx
+import { useState } from "react";
+
+function TodoForm({ onAdd }) {
+  const [text, setText] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="todo-form">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="新しいタスクを入力..."
+      />
+      <button type="submit">追加</button>
+    </form>
+  );
+}
+
+export default TodoForm;
+```
+
+**src/components/TodoItem.jsx**
+
+```jsx
+function TodoItem({ todo, onToggle, onDelete }) {
+  return (
+    <li className={todo.done ? "done" : ""}>
+      <span onClick={() => onToggle(todo.id)}>{todo.text}</span>
+      <button onClick={() => onDelete(todo.id)}>削除</button>
+    </li>
+  );
+}
+
+export default TodoItem;
+```
+
+**src/components/TodoList.jsx**
+
+```jsx
+import TodoItem from "./TodoItem";
+
+function TodoList({ todos, onToggle, onDelete }) {
+  if (todos.length === 0) {
+    return <p className="empty">タスクがありません</p>;
+  }
+
+  return (
+    <ul className="todo-list">
+      {todos.map((todo) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+        />
+      ))}
+    </ul>
+  );
+}
+
+export default TodoList;
+```
+
+**src/App.jsx（分割後）**
+
+```jsx
+import { useState } from "react";
+import TodoForm from "./components/TodoForm";
+import TodoList from "./components/TodoList";
+import "./App.css";
+
+function App() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (text) => {
+    setTodos([...todos, { id: Date.now(), text, done: false }]);
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const remainingCount = todos.filter((t) => !t.done).length;
+
+  return (
+    <div className="app">
+      <h1>📝 タスク管理</h1>
+      <TodoForm onAdd={addTodo} />
+      <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
+      {todos.length > 0 && (
+        <p className="count">{remainingCount} 件の未完了タスク</p>
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+## 配列操作のおさらい
+
+```jsx
+// 追加
+setTodos([...todos, newTodo]);
+
+// 削除
+setTodos(todos.filter((todo) => todo.id !== id));
+
+// 更新
+setTodos(
+  todos.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo))
+);
+```
+
+JavaScript 章で学んだスプレッド構文、filter、map がそのまま使えます！
+
+## 次のステップへ
+
+この簡易版では以下の機能がありません：
+
+- 編集機能
+- フィルター（全て/完了/未完了）
+- 並べ替え
+- ローカルストレージ保存
+
+これらは **Chapter 4: React 応用** で本格版として作ります！
+
+## まとめ
+
+- 配列の State は**スプレッド構文**で更新
+- **filter** で削除、**map** で更新
+- **コンポーネント分割**で見通しを良くする
+- **コールバック Props** で親に操作を伝える
+
+---
+
+## 🔗 次のステップ
+
+タスク管理アプリができたら、[カスタムフック入門](./03-17_カスタムフック入門.md)（任意）か、[まとめと次のステップ](./03-20_まとめと次のステップ.md) に進みましょう！

@@ -5,7 +5,7 @@ import { SearchAndFilter } from "./search-filter";
 import { ArticlesByChapter } from "./articles-by-chapter";
 import { ArticlesNotFound } from "./articles-not-found";
 import { Materials, buildChapters } from "@/app/(dashboard)/contents/article";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance } from "@/lib/firebase";
 import { getUserProgress } from "@/lib/progress";
 import { ArticleIsLoading } from "./article-isloading";
 
@@ -29,7 +29,10 @@ export function ArticlesList() {
 
   // ログインユーザー取得
   useEffect(() => {
-    const user = auth.currentUser;
+    // クライアントサイドでのみ実行
+    if (typeof window === "undefined") return;
+    
+    const user = getAuthInstance().currentUser;
     if (user) setUserId(user.uid);
   }, []);
 

@@ -1,0 +1,328 @@
+# 演算子と条件分岐
+
+> 📌 **この記事で学ぶこと**
+>
+> - 算術演算子
+> - 比較演算子
+> - 論理演算子
+> - if 文
+> - 三項演算子
+
+## 算術演算子
+
+計算を行うための演算子です。
+
+```javascript
+const a = 10;
+const b = 3;
+
+console.log(a + b); // 13（加算）
+console.log(a - b); // 7（減算）
+console.log(a * b); // 30（乗算）
+console.log(a / b); // 3.333...（除算）
+console.log(a % b); // 1（剰余 = あまり）
+```
+
+### よく使う場面
+
+```javascript
+// 税込み計算
+const price = 1000;
+const tax = price * 0.1;
+const total = price + tax;
+console.log(total); // 1100
+
+// 割り算の余り（奇数・偶数判定に使える）
+console.log(10 % 2); // 0（偶数）
+console.log(11 % 2); // 1（奇数）
+```
+
+## 比較演算子
+
+2 つの値を比較し、`true` または `false` を返します。
+
+```javascript
+const x = 5;
+
+// 等しい
+console.log(x === 5); // true
+console.log(x === 10); // false
+
+// 等しくない
+console.log(x !== 5); // false
+console.log(x !== 10); // true
+
+// 大小比較
+console.log(x > 3); // true
+console.log(x < 3); // false
+console.log(x >= 5); // true
+console.log(x <= 5); // true
+```
+
+### == と === の違い
+
+```javascript
+console.log(5 == "5"); // true（型を無視して比較）
+console.log(5 === "5"); // false（型も比較）
+```
+
+> ⚠️ **常に `===`（厳密等価）を使いましょう**。
+> `==` は予期しない結果になることがあります。
+
+## 論理演算子
+
+複数の条件を組み合わせるときに使います。
+
+### AND（&&）：両方 true なら true
+
+```javascript
+const age = 20;
+const isMember = true;
+
+console.log(age >= 18 && isMember); // true（両方true）
+console.log(age >= 18 && !isMember); // false（片方false）
+```
+
+### OR（||）：どちらか true なら true
+
+```javascript
+const isStudent = false;
+const isSenior = true;
+
+console.log(isStudent || isSenior); // true（片方true）
+console.log(false || false); // false（両方false）
+```
+
+### NOT（!）：反転
+
+```javascript
+console.log(!true); // false
+console.log(!false); // true
+
+const isLoggedIn = false;
+console.log(!isLoggedIn); // true
+```
+
+## if 文
+
+条件に応じて処理を分岐させます。
+
+### 基本形
+
+```javascript
+const age = 20;
+
+if (age >= 18) {
+  console.log("成人です");
+}
+```
+
+### if...else
+
+```javascript
+const age = 15;
+
+if (age >= 18) {
+  console.log("成人です");
+} else {
+  console.log("未成年です");
+}
+// → "未成年です"
+```
+
+### if...else if...else
+
+```javascript
+const score = 75;
+
+if (score >= 90) {
+  console.log("A");
+} else if (score >= 70) {
+  console.log("B");
+} else if (score >= 50) {
+  console.log("C");
+} else {
+  console.log("D");
+}
+// → "B"
+```
+
+## 三項演算子（重要！）
+
+if...else を 1 行で書ける便利な記法。
+**React でよく使います**。
+
+```javascript
+条件 ? trueの場合 : falseの場合;
+```
+
+### 例
+
+```javascript
+const age = 20;
+const message = age >= 18 ? "成人" : "未成年";
+console.log(message); // "成人"
+```
+
+### if 文との比較
+
+```javascript
+// if文で書くと
+let status;
+if (isLoggedIn) {
+  status = "ログイン中";
+} else {
+  status = "未ログイン";
+}
+
+// 三項演算子なら1行
+const status = isLoggedIn ? "ログイン中" : "未ログイン";
+```
+
+### React での使用例
+
+```jsx
+// React でこういう書き方をよくする
+<div>{isLoading ? <p>読み込み中...</p> : <p>データを表示</p>}</div>
+```
+
+## truthy と falsy
+
+JavaScript では、`true`/`false` 以外の値も条件判定で使えます。
+
+### falsy（false として扱われる値）
+
+- `false`
+- `0`
+- `""`（空文字列）
+- `null`
+- `undefined`
+- `NaN`
+
+### truthy（true として扱われる値）
+
+上記以外はすべて truthy。
+
+```javascript
+const name = "";
+
+if (name) {
+  console.log("名前があります");
+} else {
+  console.log("名前が空です");
+}
+// → "名前が空です"（空文字列は falsy）
+```
+
+### 実践例
+
+```javascript
+const user = null;
+
+// null チェック
+if (user) {
+  console.log(user.name);
+} else {
+  console.log("ユーザーが見つかりません");
+}
+```
+
+## 短絡評価（ショートサーキット）
+
+### && の短絡評価
+
+左辺が truthy なら右辺を返す。
+
+```javascript
+const user = { name: "田中" };
+const userName = user && user.name;
+console.log(userName); // "田中"
+```
+
+### || の短絡評価
+
+左辺が falsy なら右辺を返す（デフォルト値に便利）。
+
+```javascript
+const input = "";
+const name = input || "名無し";
+console.log(name); // "名無し"
+```
+
+## switch 文（参考）
+
+多くの条件分岐がある場合に使うことがあります。
+
+```javascript
+const fruit = "apple";
+
+switch (fruit) {
+  case "apple":
+    console.log("りんご");
+    break;
+  case "banana":
+    console.log("バナナ");
+    break;
+  case "orange":
+    console.log("オレンジ");
+    break;
+  default:
+    console.log("その他");
+}
+```
+
+> 💡 React では if 文や三項演算子を使うことが多く、switch は比較的少ないです。
+
+## ミニ演習：短絡評価を Console で試そう
+
+ブラウザの Console を開いて、以下のコードを試してみましょう：
+
+```javascript
+// && の短絡評価
+true && "こんにちは"; // 何が返る？
+false && "こんにちは"; // 何が返る？
+
+// || の短絡評価
+"" || "デフォルト"; // 何が返る？
+"入力値" || "デフォルト"; // 何が返る？
+
+// 実践例
+const user = null;
+const name = user && user.name; // エラーにならない！
+console.log(name);
+```
+
+> 💡 **ポイント**: `&&` は左辺が falsy なら左辺を、`||` は左辺が falsy なら右辺を返します。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+// 1. 年齢から成人かどうかを判定
+const age = 17;
+console.log(age >= 18 ? "成人" : "未成年");
+
+// 2. スコアから評価を判定（if...else if を使う）
+const score = 85;
+// A, B, C, D のどれかを表示
+
+// 3. 空文字列のチェック
+const name = "";
+console.log(name || "デフォルト名");
+```
+
+## まとめ
+
+- **算術演算子**：+, -, \*, /, %
+- **比較演算子**：===, !==, <, >, <=, >=（`===` を使う）
+- **論理演算子**：&&（AND）, ||（OR）, !（NOT）
+- **if 文**で条件分岐
+- **三項演算子**で 1 行で条件分岐（React で頻出）
+- **falsy な値**：false, 0, "", null, undefined
+
+---
+
+## 🔗 次のステップ
+
+演算子と条件分岐がわかったら、[関数](./02-03_関数.md) に進みましょう！

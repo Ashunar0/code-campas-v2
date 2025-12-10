@@ -1,0 +1,403 @@
+# フォームバリデーション
+
+> 📌 **この記事で学ぶこと**
+>
+> - バリデーションとは
+> - エラー状態の管理
+> - 様々なバリデーションパターン
+> - リアルタイム vs 送信時
+
+## バリデーションとは？
+
+**バリデーション**は、ユーザーの入力が正しいかどうかを検証することです。
+
+- 必須項目が入力されているか
+- メールアドレスの形式が正しいか
+- パスワードが十分に強いか
+
+> 💡 **なぜバリデーションが必要？**
+> 間違ったデータがサーバーに送られると、エラーやセキュリティの問題が発生します。
+> **クライアント側で事前にチェック**することで、ユーザー体験が向上します。
+
+## エラー状態の管理
+
+フォームデータとは別に、**エラー状態**を管理します。
+
+```jsx
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+});
+
+const [errors, setErrors] = useState({});
+```
+
+## バリデーション関数
+
+```jsx
+const validate = () => {
+  const newErrors = {};
+
+  // 名前の必須チェック
+  if (!formData.name.trim()) {
+    newErrors.name = "名前を入力してください";
+  }
+
+  // メールの必須チェック
+  if (!formData.email.trim()) {
+    newErrors.email = "メールアドレスを入力してください";
+  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    newErrors.email = "メールアドレスの形式が正しくありません";
+  }
+
+  setErrors(newErrors);
+
+  // エラーがなければ true を返す
+  return Object.keys(newErrors).length === 0;
+};
+```
+
+## 送信時のバリデーション
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (validate()) {
+    // バリデーション成功
+    console.log("送信:", formData);
+  } else {
+    // バリデーション失敗
+    console.log("エラーあり");
+  }
+};
+```
+
+## エラーメッセージの表示
+
+```jsx
+<div>
+  <label>名前</label>
+  <input
+    type="text"
+    name="name"
+    value={formData.name}
+    onChange={handleChange}
+    className={errors.name ? "error" : ""}
+  />
+  {errors.name && <p className="error-message">{errors.name}</p>}
+</div>
+```
+
+### スタイル
+
+```css
+.error {
+  border-color: #e74c3c;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 4px;
+}
+```
+
+## リアルタイムバリデーション
+
+入力中にリアルタイムでバリデーションを行う方法です。
+
+```jsx
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData({ ...formData, [name]: value });
+
+  // リアルタイムでエラーをクリア
+  if (errors[name]) {
+    setErrors({ ...errors, [name]: "" });
+  }
+};
+
+const handleBlur = (e) => {
+  const { name, value } = e.target;
+
+  // フォーカスが外れたときにバリデーション
+  if (name === "email" && value && !/\S+@\S+\.\S+/.test(value)) {
+    setErrors({ ...errors, email: "メールアドレスの形式が正しくありません" });
+  }
+};
+```
+
+```jsx
+<input
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={handleChange}
+  onBlur={handleBlur}
+/>
+```
+
+## 様々なバリデーションパターン
+
+### 必須チェック
+
+```javascript
+if (!value.trim()) {
+  return "この項目は必須です";
+}
+```
+
+### 文字数チェック
+
+```javascript
+if (value.length < 3) {
+  return "3文字以上で入力してください";
+}
+if (value.length > 100) {
+  return "100文字以内で入力してください";
+}
+```
+
+### メールアドレス形式
+
+```javascript
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(value)) {
+  return "メールアドレスの形式が正しくありません";
+}
+```
+
+> 💡 **正規表現の読み方**
+>
+> - `^` … 文字列の先頭
+> - `[^\s@]+` … 空白と `@` 以外の文字が 1 つ以上
+> - `@` … アットマーク
+> - `\.` … ドット（`.` は特殊文字なので `\` でエスケープ）
+> - `$` … 文字列の末尾
+>
+> つまり `文字列@文字列.文字列` の形式をチェックしています。
+
+### パスワード強度
+
+```javascript
+if (value.length < 8) {
+  return "パスワードは8文字以上で入力してください";
+}
+if (!/[A-Z]/.test(value)) {
+  return "大文字を含めてください";
+}
+if (!/[0-9]/.test(value)) {
+  return "数字を含めてください";
+}
+```
+
+### 確認用パスワード
+
+```javascript
+if (password !== confirmPassword) {
+  return "パスワードが一致しません";
+}
+```
+
+## 実践例：登録フォーム
+
+```jsx
+import { useState } from "react";
+
+function RegisterForm() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // エラーをクリア
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "名前を入力してください";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "メールアドレスを入力してください";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "メールアドレスの形式が正しくありません";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "パスワードを入力してください";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "パスワードは8文字以上で入力してください";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "パスワードが一致しません";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    // API 送信処理...
+    console.log("送信:", formData);
+    setIsSubmitting(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>名前</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        {errors.name && <p className="error">{errors.name}</p>}
+      </div>
+
+      <div>
+        <label>メールアドレス</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        {errors.email && <p className="error">{errors.email}</p>}
+      </div>
+
+      <div>
+        <label>パスワード</label>
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+        />
+        {errors.password && <p className="error">{errors.password}</p>}
+      </div>
+
+      <div>
+        <label>パスワード（確認）</label>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+        />
+        {errors.confirmPassword && (
+          <p className="error">{errors.confirmPassword}</p>
+        )}
+      </div>
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "送信中..." : "登録"}
+      </button>
+    </form>
+  );
+}
+```
+
+## まとめ
+
+- **バリデーション**で入力値を検証
+- **errors State** でエラー状態を管理
+- 送信時 or リアルタイムでバリデーション
+- エラーがあれば**エラーメッセージを表示**
+- 様々なパターン：必須、文字数、形式、一致
+
+## よくある間違い
+
+### バリデーション関数が値を返さない
+
+```jsx
+// ❌ validate() が true/false を返さない
+const handleSubmit = (e) => {
+  e.preventDefault();
+  validate(); // 戻り値をチェックしていない！
+  console.log("送信");
+};
+
+// ⭕ 戻り値をチェックする
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (validate()) {
+    console.log("送信");
+  }
+};
+```
+
+### エラーが消えない
+
+```jsx
+// ❌ 新しいエラーだけセットすると、古いエラーが残る
+setErrors({ ...errors, [name]: "エラー" });
+
+// ⭕ クリアするときは空文字列をセット
+if (errors[name]) {
+  setErrors({ ...errors, [name]: "" });
+}
+```
+
+## 練習問題
+
+以下のバリデーションを実装してみましょう：
+
+1. **電話番号**: 数字とハイフンのみ許可（例: `090-1234-5678`）
+2. **ユーザー名**: 英数字 3 ～ 20 文字
+3. **URL**: `http://` または `https://` で始まる
+
+### 回答例
+
+```javascript
+// 電話番号
+const phoneRegex = /^[0-9-]+$/;
+if (!phoneRegex.test(value)) {
+  return "数字とハイフンのみ入力できます";
+}
+
+// ユーザー名
+const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+if (!usernameRegex.test(value)) {
+  return "英数字3～20文字で入力してください";
+}
+
+// URL
+const urlRegex = /^https?:\/\/.+/;
+if (!urlRegex.test(value)) {
+  return "http:// または https:// で始めてください";
+}
+```
+
+<!--
+📸 画像メモ: フォームバリデーションのエラー表示UI
+- 入力フィールドの下に赤いエラーメッセージが表示されている様子
+- エラーのある入力欄は赤い枠線
+-->
+
+---
+
+## 🔗 次のステップ
+
+フォームバリデーションがわかったら、[React Hook Form](./04-03_ReactHookForm.md)（任意）か、[State 管理の設計](./04-04_State管理の設計.md) に進みましょう！

@@ -1,0 +1,230 @@
+# State で状態を管理する
+
+> 📌 **この記事で学ぶこと**
+>
+> - State とは何か
+> - useState の使い方
+> - State の更新方法
+> - 配列・オブジェクトの State
+
+## State とは？
+
+**State**（ステート）は、コンポーネントが持つ**動的なデータ**です。
+
+Props との違い：
+
+- **Props**：親から渡される、変更不可
+- **State**：自分で持つ、変更可能
+
+State が変わると、**自動的に画面が再描画**されます。
+
+## useState の使い方
+
+React で State を使うには **useState** フックを使います。
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+    </div>
+  );
+}
+```
+
+### 構文
+
+```jsx
+const [state, setState] = useState(初期値);
+```
+
+| 要素       | 説明             |
+| ---------- | ---------------- |
+| `state`    | 現在の値         |
+| `setState` | 値を更新する関数 |
+| `初期値`   | 最初の値         |
+
+### 命名規則
+
+State 名と setter 関数名は対応させます。
+
+```jsx
+const [count, setCount] = useState(0);
+const [name, setName] = useState("");
+const [isLoading, setIsLoading] = useState(false);
+const [todos, setTodos] = useState([]);
+```
+
+## State の更新
+
+State を更新するには、**setter 関数**を使います。
+
+```jsx
+// ⭕ setter 関数を使う
+setCount(count + 1);
+setName("田中");
+setIsLoading(true);
+
+// ❌ 直接変更しない（画面が更新されない）
+count = count + 1;
+```
+
+### なぜ直接変更してはダメ？
+
+React は State の変更を検知して画面を再描画します。
+直接変更すると、React が変更を検知できません。
+
+## 実践例：カウンター
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  const reset = () => setCount(0);
+
+  return (
+    <div>
+      <h2>カウント: {count}</h2>
+      <button onClick={increment}>+1</button>
+      <button onClick={decrement}>-1</button>
+      <button onClick={reset}>リセット</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+## 複数の State
+
+1 つのコンポーネントで複数の State を持てます。
+
+```jsx
+function UserForm() {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState(0);
+  const [isStudent, setIsStudent] = useState(false);
+
+  return (
+    <form>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input
+        type="number"
+        value={age}
+        onChange={(e) => setAge(Number(e.target.value))}
+      />
+      <input
+        type="checkbox"
+        checked={isStudent}
+        onChange={(e) => setIsStudent(e.target.checked)}
+      />
+    </form>
+  );
+}
+```
+
+## オブジェクトの State
+
+```jsx
+const [user, setUser] = useState({
+  name: "田中",
+  age: 25,
+});
+
+// ⭕ スプレッド構文で新しいオブジェクトを作る
+setUser({ ...user, age: 26 });
+
+// ❌ 直接変更しない
+user.age = 26;
+setUser(user);
+```
+
+## 配列の State
+
+```jsx
+const [todos, setTodos] = useState([
+  { id: 1, text: "買い物" },
+  { id: 2, text: "掃除" },
+]);
+
+// 追加（スプレッド構文）
+setTodos([...todos, { id: 3, text: "料理" }]);
+
+// 削除（filter）
+setTodos(todos.filter((todo) => todo.id !== 2));
+
+// 更新（map）
+setTodos(
+  todos.map((todo) =>
+    todo.id === 1 ? { ...todo, text: "新しいテキスト" } : todo
+  )
+);
+```
+
+> 💡 JavaScript 章で学んだ配列操作がそのまま使えます！
+
+## 前の State を使う更新
+
+連続で State を更新する場合、関数型の更新を使います。
+
+```jsx
+// ⚠️ 問題がある書き方（バッチ処理で期待通りに動かないことがある）
+setCount(count + 1);
+setCount(count + 1); // count は元の値のまま
+
+// ⭕ 関数型の更新
+setCount((prev) => prev + 1);
+setCount((prev) => prev + 1); // 正しく +2 される
+```
+
+### 関数型更新の構文
+
+```jsx
+setState((prevState) => 新しい値);
+```
+
+## よくある間違い
+
+### 1. 直接変更してしまう
+
+```jsx
+// ❌
+todos.push(newTodo);
+setTodos(todos);
+
+// ⭕
+setTodos([...todos, newTodo]);
+```
+
+### 2. オブジェクトをスプレッドしない
+
+```jsx
+// ❌
+setUser({ name: "佐藤" }); // age が消える
+
+// ⭕
+setUser({ ...user, name: "佐藤" }); // age は維持
+```
+
+## まとめ
+
+- **State** はコンポーネントの動的なデータ
+- **useState** で State を作る
+- **setter 関数**で更新（直接変更しない）
+- 配列・オブジェクトは**スプレッド構文**で新しいものを作って渡す
+- State が変わると**自動で再描画**
+
+---
+
+## 🔗 次のステップ
+
+State がわかったら、[イベントハンドリング](./03-06_イベントハンドリング.md) に進みましょう！

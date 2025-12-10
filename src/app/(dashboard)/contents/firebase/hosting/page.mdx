@@ -1,0 +1,172 @@
+# Firebase Hosting でデプロイ
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firebase CLI のインストール
+> - Hosting の初期設定
+> - ビルドとデプロイ
+
+## Firebase CLI のインストール
+
+```bash
+npm install -g firebase-tools
+```
+
+インストール確認：
+
+```bash
+firebase --version
+```
+
+## Firebase にログイン
+
+```bash
+firebase login
+```
+
+ブラウザが開き、Google アカウントでログインします。
+
+## Hosting の初期設定
+
+プロジェクトのルートで：
+
+```bash
+firebase init hosting
+```
+
+質問に答えていきます：
+
+```
+? What do you want to use as your public directory?
+→ dist
+
+? Configure as a single-page app (rewrite all urls to /index.html)?
+→ Yes
+
+? Set up automatic builds and deploys with GitHub?
+→ No（今回は手動デプロイ）
+
+? File dist/index.html already exists. Overwrite?
+→ No
+```
+
+## firebase.json の確認
+
+初期設定が完了すると、`firebase.json` が作成されます：
+
+```json
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
+```
+
+## ビルドとデプロイ
+
+### 1. プロジェクトをビルド
+
+```bash
+npm run build
+```
+
+`dist` フォルダに本番用ファイルが生成されます。
+
+### 2. デプロイ
+
+```bash
+firebase deploy --only hosting
+```
+
+### 3. 完了！
+
+デプロイが完了すると、URL が表示されます：
+
+```
+✔ Deploy complete!
+
+Hosting URL: https://my-todo-app.web.app
+```
+
+この URL にアクセスして動作確認！
+
+### デプロイ後の確認ポイント
+
+- ・ URL にアクセスしてページが表示されるか
+- ・ログイン/ログアウトが正しく動作するか
+- ・Firestore とのデータのやり取りができるか
+- ・画像アップロードが機能するか
+
+## デプロイの流れ（まとめ）
+
+```bash
+# 1. ビルド
+npm run build
+
+# 2. デプロイ
+firebase deploy --only hosting
+```
+
+毎回この 2 コマンドでデプロイできます。
+
+## 便利なスクリプト
+
+**package.json** にスクリプトを追加：
+
+```json
+{
+  "scripts": {
+    "deploy": "npm run build && firebase deploy --only hosting"
+  }
+}
+```
+
+```bash
+npm run deploy
+```
+
+## プレビューデプロイ
+
+本番公開前にプレビュー URL で確認：
+
+```bash
+firebase hosting:channel:deploy preview --expires 1d
+```
+
+1 日間有効なプレビュー URL が発行されます。
+
+## カスタムドメイン（任意）
+
+1. Firebase Console の **「Hosting」** を開く
+2. **「カスタムドメインを追加」** をクリック
+3. ドメインを入力し、DNS 設定を行う
+
+## まとめ
+
+- **Firebase CLI** をインストール
+- `firebase init hosting` で初期設定
+- `npm run build` + `firebase deploy` でデプロイ
+- デプロイ後は `https://プロジェクト名.web.app` でアクセス
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `firebase login` でログイン、`firebase init hosting` で初期設定
+> 2. `npm run build` でビルド、`firebase deploy --only hosting` でデプロイ
+> 3. 表示された URL にアクセスして動作確認
+>
+> **おめでとう！🎉**: 初めてのデプロイです！URL を友人に共有してみましょう
+
+---
+
+## 🔗 次のステップ
+
+デプロイができたら、[Firebase Functions 入門](./05-20_FirebaseFunctions入門.md)（任意）か、[Todo アプリに Firebase を統合しよう](./05-22_TodoアプリにFirebaseを統合.md) に進みましょう！

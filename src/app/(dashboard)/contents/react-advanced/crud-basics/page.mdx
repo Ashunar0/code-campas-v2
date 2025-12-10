@@ -1,0 +1,298 @@
+# CRUD の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - CRUD とは
+> - State で CRUD を実装
+> - 各操作のパターン
+
+## CRUD とは？
+
+**CRUD** は、データ操作の 4 つの基本機能です。
+
+| 操作       | 意味     | 例               |
+| ---------- | -------- | ---------------- |
+| **C**reate | 作成     | タスクを追加     |
+| **R**ead   | 読み取り | タスク一覧を表示 |
+| **U**pdate | 更新     | タスクを編集     |
+| **D**elete | 削除     | タスクを削除     |
+
+ほとんどのアプリは CRUD で構成されています。
+
+> 💡 **なぜ CRUD が重要？**
+> Todo アプリ、メモアプリ、E コマース...どんなアプリも「データを作る・見る・更新する・削除する」の組み合わせ。
+> CRUD ができれば、どんなアプリも作れます！
+
+<!--
+📸 画像メモ: CRUD 操作のイメージ図
+- Create: + ボタンで新規追加
+- Read: 一覧表示
+- Update: ペンアイコンで編集
+- Delete: × ボタンで削除
+-->
+
+## State での CRUD 実装
+
+```jsx
+const [items, setItems] = useState([]);
+```
+
+## Create（作成）
+
+新しいアイテムを追加します。
+
+```jsx
+const addItem = (text) => {
+  const newItem = {
+    id: Date.now(), // ユニークなID
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  setItems([...items, newItem]);
+};
+```
+
+### ポイント
+
+- **スプレッド構文**で既存の配列を展開
+- 新しいアイテムを末尾に追加
+- **id** は必ずユニークに（`Date.now()` か `crypto.randomUUID()`）
+
+> 💡 **なぜ `[...items, newItem]` を使う？**
+> React は State の**参照が変わったか**で再レンダリングを判断します。
+> `items.push(newItem)` だと参照が変わらないので、UI が更新されません。
+> **常に新しい配列を作る**（イミュータブル更新）のが React のルールです。
+
+## Read（読み取り）
+
+一覧を表示します。
+
+```jsx
+return (
+  <ul>
+    {items.map((item) => (
+      <li key={item.id}>{item.text}</li>
+    ))}
+  </ul>
+);
+```
+
+### フィルター付き
+
+```jsx
+const [filter, setFilter] = useState("all");
+
+const filteredItems = items.filter((item) => {
+  if (filter === "completed") return item.done;
+  if (filter === "active") return !item.done;
+  return true; // all
+});
+```
+
+## Update（更新）
+
+既存のアイテムを編集します。
+
+```jsx
+const updateItem = (id, updates) => {
+  setItems(
+    items.map((item) => (item.id === id ? { ...item, ...updates } : item))
+  );
+};
+
+// 使用例
+updateItem(123, { text: "新しいテキスト" });
+updateItem(123, { done: true });
+```
+
+### ポイント
+
+- **map** で全アイテムをループ
+- 対象の id なら更新、それ以外はそのまま
+- **スプレッド構文**で部分更新
+
+## Delete（削除）
+
+アイテムを削除します。
+
+```jsx
+const deleteItem = (id) => {
+  setItems(items.filter((item) => item.id !== id));
+};
+```
+
+### ポイント
+
+- **filter** で対象以外を残す
+
+## 完全な CRUD 実装
+
+```jsx
+import { useState } from "react";
+
+function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  const [inputText, setInputText] = useState("");
+
+  // Create
+  const addTodo = (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    setTodos([...todos, { id: Date.now(), text: inputText, done: false }]);
+    setInputText("");
+  };
+
+  // Update: 完了切り替え
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      )
+    );
+  };
+
+  // Update: テキスト編集
+  const editTodo = (id, newText) => {
+    setTodos(
+      todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo))
+    );
+  };
+
+  // Delete
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  return (
+    <div>
+      {/* Create */}
+      <form onSubmit={addTodo}>
+        <input
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="新しいタスク"
+        />
+        <button type="submit">追加</button>
+      </form>
+
+      {/* Read */}
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            <input
+              type="checkbox"
+              checked={todo.done}
+              onChange={() => toggleTodo(todo.id)}
+            />
+            <span
+              style={{
+                textDecoration: todo.done ? "line-through" : "none",
+              }}
+            >
+              {todo.text}
+            </span>
+            <button onClick={() => deleteTodo(todo.id)}>削除</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## CRUD のまとめ
+
+| 操作   | メソッド                    | 説明             |
+| ------ | --------------------------- | ---------------- |
+| Create | `[...items, newItem]`       | スプレッドで追加 |
+| Read   | `items.map()`               | map でループ表示 |
+| Update | `items.map(item => ...)`    | map で条件更新   |
+| Delete | `items.filter(item => ...)` | filter で除外    |
+
+## まとめ
+
+- **CRUD** はデータ操作の基本
+- **Create**：スプレッド構文で追加
+- **Read**：map でリスト表示
+- **Update**：map で条件に応じて更新
+- **Delete**：filter で除外
+- 配列の State は**常に新しい配列**を作って更新
+
+## よくある間違い
+
+### 配列を直接変更する
+
+```jsx
+// ❌ push で直接追加（React は変更を検知できない）
+items.push(newItem);
+setItems(items);
+
+// ❌ splice で直接削除
+items.splice(index, 1);
+setItems(items);
+
+// ⭕ 新しい配列を作る
+setItems([...items, newItem]);
+setItems(items.filter((item) => item.id !== id));
+```
+
+### id の重複
+
+```jsx
+// ❌ index を id に使うと、削除時にズレる
+items.map((item, index) => ({ id: index, ...item }));
+
+// ⭕ ユニークな id を生成
+const id = crypto.randomUUID(); // または Date.now()
+```
+
+## 練習問題
+
+以下の機能を持つ簡単なメモアプリを作ってみましょう：
+
+1. メモの追加（Create）
+2. メモの一覧表示（Read）
+3. メモの削除（Delete）
+
+### 回答例
+
+```jsx
+import { useState } from "react";
+
+function MemoApp() {
+  const [memos, setMemos] = useState([]);
+  const [text, setText] = useState("");
+
+  const addMemo = () => {
+    if (!text.trim()) return;
+    setMemos([...memos, { id: Date.now(), text }]);
+    setText("");
+  };
+
+  const deleteMemo = (id) => {
+    setMemos(memos.filter((memo) => memo.id !== id));
+  };
+
+  return (
+    <div>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button onClick={addMemo}>追加</button>
+      <ul>
+        {memos.map((memo) => (
+          <li key={memo.id}>
+            {memo.text}
+            <button onClick={() => deleteMemo(memo.id)}>削除</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+CRUD の基礎がわかったら、[CRUD アプリの実装パターン](./04-06_CRUDアプリの実装パターン.md) に進みましょう！

@@ -1,0 +1,220 @@
+# localStorage で保存する【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - localStorage とは
+> - データの保存・取得・削除
+> - JSON との組み合わせ
+
+> 💡 この記事は**任意**です。Firebase を使う場合は localStorage は不要ですが、知っておくと便利です。
+
+## localStorage とは？
+
+**localStorage** は、ブラウザにデータを保存する仕組みです。
+
+特徴：
+
+- ページをリロードしてもデータが残る
+- ブラウザを閉じてもデータが残る
+- ドメインごとに保存される
+- 文字列のみ保存可能
+
+## 基本的な使い方
+
+### データを保存（setItem）
+
+```javascript
+localStorage.setItem("key", "value");
+
+// 例
+localStorage.setItem("username", "田中太郎");
+localStorage.setItem("theme", "dark");
+```
+
+### データを取得（getItem）
+
+```javascript
+const value = localStorage.getItem("key");
+
+// 例
+const username = localStorage.getItem("username");
+console.log(username); // "田中太郎"
+
+// 存在しないキー
+const notFound = localStorage.getItem("notExist");
+console.log(notFound); // null
+```
+
+### データを削除（removeItem）
+
+```javascript
+localStorage.removeItem("key");
+
+// 例
+localStorage.removeItem("username");
+```
+
+### すべて削除（clear）
+
+```javascript
+localStorage.clear(); // すべてのデータを削除
+```
+
+## オブジェクトや配列を保存する
+
+localStorage は**文字列しか保存できない**ので、JSON を使って変換します。
+
+### 保存
+
+```javascript
+const user = {
+  name: "田中太郎",
+  age: 25,
+  email: "tanaka@example.com",
+};
+
+// オブジェクト → 文字列（JSON）
+localStorage.setItem("user", JSON.stringify(user));
+```
+
+### 取得
+
+```javascript
+const userString = localStorage.getItem("user");
+
+// 文字列（JSON）→ オブジェクト
+const user = JSON.parse(userString);
+console.log(user.name); // "田中太郎"
+```
+
+### 配列の場合も同じ
+
+```javascript
+// 保存
+const todos = [
+  { id: 1, text: "買い物" },
+  { id: 2, text: "掃除" },
+];
+localStorage.setItem("todos", JSON.stringify(todos));
+
+// 取得
+const todosString = localStorage.getItem("todos");
+const loadedTodos = JSON.parse(todosString);
+console.log(loadedTodos);
+```
+
+## 実践：メモアプリに localStorage を追加
+
+前回作成したメモアプリに localStorage を追加しましょう。
+
+```javascript
+// メモを保存
+const saveMemos = () => {
+  localStorage.setItem("memos", JSON.stringify(memos));
+};
+
+// メモを読み込み
+const loadMemos = () => {
+  const data = localStorage.getItem("memos");
+  if (data) {
+    memos = JSON.parse(data);
+    // ID カウンターを更新
+    if (memos.length > 0) {
+      nextId = Math.max(...memos.map((m) => m.id)) + 1;
+    }
+  }
+};
+
+// 追加時に保存
+const addMemo = (text) => {
+  const memo = {
+    id: nextId++,
+    text: text,
+    createdAt: new Date(),
+  };
+  memos.push(memo);
+  saveMemos(); // 追加
+  render();
+};
+
+// 削除時に保存
+const deleteMemo = (id) => {
+  memos = memos.filter((memo) => memo.id !== id);
+  saveMemos(); // 追加
+  render();
+};
+
+// 初期化時に読み込み
+loadMemos(); // 追加
+render();
+```
+
+## 便利なヘルパー関数
+
+localStorage の操作をまとめた関数を作っておくと便利です。
+
+```javascript
+const storage = {
+  // 保存
+  save: (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+  },
+
+  // 取得
+  load: (key, defaultValue = null) => {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : defaultValue;
+  },
+
+  // 削除
+  remove: (key) => {
+    localStorage.removeItem(key);
+  },
+};
+
+// 使用例
+storage.save("todos", [{ id: 1, text: "買い物" }]);
+const todos = storage.load("todos", []);
+```
+
+## 注意点
+
+### 容量制限
+
+localStorage の容量は約 5MB です。
+大量のデータは保存できません。
+
+### セキュリティ
+
+localStorage は JavaScript からアクセスできるため、**機密情報（パスワードなど）は保存しないでください**。
+
+### 同期処理
+
+localStorage は同期処理なので、大量のデータを扱うと画面が固まることがあります。
+
+## sessionStorage との違い
+
+|                | localStorage           | sessionStorage       |
+| -------------- | ---------------------- | -------------------- |
+| データの永続性 | ブラウザを閉じても残る | タブを閉じると消える |
+| 用途           | 設定、テーマなど       | 一時的なデータ       |
+
+```javascript
+// sessionStorage も同じ使い方
+sessionStorage.setItem("key", "value");
+sessionStorage.getItem("key");
+```
+
+## まとめ
+
+- **localStorage** でブラウザにデータを保存
+- **setItem** で保存、**getItem** で取得
+- オブジェクト/配列は **JSON.stringify/parse** で変換
+- ページをリロードしてもデータが残る
+- Firebase を使う場合は localStorage は基本不要
+
+---
+
+## 🔗 次のステップ
+
+localStorage がわかったら、[ポケモン図鑑を作ろう](./02-17_ポケモン図鑑を作ろう.md) で API 連携の発展学習に挑戦するか、[まとめと次のステップ](./02-18_まとめと次のステップ.md) で JavaScript 章を振り返りましょう！

@@ -1,0 +1,389 @@
+# メモアプリを作ろう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - CRUD（作成・読み取り・更新・削除）の基礎
+> - 配列の操作（push, filter）
+> - DOM 操作で動的に要素を追加・削除
+
+## 完成イメージ
+
+シンプルなメモ（タスク管理）アプリを作ります。
+
+機能：
+
+- メモの追加
+- メモの一覧表示
+- メモの削除
+
+<!--
+📸 画像メモ: メモアプリの完成画面
+- 入力フォーム
+- メモのリスト（削除ボタン付き）
+-->
+
+## Step 1: HTML の準備
+
+`webex` フォルダにプロジェクトを作成します。
+
+```bash
+cd ~/Desktop/webex
+mkdir memo-app
+cd memo-app
+```
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>メモアプリ</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>📝 メモアプリ</h1>
+
+      <form id="memo-form">
+        <input
+          type="text"
+          id="memo-input"
+          placeholder="メモを入力..."
+          required
+        />
+        <button type="submit">追加</button>
+      </form>
+
+      <ul id="memo-list"></ul>
+
+      <p id="empty-message">メモがありません</p>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+```
+
+## Step 2: CSS でスタイリング
+
+**style.css**
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+#memo-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+#memo-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+#memo-input:focus {
+  border-color: #667eea;
+}
+
+#memo-form button {
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#memo-form button:hover {
+  background: #5a6fd6;
+}
+
+#memo-list {
+  list-style: none;
+}
+
+.memo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memo-item span {
+  font-size: 16px;
+  color: #333;
+}
+
+.delete-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background: #ff3344;
+}
+
+#empty-message {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+}
+```
+
+## Step 3: JavaScript の実装
+
+**script.js**
+
+```javascript
+// メモデータを配列で管理
+let memos = [];
+
+// 一意のIDを生成するカウンター
+let nextId = 1;
+
+// DOM要素の取得
+const form = document.getElementById("memo-form");
+const input = document.getElementById("memo-input");
+const list = document.getElementById("memo-list");
+const emptyMessage = document.getElementById("empty-message");
+```
+
+## Step 4: メモを追加する
+
+```javascript
+// メモを追加
+const addMemo = (text) => {
+  const memo = {
+    id: nextId++,
+    text: text,
+    createdAt: new Date(),
+  };
+  memos.push(memo);
+  render();
+};
+
+// フォーム送信時の処理
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // ページのリロードを防ぐ
+
+  const text = input.value.trim();
+  if (text === "") return;
+
+  addMemo(text);
+  input.value = ""; // 入力欄をクリア
+  input.focus();
+});
+```
+
+## Step 5: メモを削除する
+
+```javascript
+// メモを削除
+const deleteMemo = (id) => {
+  memos = memos.filter((memo) => memo.id !== id);
+  render();
+};
+```
+
+## Step 6: 表示を更新する
+
+```javascript
+// 表示を更新
+const render = () => {
+  // リストをクリア
+  list.innerHTML = "";
+
+  // 空メッセージの表示/非表示
+  emptyMessage.style.display = memos.length === 0 ? "block" : "none";
+
+  // メモを表示
+  memos.forEach((memo) => {
+    const li = document.createElement("li");
+    li.className = "memo-item";
+    li.innerHTML = `
+      <span>${escapeHtml(memo.text)}</span>
+      <button class="delete-btn" onclick="deleteMemo(${memo.id})">削除</button>
+    `;
+    list.appendChild(li);
+  });
+};
+
+// HTMLエスケープ（XSS対策）
+const escapeHtml = (text) => {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+};
+
+// 初期表示
+render();
+```
+
+## 完成コード（まとめ）
+
+**script.js** の全体：
+
+```javascript
+// メモデータを配列で管理
+let memos = [];
+let nextId = 1;
+
+// DOM要素の取得
+const form = document.getElementById("memo-form");
+const input = document.getElementById("memo-input");
+const list = document.getElementById("memo-list");
+const emptyMessage = document.getElementById("empty-message");
+
+// メモを追加
+const addMemo = (text) => {
+  const memo = {
+    id: nextId++,
+    text: text,
+    createdAt: new Date(),
+  };
+  memos.push(memo);
+  render();
+};
+
+// メモを削除
+const deleteMemo = (id) => {
+  memos = memos.filter((memo) => memo.id !== id);
+  render();
+};
+
+// HTMLエスケープ（XSS対策）
+const escapeHtml = (text) => {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+};
+
+// 表示を更新
+const render = () => {
+  list.innerHTML = "";
+  emptyMessage.style.display = memos.length === 0 ? "block" : "none";
+
+  memos.forEach((memo) => {
+    const li = document.createElement("li");
+    li.className = "memo-item";
+    li.innerHTML = `
+      <span>${escapeHtml(memo.text)}</span>
+      <button class="delete-btn" onclick="deleteMemo(${memo.id})">削除</button>
+    `;
+    list.appendChild(li);
+  });
+};
+
+// フォーム送信
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (text === "") return;
+  addMemo(text);
+  input.value = "";
+  input.focus();
+});
+
+// 初期表示
+render();
+```
+
+## React との比較
+
+このメモアプリのロジックは、React でもほぼ同じです：
+
+```jsx
+// React版
+const [memos, setMemos] = useState([]);
+
+const addMemo = (text) => {
+  setMemos([...memos, { id: nextId++, text }]);
+};
+
+const deleteMemo = (id) => {
+  setMemos(memos.filter((memo) => memo.id !== id));
+};
+```
+
+配列の操作（push → スプレッド構文、filter）は React でもそのまま使えます！
+
+## 発展課題
+
+以下の機能を追加してみましょう：
+
+1. **編集機能**：メモの内容を編集できるようにする
+2. **完了機能**：タスクとして完了/未完了を切り替え
+3. **localStorage**：ページをリロードしてもデータが残る（次の記事で解説）
+
+## まとめ
+
+- **CRUD** の基本を実践
+  - Create: `push` で追加
+  - Read: `forEach` で表示
+  - Delete: `filter` で削除
+- **DOM 操作**で動的に要素を生成
+- **イベント処理**でユーザー操作に対応
+- React でも同じロジックが使える
+
+---
+
+## 🔗 次のステップ
+
+メモアプリができたら、[DOM 操作の基礎](./02-15_DOM操作の基礎.md) で詳しく学ぶか、[localStorage で保存する](./02-16_localStorageで保存する.md) でデータ永続化に挑戦しましょう！

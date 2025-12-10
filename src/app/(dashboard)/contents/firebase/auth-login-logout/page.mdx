@@ -1,0 +1,187 @@
+# ログイン・ログアウト機能の実装
+
+> 📌 **この記事で学ぶこと**
+>
+> - signInWithEmailAndPassword
+> - signOut
+> - エラーハンドリング
+
+## ログインの基本
+
+**signInWithEmailAndPassword** でログインします。
+
+```javascript
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+const login = async (email, password) => {
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  return userCredential.user;
+};
+```
+
+## ログインフォーム
+
+```jsx
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // 成功 → リダイレクトは後で実装
+    } catch (err) {
+      setError(getErrorMessage(err.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>ログイン</h2>
+
+      {error && <p className="error">{error}</p>}
+
+      <div>
+        <label>メールアドレス</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label>パスワード</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <button type="submit" disabled={loading}>
+        {loading ? "ログイン中..." : "ログイン"}
+      </button>
+    </form>
+  );
+}
+
+const getErrorMessage = (code) => {
+  switch (code) {
+    case "auth/invalid-email":
+      return "メールアドレスの形式が正しくありません";
+    case "auth/user-not-found":
+      return "ユーザーが見つかりません";
+    case "auth/wrong-password":
+      return "パスワードが正しくありません";
+    case "auth/invalid-credential":
+      return "メールアドレスまたはパスワードが正しくありません";
+    default:
+      return "ログインに失敗しました";
+  }
+};
+```
+
+## ログアウトの基本
+
+**signOut** でログアウトします。
+
+```javascript
+import { signOut } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+const logout = async () => {
+  await signOut(auth);
+};
+```
+
+## ログアウトボタン
+
+```jsx
+import { signOut } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+function LogoutButton() {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // ログアウト成功
+    } catch (error) {
+      console.error("ログアウトエラー:", error);
+    }
+  };
+
+  return <button onClick={handleLogout}>ログアウト</button>;
+}
+```
+
+## ログイン状態の保持
+
+Firebase Auth はデフォルトで**ログイン状態を保持**します。
+
+ブラウザを閉じても、次回アクセス時に自動でログイン状態が復元されます。
+
+## ログイン画面と登録画面の切り替え
+
+```jsx
+function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return (
+    <div>
+      {isLogin ? <LoginForm /> : <SignUpForm />}
+
+      <p>
+        {isLogin
+          ? "アカウントをお持ちでない方は"
+          : "既にアカウントをお持ちの方は"}
+        <button onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? "新規登録" : "ログイン"}
+        </button>
+      </p>
+    </div>
+  );
+}
+```
+
+## まとめ
+
+- **signInWithEmailAndPassword** でログイン
+- **signOut** でログアウト
+- エラーコードを日本語に変換
+- ログイン状態は自動で保持される
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. ログインフォームを作成し、先ほど登録したユーザーでログインしてみましょう
+> 2. ログイン後、`console.log(auth.currentUser)` でユーザー情報を確認
+> 3. ログアウトボタンを追加し、ログアウト後に `auth.currentUser` が `null` になることを確認
+>
+> **確認ポイント**: ブラウザを閉じて開き直しても、ログイン状態が保持されていますか？
+
+---
+
+## 🔗 次のステップ
+
+ログイン・ログアウトができたら、[認証状態の管理](./05-12_認証状態の管理.md) に進みましょう！

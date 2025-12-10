@@ -1,0 +1,275 @@
+# UI とロジックの分離
+
+> 📌 **この記事で学ぶこと**
+>
+> - なぜ分離するのか
+> - カスタムフックでロジックを切り出す
+> - ディレクトリ構成
+
+## なぜ分離するのか？
+
+コンポーネントが大きくなると、以下の問題が発生します：
+
+- コードが読みにくい
+- テストしにくい
+- 再利用しにくい
+
+**解決策**：UI とロジックを分離する
+
+<!--
+📸 画像メモ: 分離前後のイメージ図
+- 分離前: 1つの大きなコンポーネントに UI とロジックが混在
+- 分離後: カスタムフック（ロジック）とコンポーネント（UI）が分かれている
+-->
+
+> 💡 **分離のメリット**
+>
+> - 同じロジックを**別の画面でも使える**（再利用）
+> - UI の変更とロジックの変更が**独立する**（保守性）
+
+## 分離前
+
+```jsx
+function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  const [inputText, setInputText] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  // ロジック
+  const addTodo = (text) => {
+    setTodos([...todos, { id: Date.now(), text, done: false }]);
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  const filteredTodos = todos.filter((t) => {
+    if (filter === "active") return !t.done;
+    if (filter === "completed") return t.done;
+    return true;
+  });
+
+  // ここに UI も...（長くなる）
+}
+```
+
+## 分離後
+
+### カスタムフック（ロジック）
+
+**src/hooks/useTodos.js**
+
+```jsx
+import { useState } from "react";
+
+export function useTodos() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (text) => {
+    setTodos([...todos, { id: Date.now(), text, done: false }]);
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  return { todos, addTodo, toggleTodo, deleteTodo };
+}
+```
+
+**src/hooks/useTodoFilter.js**
+
+```jsx
+import { useState, useMemo } from "react";
+
+export function useTodoFilter(todos) {
+  const [filter, setFilter] = useState("all");
+
+  const filteredTodos = useMemo(() => {
+    return todos.filter((t) => {
+      if (filter === "active") return !t.done;
+      if (filter === "completed") return t.done;
+      return true;
+    });
+  }, [todos, filter]);
+
+  return { filter, setFilter, filteredTodos };
+}
+```
+
+### コンポーネント（UI）
+
+**src/App.jsx**
+
+```jsx
+import { useTodos } from "./hooks/useTodos";
+import { useTodoFilter } from "./hooks/useTodoFilter";
+import TodoForm from "./components/TodoForm";
+import TodoList from "./components/TodoList";
+import TodoFilter from "./components/TodoFilter";
+
+function App() {
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
+  const { filter, setFilter, filteredTodos } = useTodoFilter(todos);
+
+  return (
+    <div>
+      <h1>Todo App</h1>
+      <TodoForm onAdd={addTodo} />
+      <TodoFilter filter={filter} onFilterChange={setFilter} />
+      <TodoList
+        todos={filteredTodos}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+      />
+    </div>
+  );
+}
+```
+
+## ディレクトリ構成
+
+```
+src/
+├── components/       # UI コンポーネント
+│   ├── TodoForm.jsx
+│   ├── TodoList.jsx
+│   ├── TodoItem.jsx
+│   └── TodoFilter.jsx
+├── hooks/            # カスタムフック
+│   ├── useTodos.js
+│   ├── useTodoFilter.js
+│   └── useLocalStorage.js
+├── utils/            # ヘルパー関数
+│   └── dateFormat.js
+├── App.jsx
+└── main.jsx
+```
+
+## さらに分離：Presentational / Container
+
+### Presentational Component（見た目）
+
+```jsx
+// 見た目だけを担当、ロジックなし
+function TodoItem({ todo, onToggle, onDelete }) {
+  return (
+    <li className={todo.done ? "done" : ""}>
+      <span onClick={onToggle}>{todo.text}</span>
+      <button onClick={onDelete}>削除</button>
+    </li>
+  );
+}
+```
+
+### Container Component（ロジック）
+
+```jsx
+// ロジックを持ち、Presentational に渡す
+function TodoItemContainer({ todo }) {
+  const { toggleTodo, deleteTodo } = useTodos();
+
+  return (
+    <TodoItem
+      todo={todo}
+      onToggle={() => toggleTodo(todo.id)}
+      onDelete={() => deleteTodo(todo.id)}
+    />
+  );
+}
+```
+
+## リファクタリングのステップ
+
+1. **カスタムフックを作る**
+   - State とその操作をまとめる
+2. **UI コンポーネントを分割**
+   - 小さな再利用可能な単位に
+3. **Props でデータを受け渡す**
+   - コンポーネントの独立性を高める
+
+## メリット
+
+| 観点       | 分離前           | 分離後       |
+| ---------- | ---------------- | ------------ |
+| 可読性     | 長くて読みにくい | シンプル     |
+| テスト     | 難しい           | 簡単         |
+| 再利用     | できない         | できる       |
+| チーム開発 | 衝突しやすい     | 分担しやすい |
+
+## まとめ
+
+- **カスタムフック**でロジックを切り出す
+- **コンポーネント**は UI に集中
+- **ディレクトリ構成**で整理
+- コードが読みやすく、再利用しやすくなる
+
+## 練習問題
+
+以下のカウンターコンポーネントを「カスタムフック + UI コンポーネント」に分離してみましょう：
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  const reset = () => setCount(0);
+
+  return (
+    <div>
+      <p>{count}</p>
+      <button onClick={increment}>+1</button>
+      <button onClick={decrement}>-1</button>
+      <button onClick={reset}>リセット</button>
+    </div>
+  );
+}
+```
+
+### 回答例
+
+```jsx
+// hooks/useCounter.js
+import { useState } from "react";
+
+export function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  const increment = () => setCount((c) => c + 1);
+  const decrement = () => setCount((c) => c - 1);
+  const reset = () => setCount(initialValue);
+  return { count, increment, decrement, reset };
+}
+
+// components/Counter.jsx
+import { useCounter } from "../hooks/useCounter";
+
+function Counter() {
+  const { count, increment, decrement, reset } = useCounter(0);
+
+  return (
+    <div>
+      <p>{count}</p>
+      <button onClick={increment}>+1</button>
+      <button onClick={decrement}>-1</button>
+      <button onClick={reset}>リセット</button>
+    </div>
+  );
+}
+```
+
+> 💡 **ポイント**: カスタムフックは `use` で始めるのがルールです。
+
+---
+
+## 🔗 次のステップ
+
+分離がわかったら、[パフォーマンス最適化入門](./04-12_パフォーマンス最適化入門.md)（任意）か、[エラーハンドリングとローディング状態](./04-13_エラーハンドリングとローディング.md) に進みましょう！

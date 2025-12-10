@@ -1,0 +1,291 @@
+# Flexbox でレイアウトを作る
+
+> 📌 **この記事で学ぶこと**
+>
+> - Flexbox とは何か
+> - display: flex の使い方
+> - 主軸と交差軸
+> - よく使うプロパティ
+
+## Flexbox とは？
+
+**Flexbox**（Flexible Box Layout）は、要素を**柔軟に配置**するための CSS レイアウト手法です。
+
+「要素を横並びにしたい」「中央に配置したい」といった場面で大活躍します。
+
+<!--
+📸 画像メモ: Flexbox のイメージ
+- 複数のボックスが横並びになっている
+- 「これが Flexbox！」
+-->
+
+## 基本的な使い方
+
+親要素に `display: flex` を指定するだけで、子要素が横並びになります。
+
+```html
+<div class="container">
+  <div class="item">1</div>
+  <div class="item">2</div>
+  <div class="item">3</div>
+</div>
+```
+
+```css
+.container {
+  display: flex;
+}
+
+.item {
+  width: 100px;
+  height: 100px;
+  background-color: lightblue;
+  margin: 5px;
+}
+```
+
+<!--
+📸 画像メモ: display: flex の before/after
+- Before: 縦に並んでいる
+- After: 横に並んでいる
+-->
+
+## 主軸と交差軸
+
+Flexbox を理解する上で大切な概念が **軸** です。
+
+- **主軸（Main Axis）**：Flex アイテムが並ぶ方向
+- **交差軸（Cross Axis）**：主軸と垂直な方向
+
+デフォルトでは：
+
+- 主軸：横方向（→）
+- 交差軸：縦方向（↓）
+
+<!--
+📸 画像メモ: 主軸と交差軸の図解
+- 横向きの矢印「主軸」
+- 縦向きの矢印「交差軸」
+-->
+
+## よく使うプロパティ（親要素）
+
+### flex-direction（並ぶ方向）
+
+アイテムが並ぶ方向を変更します。
+
+```css
+.container {
+  display: flex;
+  flex-direction: row; /* 左から右（デフォルト） */
+  flex-direction: row-reverse; /* 右から左 */
+  flex-direction: column; /* 上から下 */
+  flex-direction: column-reverse; /* 下から上 */
+}
+```
+
+### justify-content（主軸方向の配置）
+
+**主軸方向**にアイテムをどう配置するか。
+
+```css
+.container {
+  display: flex;
+  justify-content: flex-start; /* 先頭に揃える（デフォルト） */
+  justify-content: flex-end; /* 末尾に揃える */
+  justify-content: center; /* 中央に揃える */
+  justify-content: space-between; /* 両端に配置、間を均等に */
+  justify-content: space-around; /* 均等に配置（両端に余白あり） */
+  justify-content: space-evenly; /* 完全に均等配置 */
+}
+```
+
+<!--
+📸 画像メモ: justify-content の各値の比較
+- flex-start, center, space-between などの違いを視覚的に
+-->
+
+### align-items（交差軸方向の配置）
+
+**交差軸方向**にアイテムをどう配置するか。
+
+```css
+.container {
+  display: flex;
+  height: 200px;
+  align-items: stretch; /* 伸ばして埋める（デフォルト） */
+  align-items: flex-start; /* 先頭に揃える */
+  align-items: flex-end; /* 末尾に揃える */
+  align-items: center; /* 中央に揃える */
+}
+```
+
+### gap（アイテム間の隙間）
+
+アイテム同士の間隔を指定します。
+
+```css
+.container {
+  display: flex;
+  gap: 20px; /* 全方向 */
+  gap: 10px 20px; /* 行 列 */
+}
+```
+
+> 💡 `margin` でも間隔は作れますが、`gap` の方がシンプルです。
+
+### flex-wrap（折り返し）
+
+アイテムが収まらない場合に折り返すかどうか。
+
+```css
+.container {
+  display: flex;
+  flex-wrap: nowrap; /* 折り返さない（デフォルト） */
+  flex-wrap: wrap; /* 折り返す */
+}
+```
+
+## よく使うプロパティ（子要素）
+
+### flex-grow（伸びる割合）
+
+余ったスペースをどれだけ取るか。
+
+```css
+.item {
+  flex-grow: 1; /* 等しく伸びる */
+}
+
+.item:first-child {
+  flex-grow: 2; /* 他の2倍伸びる */
+}
+```
+
+### flex-shrink（縮む割合）
+
+スペースが足りないときにどれだけ縮むか。
+
+```css
+.item {
+  flex-shrink: 0; /* 縮まない */
+}
+```
+
+### 簡略表記：flex
+
+```css
+.item {
+  flex: 1; /* flex-grow: 1 */
+  flex: 0 0 200px; /* grow shrink basis */
+}
+```
+
+## 実践例
+
+### 1. 中央配置（縦横中央）
+
+```css
+.container {
+  display: flex;
+  justify-content: center; /* 横方向中央 */
+  align-items: center; /* 縦方向中央 */
+  height: 100vh; /* 画面いっぱいの高さ */
+}
+```
+
+### 2. ヘッダーのナビゲーション
+
+```html
+<header class="header">
+  <div class="logo">Logo</div>
+  <nav class="nav">
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+```
+
+```css
+.header {
+  display: flex;
+  justify-content: space-between; /* 両端に配置 */
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+}
+```
+
+<!--
+📸 画像メモ: ヘッダーナビゲーションの完成イメージ
+- 左にロゴ、右にナビリンク
+-->
+
+### 3. カードを横並び
+
+```html
+<div class="card-container">
+  <div class="card">Card 1</div>
+  <div class="card">Card 2</div>
+  <div class="card">Card 3</div>
+</div>
+```
+
+```css
+.card-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap; /* 画面が狭くなったら折り返し */
+}
+
+.card {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+```
+
+## Flexbox チートシート
+
+| プロパティ        | 説明             | よく使う値            |
+| ----------------- | ---------------- | --------------------- |
+| `display: flex`   | Flexbox を有効化 | -                     |
+| `flex-direction`  | 並ぶ方向         | row, column           |
+| `justify-content` | 主軸方向の配置   | center, space-between |
+| `align-items`     | 交差軸方向の配置 | center, flex-start    |
+| `gap`             | アイテム間隔     | 10px, 20px            |
+| `flex-wrap`       | 折り返し         | wrap                  |
+
+## 📚 さらに練習したい人へ
+
+[Flexbox Froggy](https://flexboxfroggy.com/#ja) — ゲーム形式で Flexbox を楽しく学べます。カエルを目的地に移動させながら、`justify-content` や `align-items` をマスターしましょう！
+
+---
+
+## まとめ
+
+- **Flexbox** は要素を柔軟に配置できるレイアウト手法
+- 親要素に `display: flex` を指定
+- **justify-content** で主軸方向、**align-items** で交差軸方向の配置を調整
+- **gap** でアイテム間の余白を設定
+- ヘッダーのナビやカード並びなど、様々な場面で使える
+
+---
+
+## 🔗 次のステップ
+
+Flexbox がわかったら、[Grid でレイアウトを作る](./01-05_Gridでレイアウトを作る.md) に進みましょう！

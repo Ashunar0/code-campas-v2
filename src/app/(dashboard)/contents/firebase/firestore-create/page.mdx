@@ -1,0 +1,179 @@
+# Firestore でデータを追加する（Create）
+
+> 📌 **この記事で学ぶこと**
+>
+> - addDoc でデータを追加
+> - setDoc との違い
+> - タイムスタンプの追加
+
+## addDoc でデータを追加
+
+**addDoc** を使うと、自動生成された ID でドキュメントを追加できます。
+
+```javascript
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+const addTodo = async (text) => {
+  const docRef = await addDoc(collection(db, "todos"), {
+    text,
+    done: false,
+    createdAt: new Date(),
+  });
+  console.log("追加されたドキュメントID:", docRef.id);
+  return docRef.id;
+};
+```
+
+## addDoc vs setDoc
+
+### addDoc（ID 自動生成）
+
+```javascript
+// ID が自動生成される
+await addDoc(collection(db, "todos"), {
+  text: "やること",
+});
+```
+
+### setDoc（ID を指定）
+
+```javascript
+// ID を自分で指定する
+await setDoc(doc(db, "todos", "custom-id"), {
+  text: "やること",
+});
+```
+
+|      | addDoc     | setDoc         |
+| ---- | ---------- | -------------- |
+| ID   | 自動生成   | 手動指定       |
+| 用途 | 通常の追加 | 特定 ID で作成 |
+
+## サーバータイムスタンプ
+
+クライアントの時刻ではなく、**サーバーの時刻**を使うには：
+
+```javascript
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+await addDoc(collection(db, "todos"), {
+  text: "やること",
+  done: false,
+  createdAt: serverTimestamp(), // サーバーの時刻
+});
+```
+
+### メリット
+
+- クライアントの時刻設定に依存しない
+- 全データで一貫した時刻
+
+> 💡 **なぜ `new Date()` ではなく `serverTimestamp()` を使うの？**
+>
+> `new Date()` はユーザーの PC の時刻を使います。時計がずれていると不正確なデータが保存されます。
+> `serverTimestamp()` は Firebase サーバーの時刻を使うので、常に正確です。
+
+## React での実装
+
+```jsx
+import { useState } from "react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+function TodoForm() {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "todos"), {
+        text,
+        done: false,
+        createdAt: serverTimestamp(),
+      });
+      setText("");
+    } catch (error) {
+      console.error("追加エラー:", error);
+      alert("追加に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="新しいタスク"
+        disabled={loading}
+      />
+      <button type="submit" disabled={loading}>
+        {loading ? "追加中..." : "追加"}
+      </button>
+    </form>
+  );
+}
+```
+
+## エラーハンドリング
+
+```javascript
+try {
+  await addDoc(collection(db, "todos"), data);
+} catch (error) {
+  if (error.code === "permission-denied") {
+    console.error("権限がありません");
+  } else {
+    console.error("追加エラー:", error);
+  }
+}
+```
+
+## カスタムフックにまとめる
+
+```jsx
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
+
+export function useAddTodo() {
+  const addTodo = async (text) => {
+    const docRef = await addDoc(collection(db, "todos"), {
+      text,
+      done: false,
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  };
+
+  return { addTodo };
+}
+```
+
+## まとめ
+
+- **addDoc** で自動 ID のドキュメントを追加
+- **setDoc** で指定 ID のドキュメントを追加
+- **serverTimestamp()** でサーバー時刻を使用
+- エラーハンドリングを忘れずに
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. フォームを作成し、`addDoc` で Todo を追加できるようにしてみましょう
+> 2. Firebase Console でデータが追加されていることを確認
+> 3. `createdAt` に `serverTimestamp()` を使ってみましょう
+>
+> **確認ポイント**: Console で `createdAt` の値が時刻になっていれば OK
+
+---
+
+## 🔗 次のステップ
+
+データ追加ができたら、[Firestore でデータを更新する（Update）](./05-06_Firestoreでデータを更新する.md) に進みましょう！

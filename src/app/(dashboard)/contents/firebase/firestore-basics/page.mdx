@@ -1,0 +1,176 @@
+# Firestore の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firestore とは
+> - NoSQL データベースの基本
+> - コレクションとドキュメント
+
+## Firestore とは？
+
+**Firestore** は、Firebase が提供する **NoSQL データベース**です。
+
+> 💡 **NoSQL とは？**
+>
+> NoSQL（Not Only SQL）は、従来のテーブル形式（SQL）とは異なる形式でデータを保存するデータベースの総称です。
+> Firestore は JSON に近い形式でデータを保存するため、JavaScript との相性が良いです。
+
+特徴：
+
+- リアルタイムでデータを同期
+- オフラインでも動作
+- 自動スケーリング
+
+## NoSQL vs SQL
+
+### SQL（リレーショナル DB）
+
+```
+users テーブル
++----+--------+-----+
+| id | name   | age |
++----+--------+-----+
+| 1  | 田中   | 25  |
+| 2  | 佐藤   | 30  |
++----+--------+-----+
+```
+
+### NoSQL（Firestore）
+
+```
+users コレクション
+├── doc1
+│   ├── name: "田中"
+│   └── age: 25
+└── doc2
+    ├── name: "佐藤"
+    └── age: 30
+```
+
+## コレクションとドキュメント
+
+Firestore のデータ構造は以下のようになっています：
+
+```
+コレクション（Collection）
+    └── ドキュメント（Document）
+            └── フィールド（Field）
+```
+
+### 例：Todo アプリ
+
+```
+todos（コレクション）
+├── abc123（ドキュメント ID）
+│   ├── text: "買い物に行く"
+│   ├── done: false
+│   ├── createdAt: 2024-01-01
+│   └── userId: "user123"
+├── def456
+│   ├── text: "掃除をする"
+│   ├── done: true
+│   └── ...
+└── ...
+```
+
+## データ構造の設計
+
+### ルール 1: フラットな構造を推奨
+
+```
+// ⭕ フラット：シンプルで効率的
+todos/
+  {todoId}/
+    text, done, userId, createdAt
+
+// △ ネスト：読み取りが複雑になる
+users/
+  {userId}/
+    todos/
+      {todoId}/
+        text, done
+```
+
+### ルール 2: 必要な情報を含める
+
+```javascript
+// ドキュメントに必要な情報を入れる
+{
+  text: "買い物",
+  done: false,
+  userId: "user123",      // 所有者
+  createdAt: Timestamp,   // 作成日時
+  updatedAt: Timestamp    // 更新日時
+}
+```
+
+## Firebase Console でデータを確認
+
+1. Firebase Console を開く
+2. 左メニューの **「Firestore Database」** をクリック
+3. データの追加・編集・削除が GUI でできます
+
+<!--
+📸 画像メモ: Firestore コンソールのデータ画面
+-->
+
+## データ型
+
+Firestore で使えるデータ型：
+
+| 型                  | 例                       |
+| ------------------- | ------------------------ |
+| string              | `"テキスト"`             |
+| number              | `123`, `45.67`           |
+| boolean             | `true`, `false`          |
+| timestamp           | `Timestamp.now()`        |
+| array               | `["a", "b", "c"]`        |
+| map（オブジェクト） | `{ key: "value" }`       |
+| null                | `null`                   |
+| reference           | 他のドキュメントへの参照 |
+
+> 💡 **Timestamp とは？**
+>
+> Firestore 独自の日時型です。`new Date()` でも保存できますが、`serverTimestamp()` を使うと、サーバー側の正確な時刻で保存されます。
+
+## ドキュメント ID
+
+### 自動生成（推奨）
+
+```javascript
+const docRef = await addDoc(collection(db, "todos"), {
+  text: "やること",
+});
+console.log(docRef.id); // 自動生成された ID
+```
+
+### 手動指定
+
+```javascript
+await setDoc(doc(db, "todos", "custom-id"), {
+  text: "やること",
+});
+```
+
+## まとめ
+
+- **Firestore** は NoSQL データベース
+- **コレクション** > **ドキュメント** > **フィールド**
+- フラットな構造を推奨
+- 自動生成 ID を使うのが一般的
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. Firebase Console を開いて、左メニューの「Firestore Database」をクリック
+> 2. 「コレクションを開始」をクリックし、`todos` コレクションを作成
+> 3. ドキュメントを手動で 1 つ追加してみましょう（ID は自動生成、フィールドは `text: "テスト"`, `done: false`）
+>
+> **ヒント**: データ型はドロップダウンから選択できます
+
+---
+
+## 🔗 次のステップ
+
+基礎がわかったら、[Firestore でデータを取得する（Read）](./05-04_Firestoreでデータを取得する.md) に進みましょう！

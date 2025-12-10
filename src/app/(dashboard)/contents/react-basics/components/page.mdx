@@ -1,0 +1,240 @@
+# コンポーネントを作る
+
+> 📌 **この記事で学ぶこと**
+>
+> - コンポーネントとは何か
+> - 関数コンポーネントの書き方
+> - コンポーネントの分割
+> - ファイル構成
+
+## コンポーネントとは？
+
+**コンポーネント**は、UI の「部品」です。
+
+ボタン、ヘッダー、カード、フォームなど、画面を構成する要素をコンポーネントとして作ります。
+
+```
+App
+├── Header
+├── Main
+│   ├── Card
+│   ├── Card
+│   └── Card
+└── Footer
+```
+
+## 関数コンポーネントの書き方
+
+React のコンポーネントは **関数** として書きます。
+
+```jsx
+function Greeting() {
+  return <h1>こんにちは！</h1>;
+}
+```
+
+アロー関数でも OK：
+
+```jsx
+const Greeting = () => {
+  return <h1>こんにちは！</h1>;
+};
+```
+
+### コンポーネントを使う
+
+```jsx
+function App() {
+  return (
+    <div>
+      <Greeting />
+      <Greeting />
+      <Greeting />
+    </div>
+  );
+}
+```
+
+> 💡 同じコンポーネントを何度でも使いまわせます！
+
+## 命名ルール
+
+### コンポーネント名は大文字で始める
+
+```jsx
+// ⭕ 正しい（大文字で始まる）
+function Header() { ... }
+function UserCard() { ... }
+
+// ❌ ダメ（小文字だとHTMLタグと見なされる）
+function header() { ... }
+```
+
+### ファイル名もコンポーネント名と同じに
+
+```
+Header.jsx   → function Header()
+UserCard.jsx → function UserCard()
+```
+
+## コンポーネントの分割
+
+画面が大きくなると、1 つのファイルが長くなります。
+コンポーネントを分割して、別ファイルにしましょう。
+
+### 例：ヘッダーを分割
+
+**src/components/Header.jsx**
+
+```jsx
+const Header = () => {
+  return (
+    <header>
+      <h1>My App</h1>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;
+```
+
+**src/App.jsx**
+
+```jsx
+import Header from "./components/Header";
+
+function App() {
+  return (
+    <div>
+      <Header />
+      <main>
+        <p>メインコンテンツ</p>
+      </main>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## ファイル構成
+
+コンポーネントは `components` フォルダにまとめるのが一般的です。
+
+```
+src/
+├── components/
+│   ├── Header.jsx
+│   ├── Footer.jsx
+│   ├── Button.jsx
+│   └── Card.jsx
+├── App.jsx
+├── main.jsx
+└── index.css
+```
+
+## 実践：シンプルなコンポーネントを作る
+
+### Step 1: Button コンポーネント
+
+**src/components/Button.jsx**
+
+```jsx
+const Button = () => {
+  return <button className="btn">クリック</button>;
+};
+
+export default Button;
+```
+
+### Step 2: Card コンポーネント
+
+**src/components/Card.jsx**
+
+```jsx
+const Card = () => {
+  return (
+    <div className="card">
+      <h3>カードタイトル</h3>
+      <p>カードの内容がここに入ります。</p>
+    </div>
+  );
+};
+
+export default Card;
+```
+
+### Step 3: App で使う
+
+**src/App.jsx**
+
+```jsx
+import Button from "./components/Button";
+import Card from "./components/Card";
+
+function App() {
+  return (
+    <div>
+      <h1>コンポーネント練習</h1>
+      <Button />
+      <Card />
+      <Card />
+      <Card />
+    </div>
+  );
+}
+
+export default App;
+```
+
+## コンポーネントのネスト
+
+コンポーネントの中に別のコンポーネントを入れることもできます。
+
+```jsx
+const Card = () => {
+  return (
+    <div className="card">
+      <h3>カードタイトル</h3>
+      <p>説明文</p>
+      <Button /> {/* コンポーネントの中にコンポーネント */}
+    </div>
+  );
+};
+```
+
+## なぜコンポーネントに分けるのか
+
+### 1. 再利用できる
+
+同じ UI を何度も書かなくて済みます。
+
+### 2. 読みやすい
+
+コードが短くなり、役割が明確になります。
+
+### 3. テストしやすい
+
+小さな単位でテストできます。
+
+### 4. チーム開発がしやすい
+
+役割ごとにファイルを分担できます。
+
+## まとめ
+
+- **コンポーネント** は UI の部品
+- **関数**として定義し、**JSX を return**
+- コンポーネント名は**大文字で始める**
+- `components` フォルダにファイルを分ける
+- `export default` でエクスポート、`import` で読み込み
+
+---
+
+## 🔗 次のステップ
+
+コンポーネントが作れるようになったら、[Props でデータを渡す](./03-04_Propsでデータを渡す.md) に進みましょう！

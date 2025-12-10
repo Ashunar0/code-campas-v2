@@ -1,0 +1,316 @@
+# React Router 入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - React Router とは
+> - ルート定義
+> - Link と useNavigate
+> - URL パラメータ
+
+> 💡 この記事は**任意**です。単一ページで十分な場合はスキップ可能です。
+
+## React Router とは？
+
+**React Router** は、React でページ遷移を実現するためのライブラリです。
+
+- 複数ページのアプリを作る
+- URL に応じて表示を切り替える
+- ブラウザの戻る/進むに対応
+
+### なぜ SPA でルーティングが必要？
+
+React アプリは **SPA（Single Page Application）** です。
+実際は 1 つの HTML ファイルだけで、JavaScript で表示を切り替えています。
+
+でも、ユーザーは URL でページを共有したり、ブックマークしたりしたいはず。
+**React Router** を使うと、URL とコンポーネントの表示を同期できます。
+
+> 💡 Next.js を使う場合は、ファイルベースルーティングが組み込まれているので、React Router は不要です。
+
+## インストール
+
+```bash
+npm install react-router-dom
+```
+
+## 基本設定
+
+**src/main.jsx**
+
+```jsx
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
+```
+
+## ルート定義
+
+**src/App.jsx**
+
+```jsx
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+
+function App() {
+  return (
+    <div>
+      <nav>{/* ナビゲーション */}</nav>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </div>
+  );
+}
+```
+
+## Link でページ遷移
+
+```jsx
+import { Link } from "react-router-dom";
+
+function Navbar() {
+  return (
+    <nav>
+      <Link to="/">ホーム</Link>
+      <Link to="/about">About</Link>
+      <Link to="/contact">お問い合わせ</Link>
+    </nav>
+  );
+}
+```
+
+### NavLink（アクティブ状態）
+
+```jsx
+import { NavLink } from "react-router-dom";
+
+<NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>
+  About
+</NavLink>;
+```
+
+## useNavigate でプログラム的に遷移
+
+```jsx
+import { useNavigate } from "react-router-dom";
+
+function LoginForm() {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // ログイン処理...
+    navigate("/dashboard"); // 成功したら遷移
+  };
+
+  return <form onSubmit={handleSubmit}>{/* ... */}</form>;
+}
+```
+
+## URL パラメータ
+
+### 定義
+
+```jsx
+<Route path="/users/:id" element={<UserDetail />} />
+```
+
+### 取得
+
+```jsx
+import { useParams } from "react-router-dom";
+
+function UserDetail() {
+  const { id } = useParams();
+
+  return <h1>ユーザー ID: {id}</h1>;
+}
+```
+
+### 例：PokeAPI と組み合わせ
+
+```jsx
+function PokemonDetail() {
+  const { name } = useParams();
+  const [pokemon, setPokemon] = useState(null);
+
+  useEffect(() => {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+      .then((res) => res.json())
+      .then((data) => setPokemon(data));
+  }, [name]);
+
+  if (!pokemon) return <p>読み込み中...</p>;
+
+  return (
+    <div>
+      <h1>{pokemon.name}</h1>
+      <img src={pokemon.sprites.front_default} alt={pokemon.name} />
+    </div>
+  );
+}
+```
+
+## 404 ページ
+
+```jsx
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+  <Route path="*" element={<NotFound />} /> {/* 404 */}
+</Routes>;
+
+function NotFound() {
+  return (
+    <div>
+      <h1>404 - ページが見つかりません</h1>
+      <Link to="/">ホームに戻る</Link>
+    </div>
+  );
+}
+```
+
+## ネストされたルート
+
+```jsx
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="about" element={<About />} />
+        <Route path="users" element={<Users />}>
+          <Route path=":id" element={<UserDetail />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
+function Layout() {
+  return (
+    <div>
+      <Navbar />
+      <main>
+        <Outlet /> {/* 子ルートがここに表示される */}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+```
+
+## useSearchParams（クエリパラメータ）
+
+```jsx
+import { useSearchParams } from "react-router-dom";
+
+function SearchResults() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q");
+
+  // URL: /search?q=react
+  // query = "react"
+
+  return (
+    <div>
+      <p>検索キーワード: {query}</p>
+    </div>
+  );
+}
+```
+
+## まとめ
+
+- **React Router** でページ遷移を実現
+- **Routes** と **Route** でルート定義
+- **Link** でページ遷移リンク
+- **useNavigate** でプログラム的に遷移
+- **useParams** で URL パラメータ取得
+- `path="*"` で 404 ページ
+
+## よくある間違い
+
+### BrowserRouter の配置場所
+
+```jsx
+// ❌ App 内で BrowserRouter を使う
+function App() {
+  return (
+    <BrowserRouter>
+      {" "}
+      // ← main.jsx に置くべき
+      <Routes>...</Routes>
+    </BrowserRouter>
+  );
+}
+
+// ⭕ main.jsx でラップ
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
+```
+
+### Link と a タグの違い
+
+```jsx
+// ❌ a タグを使うとページ全体がリロードされる
+<a href="/about">About</a>
+
+// ⭕ Link を使うと SPA のまま遷移
+<Link to="/about">About</Link>
+```
+
+## 練習問題
+
+以下のページ構成を React Router で作ってみましょう：
+
+1. ホーム (`/`)
+2. 記事一覧 (`/posts`)
+3. 記事詳細 (`/posts/:id`)
+4. 404 ページ
+
+### 回答例
+
+```jsx
+import { Routes, Route, Link, useParams } from "react-router-dom";
+
+function App() {
+  return (
+    <div>
+      <nav>
+        <Link to="/">ホーム</Link> | <Link to="/posts">記事一覧</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<h1>ホーム</h1>} />
+        <Route path="/posts" element={<h1>記事一覧</h1>} />
+        <Route path="/posts/:id" element={<PostDetail />} />
+        <Route path="*" element={<h1>404 Not Found</h1>} />
+      </Routes>
+    </div>
+  );
+}
+
+function PostDetail() {
+  const { id } = useParams();
+  return <h1>記事 ID: {id}</h1>;
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+React Router がわかったら、[UI とロジックの分離](./04-11_UIとロジックの分離.md) に進みましょう！

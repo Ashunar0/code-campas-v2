@@ -1,0 +1,185 @@
+# 認証ガード（Protected Routes）
+
+> 📌 **この記事で学ぶこと**
+>
+> - 認証が必要なページの保護
+> - PrivateRoute コンポーネント
+> - リダイレクト処理
+
+## 認証ガードとは？
+
+ログインしていないユーザーが、ログイン必須のページにアクセスした場合、**ログインページにリダイレクト**する仕組みです。
+
+> 💡 **Protected Routes とは？**
+>
+> 「保護されたルート」という意味で、認証が必要なページのことです。
+> 見えないガードマンが「ログインしていない人は入れません」と守っているイメージです。
+
+## PrivateRoute コンポーネント
+
+**src/components/PrivateRoute.jsx**
+
+```jsx
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+function PrivateRoute({ children }) {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div>読み込み中...</div>;
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+export default PrivateRoute;
+```
+
+## 使い方
+
+**src/App.jsx**
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PrivateRoute from "./components/PrivateRoute";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* 公開ルート */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        {/* 認証が必要なルート */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+## ログイン済みユーザーのリダイレクト
+
+ログイン済みのユーザーがログインページにアクセスした場合、ダッシュボードにリダイレクトします。
+
+**src/pages/Login.jsx**
+
+```jsx
+import { useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
+
+function Login() {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  // 既にログイン済みならリダイレクト
+  if (currentUser) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError("ログインに失敗しました");
+    }
+  };
+
+  // フォーム...
+}
+```
+
+## より高度な認証ガード
+
+元のページにリダイレクトする機能を追加：
+
+```jsx
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+function PrivateRoute({ children }) {
+  const { currentUser, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div>読み込み中...</div>;
+  }
+
+  if (!currentUser) {
+    // 元のパスを state に保存
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+```
+
+ログイン成功後に元のページに戻る：
+
+```jsx
+function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate(from, { replace: true }); // 元のページに戻る
+    } catch (err) {
+      setError("ログインに失敗しました");
+    }
+  };
+  // ...
+}
+```
+
+## まとめ
+
+- **PrivateRoute** でログイン必須ページを保護
+- 未ログインなら**ログインページにリダイレクト**
+- ログイン済みならログインページから**ダッシュボードにリダイレクト**
+- `location.state` で元のページ情報を保持
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `PrivateRoute` コンポーネントを作成してください
+> 2. `/dashboard` ルートを `PrivateRoute` で保護してみましょう
+> 3. ログアウト状態で `/dashboard` にアクセスするとリダイレクトされることを確認
+>
+> **確認ポイント**: ログイン後は `/dashboard` にアクセスできますか？
+
+---
+
+## 🔗 次のステップ
+
+認証ガードができたら、[ユーザー情報の管理](./05-14_ユーザー情報の管理.md) に進みましょう！

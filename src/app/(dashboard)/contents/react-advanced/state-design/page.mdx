@@ -1,0 +1,259 @@
+# State 管理の設計
+
+> 📌 **この記事で学ぶこと**
+>
+> - State をどこに置くべきか
+> - ローカル State vs グローバル State
+> - よくあるアンチパターン
+
+## State はどこに置くべきか
+
+### 基本ルール
+
+1. **その State を使うコンポーネント**に置く
+2. **複数のコンポーネント**で使うなら、共通の親に置く
+3. **アプリ全体**で使うなら、Context やグローバル状態管理
+
+## ローカル State vs グローバル State
+
+### ローカル State
+
+コンポーネント内でのみ使う State
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0); // ローカル
+  // ...
+}
+```
+
+適したデータ：
+
+- フォームの入力値
+- モーダルの開閉状態
+- ローディング状態
+
+### グローバル State
+
+アプリ全体で共有する State
+
+```jsx
+// Context で管理
+const AuthContext = createContext();
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(null); // グローバル
+  // ...
+}
+```
+
+適したデータ：
+
+- ログインユーザー情報
+- テーマ設定
+- 言語設定
+
+## State のリフトアップ
+
+複数の子コンポーネントで State を共有したい場合、**親に State を移動**します。
+
+### なぜリフトアップするのか？
+
+React のデータは**上から下へ**流れます（Props）。
+兄弟コンポーネント間でデータを共有したいときは、**共通の親**に State を置くことで、両方の子にデータを渡せます。
+
+<!--
+📸 画像メモ: State のリフトアップの図
+- 親コンポーネントに State があり、矢印で子コンポーネントに Props が流れる図
+- ItemForm と ItemList が共通の State を参照している様子
+-->
+
+```jsx
+// 親
+function App() {
+  const [items, setItems] = useState([]);
+
+  return (
+    <>
+      <ItemForm onAdd={(item) => setItems([...items, item])} />
+      <ItemList items={items} />
+    </>
+  );
+}
+```
+
+> 💡 **ポイント**: 子から親の State を変更するには、**関数を Props として渡す**（上の例では `onAdd`）。
+
+## 派生 State（Derived State）
+
+既存の State から**計算で求められる**値は、新たな State にしない。
+
+```jsx
+// ❌ 冗長
+const [todos, setTodos] = useState([]);
+const [completedCount, setCompletedCount] = useState(0); // 不要！
+
+// ⭕ 計算で求める
+const [todos, setTodos] = useState([]);
+const completedCount = todos.filter((t) => t.done).length; // 派生State
+```
+
+## State の分割と統合
+
+### 分割すべき場合
+
+関連のない State は分ける
+
+```jsx
+// ⭕ 別々に管理
+const [user, setUser] = useState(null);
+const [theme, setTheme] = useState("light");
+```
+
+### 統合すべき場合
+
+**常に一緒に更新される**ものはまとめる
+
+```jsx
+// ⭕ 一緒に管理
+const [position, setPosition] = useState({ x: 0, y: 0 });
+
+// 更新
+setPosition({ x: 100, y: 200 });
+```
+
+## よくあるアンチパターン
+
+### 1. Props を State にコピー
+
+```jsx
+// ❌ Props を State にコピーしない
+function UserProfile({ user }) {
+  const [userData, setUserData] = useState(user); // 同期がズレる
+  // ...
+}
+
+// ⭕ Props をそのまま使う
+function UserProfile({ user }) {
+  return <div>{user.name}</div>;
+}
+```
+
+### 2. 過剰な State
+
+```jsx
+// ❌ 計算で求められるものを State にしている
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [fullName, setFullName] = useState(""); // 不要！
+
+// ⭕ 計算で求める
+const fullName = `${firstName} ${lastName}`;
+```
+
+### 3. State を直接変更
+
+```jsx
+// ❌ 直接変更
+todos.push(newTodo);
+setTodos(todos);
+
+// ⭕ 新しい配列を作る
+setTodos([...todos, newTodo]);
+```
+
+## 設計の指針
+
+| 観点 | 判断基準                              |
+| ---- | ------------------------------------- |
+| 場所 | 使うコンポーネントの最も近い共通の親  |
+| 分割 | 関連のないデータは分ける              |
+| 統合 | 一緒に更新されるデータはまとめる      |
+| 派生 | 計算で求められるものは State にしない |
+
+## 実践例：フォーム + リスト
+
+```jsx
+function App() {
+  // リストデータ（複数コンポーネントで使う → 親で管理）
+  const [todos, setTodos] = useState([]);
+
+  // 派生State（計算で求める）
+  const remainingCount = todos.filter((t) => !t.done).length;
+  const completedCount = todos.filter((t) => t.done).length;
+
+  return (
+    <div>
+      <TodoForm
+        onAdd={(text) => {
+          setTodos([...todos, { id: Date.now(), text, done: false }]);
+        }}
+      />
+
+      <TodoList
+        todos={todos}
+        onToggle={(id) => {
+          setTodos(
+            todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+          );
+        }}
+      />
+
+      <Stats
+        total={todos.length}
+        remaining={remainingCount}
+        completed={completedCount}
+      />
+    </div>
+  );
+}
+
+// フォームは入力値をローカルで管理
+function TodoForm({ onAdd }) {
+  const [text, setText] = useState(""); // ローカル State
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button type="submit">追加</button>
+    </form>
+  );
+}
+```
+
+## まとめ
+
+- **ローカル State**：そのコンポーネントだけで使う
+- **グローバル State**：アプリ全体で共有
+- 複数コンポーネントで使うなら**リフトアップ**
+- 計算で求められるものは**派生 State**として扱う
+- Props を State にコピーしない
+
+## 練習問題
+
+以下のシナリオで、State をどこに置くべきか考えてみましょう：
+
+1. **カウンターボタン**（+1/-1）と「リセット」ボタンが同じ組み合わせで使われる
+2. **ショッピングカート**と**合計表示**が別のコンポーネント
+3. **ダークモード切り替え**がアプリ全体に影響
+
+### 回答例
+
+1. **カウンター**: `count` はカウンターコンポーネント内に置く（ローカル State）
+2. **ショッピングカート**: `cart` は親に置き、合計は派生 State（`cart.reduce(...)`）
+3. **ダークモード**: Context でグローバル管理（または最上位のコンポーネント）
+
+> 💡 **迷ったら**: その State を使うコンポーネントの**最も近い共通の親**に置くのが基本です。
+
+---
+
+## 🔗 次のステップ
+
+State 管理がわかったら、[CRUD の基礎](./04-05_CRUDの基礎.md) に進みましょう！

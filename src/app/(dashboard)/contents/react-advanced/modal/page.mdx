@@ -1,0 +1,377 @@
+# モーダルの実装
+
+> 📌 **この記事で学ぶこと**
+>
+> - モーダルの開閉状態管理
+> - モーダルコンポーネントの作成
+> - 外側クリックで閉じる
+> - ESC キーで閉じる
+
+## モーダルとは？
+
+**モーダル**は、メインコンテンツの上に表示されるダイアログです。
+
+- 編集フォーム
+- 確認ダイアログ
+- 詳細表示
+
+## 基本的なモーダル
+
+### 開閉状態の管理
+
+```jsx
+const [isOpen, setIsOpen] = useState(false);
+
+const openModal = () => setIsOpen(true);
+const closeModal = () => setIsOpen(false);
+```
+
+### モーダルコンポーネント
+
+```jsx
+function Modal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+
+### 使用例
+
+```jsx
+function App() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setIsOpen(true)}>モーダルを開く</button>
+
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <h2>モーダルタイトル</h2>
+        <p>モーダルの内容</p>
+      </Modal>
+    </div>
+  );
+}
+```
+
+## スタイル
+
+```css
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+```
+
+## 外側クリックで閉じる
+
+```jsx
+function Modal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+
+  const handleOverlayClick = (e) => {
+    // overlay自体がクリックされた場合のみ閉じる
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-content">
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+
+> 💡 **`e.target` vs `e.currentTarget`**
+>
+> - `e.target`: 実際にクリックされた要素
+> - `e.currentTarget`: イベントハンドラが付いている要素
+>
+> 子要素（モーダル内容）をクリックしたときに閉じないように、この比較が必要です。
+
+## ESC キーで閉じる
+
+```jsx
+import { useEffect } from "react";
+
+function Modal({ isOpen, onClose, children }) {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  // 省略...
+}
+```
+
+## スクロールロック
+
+モーダルが開いているとき、背景のスクロールを無効にします。
+
+```jsx
+useEffect(() => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "unset";
+  }
+
+  return () => {
+    document.body.style.overflow = "unset";
+  };
+}, [isOpen]);
+```
+
+## 完成版モーダル
+
+```jsx
+import { useEffect } from "react";
+
+function Modal({ isOpen, onClose, title, children }) {
+  // ESC キーで閉じる
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      document.addEventListener("keydown", handleEsc);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>{title}</h2>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export default Modal;
+```
+
+## 実践例：編集モーダル
+
+```jsx
+function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  const [editingTodo, setEditingTodo] = useState(null);
+
+  const openEditModal = (todo) => {
+    setEditingTodo(todo);
+  };
+
+  const closeEditModal = () => {
+    setEditingTodo(null);
+  };
+
+  const saveTodo = (id, newText) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, text: newText } : t)));
+    closeEditModal();
+  };
+
+  return (
+    <div>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            {todo.text}
+            <button onClick={() => openEditModal(todo)}>編集</button>
+          </li>
+        ))}
+      </ul>
+
+      <Modal
+        isOpen={editingTodo !== null}
+        onClose={closeEditModal}
+        title="タスクを編集"
+      >
+        {editingTodo && (
+          <EditForm
+            todo={editingTodo}
+            onSave={saveTodo}
+            onCancel={closeEditModal}
+          />
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+function EditForm({ todo, onSave, onCancel }) {
+  const [text, setText] = useState(todo.text);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(todo.id, text);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <div>
+        <button type="button" onClick={onCancel}>
+          キャンセル
+        </button>
+        <button type="submit">保存</button>
+      </div>
+    </form>
+  );
+}
+```
+
+## まとめ
+
+- **useState** でモーダルの開閉を管理
+- **Portal** を使うとより堅牢（発展）
+- **外側クリック**と **ESC キー**で閉じる
+- **スクロールロック**で背景固定
+- 編集対象を State で保持してモーダルに渡す
+
+> 💡 **Portal とは？** > `ReactDOM.createPortal()` を使うと、コンポーネントを DOM ツリーの別の場所（例: `body` 直下）にレンダリングできます。
+> CSS の `z-index` や `overflow` の問題を回避できますが、基本的なモーダルなら上記の実装で十分です。
+
+<!--
+📸 画像メモ: モーダルの構造図
+- 背景（overlay）が画面全体を覆う
+- 中央にモーダルコンテンツ
+- × ボタンが右上
+-->
+
+## 練習問題
+
+以下の確認ダイアログを作ってみましょう：
+
+1. 「削除」ボタンを押すと確認モーダルが開く
+2. 「キャンセル」で閉じる、「削除する」で実行
+3. 外側クリックでも閉じる
+
+### 回答例
+
+```jsx
+function ConfirmDialog({ isOpen, onClose, onConfirm, message }) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="modal-content">
+        <p>{message}</p>
+        <div>
+          <button onClick={onClose}>キャンセル</button>
+          <button onClick={onConfirm}>削除する</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 使用例
+function App() {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const handleDeleteClick = (item) => {
+    setDeleteTarget(item);
+    setShowConfirm(true);
+  };
+
+  const handleConfirm = () => {
+    console.log("削除:", deleteTarget);
+    setShowConfirm(false);
+  };
+
+  return (
+    <>
+      <button onClick={() => handleDeleteClick({ id: 1 })}>削除</button>
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirm}
+        message="本当に削除しますか？"
+      />
+    </>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+モーダルがわかったら、[Tailwind CSS を使いこなす](./04-08_TailwindCSSを使いこなす.md) に進みましょう！

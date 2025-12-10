@@ -1,0 +1,389 @@
+# Controlled Components 完全理解
+
+> 📌 **この記事で学ぶこと**
+>
+> - Controlled Component の復習
+> - Uncontrolled Component との違い
+> - 複数の input をオブジェクトで管理
+
+## Controlled Component とは？
+
+**Controlled Component** は、フォームの値を **State で管理** するパターンです。
+
+```jsx
+const [name, setName] = useState("");
+
+<input type="text" value={name} onChange={(e) => setName(e.target.value)} />;
+```
+
+- `value` : State の値を表示
+- `onChange` : State を更新
+
+React が入力値を**完全にコントロール**しています。
+
+### なぜ Controlled Component を使うのか？
+
+**React の考え方**は「UI は State の関数」です。
+State が変われば UI が変わる、という一方向のデータフローを保つことで：
+
+- **バグが起きにくい**（どこで値が変わったか追跡しやすい）
+- **リアルタイム処理がしやすい**（入力中のバリデーションなど）
+- **複雑なフォームも管理しやすい**（複数の入力を 1 つの State にまとめられる）
+
+> 💡 Controlled Component は「React に入力値を任せる」パターン。
+> DOM が勝手に値を持つのではなく、**State が唯一の情報源（Single Source of Truth）** になります。
+
+## Uncontrolled Component との違い
+
+### Uncontrolled Component
+
+DOM が値を管理し、必要なときに `ref` で取得します。
+
+```jsx
+const inputRef = useRef(null);
+
+const handleSubmit = () => {
+  console.log(inputRef.current.value);
+};
+
+<input type="text" ref={inputRef} />;
+```
+
+### 比較
+
+|                  | Controlled     | Uncontrolled   |
+| ---------------- | -------------- | -------------- |
+| 値の管理         | React（State） | DOM            |
+| リアルタイム処理 | ⭕ できる      | △ 難しい       |
+| バリデーション   | ⭕ 容易        | △ 面倒         |
+| 推奨度           | ⭕ 推奨        | 特殊な場合のみ |
+
+> 💡 通常は **Controlled Component** を使いましょう。
+
+## 複数の input を個別管理
+
+```jsx
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [message, setMessage] = useState("");
+
+return (
+  <form>
+    <input value={name} onChange={(e) => setName(e.target.value)} />
+    <input value={email} onChange={(e) => setEmail(e.target.value)} />
+    <textarea value={message} onChange={(e) => setMessage(e.target.value)} />
+  </form>
+);
+```
+
+項目が増えると State が増えて大変...
+
+## オブジェクトで State を管理
+
+フォームデータを **1 つのオブジェクト** にまとめます。
+
+```jsx
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  message: "",
+});
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData({
+    ...formData,
+    [name]: value,
+  });
+};
+
+return (
+  <form>
+    <input name="name" value={formData.name} onChange={handleChange} />
+    <input name="email" value={formData.email} onChange={handleChange} />
+    <textarea name="message" value={formData.message} onChange={handleChange} />
+  </form>
+);
+```
+
+### ポイント
+
+- input に `name` 属性を設定
+- `e.target.name` で どのフィールドか判定
+- `[name]: value` で 動的にプロパティを更新
+
+> 💡 `[name]: value` は**計算されたプロパティ名（Computed Property Name）** という JavaScript の構文です。
+> 変数 `name` の値が `"email"` なら `{ email: value }` と同じ意味になります。
+
+## 様々な input タイプ
+
+### checkbox
+
+```jsx
+const [formData, setFormData] = useState({
+  name: "",
+  isAgree: false,
+});
+
+const handleChange = (e) => {
+  const { name, value, type, checked } = e.target;
+  setFormData({
+    ...formData,
+    [name]: type === "checkbox" ? checked : value,
+  });
+};
+
+<input
+  type="checkbox"
+  name="isAgree"
+  checked={formData.isAgree}
+  onChange={handleChange}
+/>;
+```
+
+### select
+
+```jsx
+const [formData, setFormData] = useState({
+  category: "",
+});
+
+<select name="category" value={formData.category} onChange={handleChange}>
+  <option value="">選択してください</option>
+  <option value="tech">技術</option>
+  <option value="life">生活</option>
+</select>;
+```
+
+## フォームのリセット
+
+```jsx
+const initialState = {
+  name: "",
+  email: "",
+  message: "",
+};
+
+const [formData, setFormData] = useState(initialState);
+
+const handleReset = () => {
+  setFormData(initialState);
+};
+
+<button type="button" onClick={handleReset}>
+  リセット
+</button>;
+```
+
+## 実践例：お問い合わせフォーム
+
+```jsx
+import { useState } from "react";
+
+function ContactForm() {
+  const initialState = {
+    name: "",
+    email: "",
+    category: "",
+    message: "",
+    isAgree: false,
+  };
+
+  const [formData, setFormData] = useState(initialState);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("送信データ:", formData);
+    // 送信処理...
+    setFormData(initialState);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>名前</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label>メール</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label>カテゴリ</label>
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+        >
+          <option value="">選択してください</option>
+          <option value="question">質問</option>
+          <option value="feedback">フィードバック</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+
+      <div>
+        <label>メッセージ</label>
+        <textarea
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            name="isAgree"
+            checked={formData.isAgree}
+            onChange={handleChange}
+          />
+          利用規約に同意する
+        </label>
+      </div>
+
+      <button type="submit" disabled={!formData.isAgree}>
+        送信
+      </button>
+    </form>
+  );
+}
+```
+
+## まとめ
+
+- **Controlled Component** で React がフォームを完全に管理
+- 複数の input は **1 つのオブジェクト** にまとめると便利
+- `name` 属性と `[name]: value` で動的に更新
+- checkbox は `checked` プロパティを使う
+- **リセット**は初期値のオブジェクトで上書き
+
+## よくある間違い
+
+### value と defaultValue の混同
+
+```jsx
+// ❌ Controlled と Uncontrolled の混在（警告が出る）
+<input value={text} />  // onChange がない！
+
+// ❌ defaultValue は Uncontrolled 用
+<input defaultValue="初期値" onChange={(e) => setText(e.target.value)} />
+
+// ⭕ Controlled は value + onChange のセット
+<input value={text} onChange={(e) => setText(e.target.value)} />
+```
+
+### checkbox で value を使ってしまう
+
+```jsx
+// ❌ checkbox は value ではなく checked
+<input type="checkbox" value={isChecked} />
+
+// ⭕ checked を使う
+<input type="checkbox" checked={isChecked} onChange={...} />
+```
+
+## 練習問題
+
+以下のお問い合わせフォームを作ってみましょう：
+
+1. 名前（必須）、メール、電話番号、お問い合わせ種別（select）、メッセージ（textarea）
+2. すべてを 1 つのオブジェクト State で管理
+3. 「送信」ボタンを押したら Console にデータを表示
+4. 「リセット」ボタンでフォームをクリア
+
+### 回答例
+
+```jsx
+import { useState } from "react";
+
+function ContactForm() {
+  const initialState = {
+    name: "",
+    email: "",
+    phone: "",
+    type: "",
+    message: "",
+  };
+
+  const [formData, setFormData] = useState(initialState);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("送信データ:", formData);
+  };
+
+  const handleReset = () => {
+    setFormData(initialState);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        placeholder="名前"
+      />
+      <input
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        placeholder="メール"
+      />
+      <input
+        name="phone"
+        value={formData.phone}
+        onChange={handleChange}
+        placeholder="電話番号"
+      />
+      <select name="type" value={formData.type} onChange={handleChange}>
+        <option value="">選択してください</option>
+        <option value="question">質問</option>
+        <option value="request">依頼</option>
+      </select>
+      <textarea
+        name="message"
+        value={formData.message}
+        onChange={handleChange}
+      />
+      <button type="submit">送信</button>
+      <button type="button" onClick={handleReset}>
+        リセット
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+Controlled Component がわかったら、[フォームバリデーション](./04-02_フォームバリデーション.md) に進みましょう！

@@ -1,0 +1,192 @@
+# Context API 入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - Context API とは
+> - Props のバケツリレー問題
+> - Context の作成と使い方
+
+> 💡 この記事は**任意**です。理解できなくても先に進んで大丈夫です。
+
+## Props のバケツリレー問題
+
+深くネストしたコンポーネントにデータを渡すとき、中間のコンポーネントを経由する必要があります。
+
+```
+App（theme を持っている）
+└── Header（theme を受け取って渡す）
+    └── Navigation（theme を受け取って渡す）
+        └── NavItem（theme を使う）
+```
+
+```jsx
+// 各コンポーネントで theme を受け渡す必要がある
+<Header theme={theme} />
+<Navigation theme={theme} />
+<NavItem theme={theme} />
+```
+
+これを **Props のバケツリレー**（Prop Drilling）と呼びます。
+
+## Context API とは？
+
+**Context** を使うと、Props を経由せずに、どの階層のコンポーネントからでもデータにアクセスできます。
+
+```
+App（Context Provider）
+└── Header
+    └── Navigation
+        └── NavItem（Context を直接使う）
+```
+
+## Context の作成
+
+**src/contexts/ThemeContext.jsx**
+
+```jsx
+import { createContext, useState, useContext } from "react";
+
+// 1. Context を作成
+const ThemeContext = createContext();
+
+// 2. Provider コンポーネントを作成
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState("light");
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. カスタムフックを作成（使いやすくするため）
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme must be used within ThemeProvider");
+  }
+  return context;
+}
+```
+
+## Provider で囲む
+
+**src/main.jsx**
+
+```jsx
+import { ThemeProvider } from "./contexts/ThemeContext";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+);
+```
+
+## Context を使う
+
+**src/components/ThemeToggle.jsx**
+
+```jsx
+import { useTheme } from "../contexts/ThemeContext";
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button onClick={toggleTheme}>
+      現在: {theme} モード（クリックで切り替え）
+    </button>
+  );
+}
+```
+
+どの階層のコンポーネントからでも、`useTheme()` で theme にアクセスできます！
+
+## 実践例：認証状態の管理
+
+**src/contexts/AuthContext.jsx**
+
+```jsx
+import { createContext, useState, useContext } from "react";
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  const login = (userData) => {
+    setUser(userData);
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
+
+  const isLoggedIn = !!user;
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isLoggedIn }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+```
+
+**使い方**
+
+```jsx
+import { useAuth } from "../contexts/AuthContext";
+
+function Header() {
+  const { user, logout, isLoggedIn } = useAuth();
+
+  return (
+    <header>
+      {isLoggedIn ? (
+        <>
+          <span>こんにちは、{user.name}さん</span>
+          <button onClick={logout}>ログアウト</button>
+        </>
+      ) : (
+        <span>ログインしてください</span>
+      )}
+    </header>
+  );
+}
+```
+
+## いつ Context を使うか
+
+- **テーマ**（ダークモード/ライトモード）
+- **認証状態**（ログイン中のユーザー情報）
+- **言語設定**（多言語対応）
+- **グローバルな UI 状態**
+
+## 注意点
+
+- Context の値が変わると、それを使う**すべてのコンポーネントが再レンダリング**される
+- パフォーマンスが気になる場合は、Context を分割するか、メモ化を検討
+
+## まとめ
+
+- **Context API** で Props のバケツリレーを解消
+- **createContext** で Context を作成
+- **Provider** で囲んでデータを提供
+- **useContext**（またはカスタムフック）でデータを取得
+- グローバルな状態（テーマ、認証など）に適している
+
+---
+
+## 🔗 次のステップ
+
+Context がわかったら、[Pokedex アプリを作ろう](./03-19_Pokedexアプリを作ろう.md)（発展）か、[まとめと次のステップ](./03-20_まとめと次のステップ.md) に進みましょう！

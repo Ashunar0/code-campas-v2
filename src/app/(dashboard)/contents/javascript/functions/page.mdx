@@ -1,0 +1,274 @@
+# 関数
+
+> 📌 **この記事で学ぶこと**
+>
+> - 関数とは何か
+> - 関数の定義方法
+> - アロー関数（最重要）
+> - 引数と戻り値
+
+## 関数とは？
+
+**関数**は、処理をまとめて名前をつけたものです。
+同じ処理を何度も書かなくて済むようになります。
+
+```javascript
+// 関数がないと...
+console.log("こんにちは、田中さん！");
+console.log("こんにちは、佐藤さん！");
+console.log("こんにちは、鈴木さん！");
+
+// 関数を使うと...
+function greet(name) {
+  console.log(`こんにちは、${name}さん！`);
+}
+
+greet("田中");
+greet("佐藤");
+greet("鈴木");
+```
+
+## 関数の定義方法
+
+JavaScript では、関数を定義する方法がいくつかあります。
+
+### 1. 関数宣言
+
+```javascript
+function greet(name) {
+  console.log(`こんにちは、${name}さん！`);
+}
+
+greet("田中"); // "こんにちは、田中さん！"
+```
+
+### 2. 関数式
+
+```javascript
+const greet = function (name) {
+  console.log(`こんにちは、${name}さん！`);
+};
+
+greet("田中");
+```
+
+### 3. アロー関数（最重要！）⭐
+
+```javascript
+const greet = (name) => {
+  console.log(`こんにちは、${name}さん！`);
+};
+
+greet("田中");
+```
+
+> 💡 **React ではアロー関数をメインで使います**。
+> この書き方に慣れておきましょう！
+
+## アロー関数の書き方
+
+### 基本形
+
+```javascript
+const 関数名 = (引数) => {
+  処理;
+};
+```
+
+### 省略記法
+
+アロー関数には便利な省略記法があります。
+
+#### 引数が 1 つなら () を省略できる
+
+```javascript
+// 通常
+const double = (num) => {
+  return num * 2;
+};
+
+// 省略
+const double = (num) => {
+  return num * 2;
+};
+```
+
+#### 処理が 1 行なら {} と return を省略できる
+
+```javascript
+// 通常
+const double = (num) => {
+  return num * 2;
+};
+
+// 省略
+const double = (num) => num * 2;
+```
+
+#### 組み合わせ例
+
+```javascript
+// 最も省略された形
+const double = (num) => num * 2;
+const add = (a, b) => a + b;
+const greet = (name) => `こんにちは、${name}さん！`;
+
+console.log(double(5)); // 10
+console.log(add(3, 4)); // 7
+console.log(greet("田中")); // "こんにちは、田中さん！"
+```
+
+## 引数と戻り値
+
+### 引数（ひきすう）
+
+関数に渡すデータ。
+
+```javascript
+const greet = (name, time) => {
+  console.log(`${time}、${name}さん！`);
+};
+
+greet("田中", "おはよう"); // "おはよう、田中さん！"
+greet("佐藤", "こんばんは"); // "こんばんは、佐藤さん！"
+```
+
+### 戻り値（もどりち）
+
+関数から返ってくる値。`return` を使います。
+
+```javascript
+const add = (a, b) => {
+  return a + b;
+};
+
+const result = add(3, 5);
+console.log(result); // 8
+```
+
+### 戻り値を使う例
+
+```javascript
+const calculateTax = (price) => price * 1.1;
+
+const applePrice = calculateTax(100);
+const bananaPrice = calculateTax(200);
+
+console.log(applePrice); // 110
+console.log(bananaPrice); // 220
+```
+
+## デフォルト引数
+
+引数が渡されなかった場合の初期値を設定できます。
+
+```javascript
+const greet = (name = "ゲスト") => {
+  console.log(`こんにちは、${name}さん！`);
+};
+
+greet("田中"); // "こんにちは、田中さん！"
+greet(); // "こんにちは、ゲストさん！"
+```
+
+## 関数を変数に入れる
+
+JavaScript では、関数も値として扱えます。
+
+```javascript
+const myFunction = (num) => num * 2;
+
+// 関数を別の変数に代入
+const anotherFunction = myFunction;
+console.log(anotherFunction(5)); // 10
+```
+
+## コールバック関数
+
+関数を別の関数の引数として渡すこと。
+これは次の章（配列の高階関数）で詳しく学びます。
+
+```javascript
+const numbers = [1, 2, 3];
+
+// 関数を引数として渡す
+numbers.forEach((num) => {
+  console.log(num);
+});
+```
+
+## React での使用例
+
+React では、こんな感じで関数を使います：
+
+```jsx
+// コンポーネント（関数）
+const Greeting = ({ name }) => {
+  return <h1>こんにちは、{name}さん！</h1>;
+};
+
+// イベントハンドラ
+const handleClick = () => {
+  console.log("クリックされました");
+};
+```
+
+## ミニ演習：アロー関数の書き方を比較しよう
+
+以下の 3 つは**すべて同じ動作**をします。Console で試してみましょう：
+
+```javascript
+// 1. 最も長い書き方
+const double1 = (num) => {
+  return num * 2;
+};
+
+// 2. {} と return を省略
+const double2 = (num) => num * 2;
+
+// 3. () も省略（引数が1つの場合）
+const double3 = (num) => num * 2;
+
+// 確認
+console.log(double1(5)); // 10
+console.log(double2(5)); // 10
+console.log(double3(5)); // 10
+```
+
+> 💡 **おすすめ**: 最初は省略せずに書き、慣れてきたら省略していきましょう。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+// 1. 2つの数を掛け算するアロー関数
+const multiply = (a, b) => a * b;
+console.log(multiply(3, 4)); // 12
+
+// 2. 名前と年齢を受け取って自己紹介文を返す関数
+const introduce = (name, age) => {
+  // ここを書いてみよう
+};
+
+// 3. デフォルト引数を使った関数
+const greet = (name = "名無し", greeting = "こんにちは") => {
+  // ここを書いてみよう
+};
+```
+
+## まとめ
+
+- **関数**は処理をまとめて再利用できるようにしたもの
+- **アロー関数**を使う：`const func = (arg) => { ... }`
+- 引数が 1 つなら `()` 省略可能
+- 処理が 1 行で return だけなら `{}` と `return` 省略可能
+- **引数**は関数に渡すデータ
+- **戻り値**は関数から返ってくる値
+- React ではアロー関数がメイン
+
+---
+
+## 🔗 次のステップ
+
+関数がわかったら、[配列の基礎](./02-04_配列の基礎.md) に進みましょう！

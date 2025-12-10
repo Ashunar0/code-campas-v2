@@ -1,0 +1,192 @@
+# カスタムフック入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - カスタムフックとは
+> - カスタムフックの作り方
+> - ロジックの再利用
+
+> 💡 この記事は**任意**です。理解できなくても先に進んで大丈夫です。
+
+## カスタムフックとは？
+
+**カスタムフック**は、React のロジックを再利用可能な関数にまとめたものです。
+
+- `useState` や `useEffect` を組み合わせた処理を**再利用**できる
+- 複数のコンポーネントで**同じロジック**を使いたいときに便利
+
+## 命名規則
+
+カスタムフックは **`use`** で始める必要があります。
+
+```javascript
+// ⭕ 正しい命名
+function useCounter() { ... }
+function useFetch() { ... }
+function useLocalStorage() { ... }
+
+// ❌ use で始まらない
+function counter() { ... }
+function fetchData() { ... }
+```
+
+## 例 1: useCounter
+
+カウンターのロジックをカスタムフックにします。
+
+**src/hooks/useCounter.js**
+
+```javascript
+import { useState } from "react";
+
+export function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  const reset = () => setCount(initialValue);
+
+  return { count, increment, decrement, reset };
+}
+```
+
+**使い方**
+
+```jsx
+import { useCounter } from "./hooks/useCounter";
+
+function Counter() {
+  const { count, increment, decrement, reset } = useCounter(0);
+
+  return (
+    <div>
+      <p>{count}</p>
+      <button onClick={increment}>+1</button>
+      <button onClick={decrement}>-1</button>
+      <button onClick={reset}>リセット</button>
+    </div>
+  );
+}
+```
+
+## 例 2: useFetch
+
+API からデータを取得するロジックをカスタムフックにします。
+
+**src/hooks/useFetch.js**
+
+```javascript
+import { useState, useEffect } from "react";
+
+export function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("データの取得に失敗しました");
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [url]);
+
+  return { data, loading, error };
+}
+```
+
+**使い方**
+
+```jsx
+import { useFetch } from "./hooks/useFetch";
+
+function PokemonCard({ id }) {
+  const { data, loading, error } = useFetch(
+    `https://pokeapi.co/api/v2/pokemon/${id}`
+  );
+
+  if (loading) return <p>読み込み中...</p>;
+  if (error) return <p>エラー: {error}</p>;
+
+  return (
+    <div>
+      <h2>{data.name}</h2>
+      <img src={data.sprites.front_default} alt={data.name} />
+    </div>
+  );
+}
+```
+
+## 例 3: useLocalStorage
+
+localStorage と同期する State を作るカスタムフックです。
+
+**src/hooks/useLocalStorage.js**
+
+```javascript
+import { useState, useEffect } from "react";
+
+export function useLocalStorage(key, initialValue) {
+  const [value, setValue] = useState(() => {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : initialValue;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
+}
+```
+
+**使い方**
+
+```jsx
+import { useLocalStorage } from "./hooks/useLocalStorage";
+
+function App() {
+  const [name, setName] = useLocalStorage("userName", "");
+
+  return (
+    <input
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+      placeholder="名前を入力"
+    />
+  );
+}
+```
+
+ページをリロードしても入力値が残ります！
+
+## カスタムフックの利点
+
+1. **再利用性**：同じロジックを複数のコンポーネントで使える
+2. **可読性**：コンポーネントがシンプルになる
+3. **テスト容易性**：ロジックだけを独立してテストできる
+
+## まとめ
+
+- **カスタムフック**はロジックを再利用可能にする
+- **`use`** で始める命名規則
+- useState, useEffect を組み合わせて作る
+- 複数のコンポーネントで**同じロジック**を使いたいときに便利
+
+---
+
+## 🔗 次のステップ
+
+カスタムフックがわかったら、[Context API 入門](./03-18_ContextAPI入門.md)（任意）か、[まとめと次のステップ](./03-20_まとめと次のステップ.md) に進みましょう！

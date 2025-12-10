@@ -1,0 +1,291 @@
+# FizzBuzz を作ろう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - 変数、if 文、for 文の実践
+> - FizzBuzz のロジック
+> - Console と HTML への出力
+
+## FizzBuzz とは？
+
+**FizzBuzz** は、プログラミングの基礎を確認するための定番問題です。
+
+ルール：
+
+1. 1 から 100 までの数字を順番に表示
+2. 3 の倍数なら「Fizz」
+3. 5 の倍数なら「Buzz」
+4. 3 と 5 の両方の倍数なら「FizzBuzz」
+5. それ以外は数字をそのまま表示
+
+## 完成イメージ
+
+```
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+...
+```
+
+## Step 1: for 文で 1〜100 を表示
+
+まずは Console で試してみましょう。
+
+```javascript
+for (let i = 1; i <= 100; i++) {
+  console.log(i);
+}
+```
+
+### for 文の構造
+
+```javascript
+for (初期化; 条件; 更新) {
+  繰り返す処理;
+}
+```
+
+- `let i = 1` : カウンタ変数 i を 1 で初期化
+- `i <= 100` : i が 100 以下の間、繰り返す
+- `i++` : 毎回 i を 1 増やす
+
+## Step 2: 3 の倍数で「Fizz」
+
+```javascript
+for (let i = 1; i <= 100; i++) {
+  if (i % 3 === 0) {
+    console.log("Fizz");
+  } else {
+    console.log(i);
+  }
+}
+```
+
+### 剰余演算子（%）
+
+`i % 3` は「i を 3 で割った余り」を返します。
+
+- 3 % 3 = 0（3 の倍数）
+- 6 % 3 = 0（3 の倍数）
+- 7 % 3 = 1（3 の倍数ではない）
+
+## Step 3: 5 の倍数で「Buzz」を追加
+
+```javascript
+for (let i = 1; i <= 100; i++) {
+  if (i % 3 === 0) {
+    console.log("Fizz");
+  } else if (i % 5 === 0) {
+    console.log("Buzz");
+  } else {
+    console.log(i);
+  }
+}
+```
+
+## Step 4: 15 の倍数で「FizzBuzz」
+
+ここがポイント！**15 の倍数の判定を最初に**書く必要があります。
+
+```javascript
+for (let i = 1; i <= 100; i++) {
+  if (i % 15 === 0) {
+    console.log("FizzBuzz");
+  } else if (i % 3 === 0) {
+    console.log("Fizz");
+  } else if (i % 5 === 0) {
+    console.log("Buzz");
+  } else {
+    console.log(i);
+  }
+}
+```
+
+### なぜ 15 を最初に？
+
+if 文は**上から順番に**評価されます。
+
+15 は 3 の倍数でもあるので、3 の判定を先にすると「Fizz」になってしまいます。
+
+```javascript
+// ❌ 間違い（15 は Fizz になる）
+if (i % 3 === 0) { ... }
+else if (i % 15 === 0) { ... }  // ← 到達しない
+
+// ⭕ 正しい（15 は FizzBuzz になる）
+if (i % 15 === 0) { ... }
+else if (i % 3 === 0) { ... }
+```
+
+## 別解：論理演算子を使う
+
+15 の代わりに `&&` を使う方法もあります。
+
+```javascript
+for (let i = 1; i <= 100; i++) {
+  if (i % 3 === 0 && i % 5 === 0) {
+    console.log("FizzBuzz");
+  } else if (i % 3 === 0) {
+    console.log("Fizz");
+  } else if (i % 5 === 0) {
+    console.log("Buzz");
+  } else {
+    console.log(i);
+  }
+}
+```
+
+## 関数化する
+
+再利用しやすいように関数にまとめましょう。
+
+```javascript
+const fizzBuzz = (n) => {
+  for (let i = 1; i <= n; i++) {
+    if (i % 15 === 0) {
+      console.log("FizzBuzz");
+    } else if (i % 3 === 0) {
+      console.log("Fizz");
+    } else if (i % 5 === 0) {
+      console.log("Buzz");
+    } else {
+      console.log(i);
+    }
+  }
+};
+
+fizzBuzz(100);
+```
+
+## 応用：HTML に表示する
+
+Console だけでなく、HTML ページに結果を表示してみましょう。
+
+### HTML ファイル
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FizzBuzz</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .fizz {
+        color: green;
+      }
+      .buzz {
+        color: blue;
+      }
+      .fizzbuzz {
+        color: red;
+        font-weight: bold;
+      }
+      #result {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 8px;
+        max-width: 600px;
+      }
+      #result span {
+        padding: 8px;
+        text-align: center;
+        background: #f0f0f0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>FizzBuzz</h1>
+    <div id="result"></div>
+
+    <script>
+      const result = document.getElementById("result");
+
+      for (let i = 1; i <= 100; i++) {
+        const span = document.createElement("span");
+
+        if (i % 15 === 0) {
+          span.textContent = "FizzBuzz";
+          span.className = "fizzbuzz";
+        } else if (i % 3 === 0) {
+          span.textContent = "Fizz";
+          span.className = "fizz";
+        } else if (i % 5 === 0) {
+          span.textContent = "Buzz";
+          span.className = "buzz";
+        } else {
+          span.textContent = i;
+        }
+
+        result.appendChild(span);
+      }
+    </script>
+  </body>
+</html>
+```
+
+<!--
+📸 画像メモ: HTML版FizzBuzzの完成画面
+- グリッド状に数字が並んでいる
+- Fizz は緑、Buzz は青、FizzBuzz は赤
+-->
+
+## 発展課題
+
+以下の課題に挑戦してみましょう：
+
+1. **範囲を変更**：1〜50、1〜200 など
+2. **数字を変更**：3 と 5 ではなく、2 と 7 など
+3. **カウントを追加**：Fizz, Buzz, FizzBuzz の数をカウント
+4. **配列で返す**：console.log ではなく配列を返す関数を作る
+
+```javascript
+// 配列で返すバージョン
+const fizzBuzzArray = (n) => {
+  const result = [];
+  for (let i = 1; i <= n; i++) {
+    if (i % 15 === 0) {
+      result.push("FizzBuzz");
+    } else if (i % 3 === 0) {
+      result.push("Fizz");
+    } else if (i % 5 === 0) {
+      result.push("Buzz");
+    } else {
+      result.push(i);
+    }
+  }
+  return result;
+};
+
+console.log(fizzBuzzArray(20));
+```
+
+## まとめ
+
+- **for 文**で繰り返し処理
+- **剰余演算子（%）**で倍数を判定
+- **if...else if...else** で条件分岐
+- **条件の順番**が重要（15 を最初に！）
+- 関数化して再利用可能に
+
+---
+
+## 🔗 次のステップ
+
+FizzBuzz ができたら、[クイズアプリを作ろう](./02-12_クイズアプリを作ろう.md) に進みましょう！

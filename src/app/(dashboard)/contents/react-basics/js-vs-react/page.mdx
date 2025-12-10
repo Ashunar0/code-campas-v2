@@ -1,0 +1,213 @@
+# JS と React の違いを理解しよう
+
+> 📌 **この記事で学ぶこと**
+>
+> - JavaScript 版と React 版の比較
+> - DOM 操作 vs 宣言的 UI
+> - なぜ React を使うのか
+
+## なぜこの章が重要か
+
+JavaScript 章で作ったアプリ（クイズ、メモなど）を React で作り直すことで、**React の利点**を実感できます。
+
+## カウンターアプリでの比較
+
+### JavaScript 版
+
+```html
+<!-- HTML -->
+<div id="counter">
+  <p id="count">0</p>
+  <button id="increment">+1</button>
+  <button id="decrement">-1</button>
+</div>
+```
+
+```javascript
+// JavaScript
+let count = 0;
+const countEl = document.getElementById("count");
+const incrementBtn = document.getElementById("increment");
+const decrementBtn = document.getElementById("decrement");
+
+incrementBtn.addEventListener("click", () => {
+  count++;
+  countEl.textContent = count;
+});
+
+decrementBtn.addEventListener("click", () => {
+  count--;
+  countEl.textContent = count;
+});
+```
+
+### React 版
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>{count}</p>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <button onClick={() => setCount(count - 1)}>-1</button>
+    </div>
+  );
+}
+```
+
+### 比較
+
+| 観点       | JavaScript | React  |
+| ---------- | ---------- | ------ |
+| コード量   | 多い       | 少ない |
+| DOM 操作   | 手動       | 自動   |
+| 状態と表示 | バラバラ   | 一体化 |
+
+## DOM 操作の違い
+
+### JavaScript：命令的
+
+「どうやって」表示を変えるかを記述：
+
+```javascript
+// 1. 要素を取得
+const element = document.getElementById("message");
+// 2. 中身を変更
+element.textContent = "新しいメッセージ";
+// 3. スタイルを変更
+element.style.color = "red";
+```
+
+### React：宣言的
+
+「何を」表示するかを記述：
+
+```jsx
+<p style={{ color: isError ? "red" : "black" }}>{message}</p>
+```
+
+State を変えるだけで、表示は**自動で更新**されます。
+
+## Todo アプリでの比較
+
+### JavaScript 版（抜粋）
+
+```javascript
+const addTodo = (text) => {
+  // 1. データを更新
+  todos.push({ id: nextId++, text });
+
+  // 2. HTML を生成
+  const li = document.createElement("li");
+  li.textContent = text;
+
+  // 3. 削除ボタンを追加
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "削除";
+  deleteBtn.addEventListener("click", () => {
+    todos = todos.filter((t) => t.id !== todo.id);
+    li.remove();
+  });
+  li.appendChild(deleteBtn);
+
+  // 4. DOM に追加
+  todoList.appendChild(li);
+};
+```
+
+### React 版
+
+```jsx
+const addTodo = (text) => {
+  setTodos([...todos, { id: nextId++, text }]);
+};
+
+// JSX
+{
+  todos.map((todo) => (
+    <li key={todo.id}>
+      {todo.text}
+      <button onClick={() => deleteTodo(todo.id)}>削除</button>
+    </li>
+  ));
+}
+```
+
+### 違い
+
+- **JavaScript**：データと DOM を**別々に管理**
+- **React**：データを変えれば DOM は**自動更新**
+
+## React の利点
+
+### 1. コードが読みやすい
+
+```jsx
+// 表示したい内容がそのまま書いてある
+<div>
+  <h1>{title}</h1>
+  <p>{description}</p>
+  {isLoggedIn && <button>ログアウト</button>}
+</div>
+```
+
+### 2. バグが少ない
+
+- DOM の状態とデータの状態が**常に一致**
+- 手動で DOM を更新する必要がないのでミスが減る
+
+### 3. 再利用しやすい
+
+```jsx
+// 同じコンポーネントを何度でも使える
+<Button>送信</Button>
+<Button>キャンセル</Button>
+<Button>削除</Button>
+```
+
+### 4. 状態管理が楽
+
+```jsx
+// State を変えるだけ
+setTodos([...todos, newTodo]);
+// 画面は自動で更新される
+```
+
+## 比較表
+
+| 観点           | JavaScript      | React    |
+| -------------- | --------------- | -------- |
+| UI の記述      | 命令的          | 宣言的   |
+| DOM 操作       | 手動            | 自動     |
+| 状態管理       | 変数 + DOM 更新 | useState |
+| コードの見通し | 複雑になりがち  | シンプル |
+| 再利用性       | 低い            | 高い     |
+| 学習コスト     | 低い            | 高め     |
+
+## React を学ぶ価値
+
+最初は React の方が難しく感じるかもしれません。
+しかし、アプリが大きくなるほど React の恩恵を受けられます。
+
+- 大規模なアプリでもコードが整理しやすい
+- チーム開発がしやすい
+- 多くの企業で採用されている
+
+## まとめ
+
+- **JavaScript**：DOM を**手動**で操作（命令的）
+- **React**：State を変えれば DOM は**自動更新**（宣言的）
+- React は「何を表示するか」を書くだけ
+- アプリが大きくなるほど React の利点が活きる
+
+次のハンズオンで、実際に React アプリを作って体験しましょう！
+
+---
+
+## 🔗 次のステップ
+
+違いがわかったら、[カウンターアプリを作ろう](./03-14_カウンターアプリを作ろう.md) に進みましょう！

@@ -1,0 +1,182 @@
+# SWR + Firestore【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - SWR とは
+> - Firestore と SWR の組み合わせ
+> - キャッシュとリアルタイム更新
+
+> 💡 この記事は**任意**です。パフォーマンス向上のための発展的な内容です。
+
+## SWR とは？
+
+**SWR**（Stale-While-Revalidate）は、Vercel が開発したデータフェッチライブラリです。
+
+> 💡 **SWR の名前の由来**
+>
+> **Stale-While-Revalidate**（古いデータを表示しながら再検証）という HTTP キャッシュ戦略に由来します。
+> まずキャッシュからデータを表示し、裏側で最新データを取得して更新します。
+
+特徴：
+
+- 自動キャッシュ
+- 自動再検証
+- フォーカス時の再取得
+- エラーリトライ
+
+## インストール
+
+```bash
+npm install swr
+```
+
+## 基本的な使い方
+
+```jsx
+import useSWR from "swr";
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
+function Profile() {
+  const { data, error, isLoading } = useSWR("/api/user", fetcher);
+
+  if (isLoading) return <p>読み込み中...</p>;
+  if (error) return <p>エラー</p>;
+
+  return <p>こんにちは、{data.name}さん</p>;
+}
+```
+
+## Firestore との組み合わせ
+
+```jsx
+import useSWR from "swr";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "./lib/firebase";
+import { useAuth } from "./contexts/AuthContext";
+
+// Firestore 用 fetcher
+const fetchTodos = async (userId) => {
+  const q = query(collection(db, "todos"), where("userId", "==", userId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+function useTodos() {
+  const { currentUser } = useAuth();
+
+  const { data, error, isLoading, mutate } = useSWR(
+    currentUser ? ["todos", currentUser.uid] : null,
+    () => fetchTodos(currentUser.uid)
+  );
+
+  return {
+    todos: data || [],
+    isLoading,
+    error,
+    mutate, // 手動で再取得
+  };
+}
+```
+
+## 楽観的 UI 更新
+
+```jsx
+const addTodo = async (text) => {
+  const newTodo = {
+    id: crypto.randomUUID(),
+    text,
+    done: false,
+    userId: currentUser.uid,
+  };
+
+  // 1. 楽観的に更新
+  mutate([...todos, newTodo], false);
+
+  try {
+    // 2. Firestore に追加
+    await addDoc(collection(db, "todos"), {
+      text,
+      done: false,
+      userId: currentUser.uid,
+      createdAt: serverTimestamp(),
+    });
+
+    // 3. 再取得（サーバーのデータで更新）
+    mutate();
+  } catch (error) {
+    // 4. 失敗したら元に戻す
+    mutate();
+  }
+};
+```
+
+## SWR vs onSnapshot
+
+|              | SWR        | onSnapshot |
+| ------------ | ---------- | ---------- |
+| リアルタイム | 手動再取得 | 自動       |
+| キャッシュ   | ⭕         | △          |
+| オフライン   | △          | ⭕         |
+| コスト       | 低い       | やや高い   |
+
+- **リアルタイム性重視** → onSnapshot
+- **パフォーマンス・キャッシュ重視** → SWR
+
+## 組み合わせパターン
+
+SWR + onSnapshot を組み合わせることも可能：
+
+```jsx
+import useSWRSubscription from "swr/subscription";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+
+function useTodosRealtime() {
+  const { currentUser } = useAuth();
+
+  const { data, error } = useSWRSubscription(
+    currentUser ? ["todos", currentUser.uid] : null,
+    (key, { next }) => {
+      const q = query(
+        collection(db, "todos"),
+        where("userId", "==", currentUser.uid)
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const todos = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        next(null, todos);
+      });
+
+      return unsubscribe;
+    }
+  );
+
+  return { todos: data || [], error };
+}
+```
+
+## まとめ
+
+- **SWR** でデータフェッチを効率化
+- **キャッシュ**と**自動再検証**
+- **楽観的更新**で UX 向上
+- リアルタイム性が必要なら onSnapshot と組み合わせ
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `npm install swr` で SWR をインストール
+> 2. Firestore のデータを SWR 経由で取得してみましょう
+> 3. `mutate()` を使った即座更新を試してみましょう
+>
+> **比較**: `onSnapshot` と SWR 、それぞれの UX の違いを感じてみてください
+
+---
+
+## 🔗 次のステップ
+
+SWR がわかったら、[Todo アプリに Firebase を統合しよう](./05-22_TodoアプリにFirebaseを統合.md) に進みましょう！

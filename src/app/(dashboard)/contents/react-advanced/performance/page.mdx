@@ -1,0 +1,253 @@
+# パフォーマンス最適化入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - React.memo
+> - useMemo
+> - useCallback
+> - 最適化のタイミング
+
+> 💡 この記事は**任意**です。アプリが遅くなるまでは気にしなくて OK です。
+
+## 最適化の前に
+
+> "Premature optimization is the root of all evil"
+> （早すぎる最適化は諸悪の根源）
+
+まずは**動くものを作る**ことが大事です。
+遅いと感じたら、そのときに最適化を検討しましょう。
+
+## 再レンダリングの基本
+
+React は以下のときに再レンダリングします：
+
+1. **State が変わった**とき
+2. **Props が変わった**とき
+3. **親が再レンダリング**したとき
+
+> 💡 **再レンダリング = 悪いこと？**
+> いいえ！React は再レンダリングが素早いので、普通は気にしなくて OK。
+> **実際に遅いと感じたとき**にだけ最適化を検討しましょう。
+
+## React.memo
+
+コンポーネントの**不要な再レンダリングを防ぐ**。
+
+### 問題
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <Child name="田中" /> {/* count が変わっても再レンダリングされる */}
+    </div>
+  );
+}
+
+function Child({ name }) {
+  console.log("Child レンダリング");
+  return <p>{name}</p>;
+}
+```
+
+### 解決
+
+```jsx
+const Child = React.memo(function Child({ name }) {
+  console.log("Child レンダリング");
+  return <p>{name}</p>;
+});
+```
+
+`React.memo` でラップすると、**Props が変わらない限り再レンダリングされません**。
+
+## useMemo
+
+**計算結果をメモ化**する。
+
+### 問題
+
+```jsx
+function App({ items }) {
+  // 毎回計算される
+  const expensiveResult = items.reduce((sum, item) => sum + item.price, 0);
+
+  return <p>合計: {expensiveResult}</p>;
+}
+```
+
+### 解決
+
+```jsx
+function App({ items }) {
+  // items が変わったときだけ計算
+  const expensiveResult = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.price, 0);
+  }, [items]);
+
+  return <p>合計: {expensiveResult}</p>;
+}
+```
+
+## useCallback
+
+**関数をメモ化**する。
+
+### 問題
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+
+  // 毎回新しい関数が作られる
+  const handleClick = () => {
+    console.log("クリック");
+  };
+
+  return <Child onClick={handleClick} />;
+  {
+    /* 毎回再レンダリング */
+  }
+}
+```
+
+### 解決
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+
+  // 関数をメモ化
+  const handleClick = useCallback(() => {
+    console.log("クリック");
+  }, []);
+
+  return <Child onClick={handleClick} />;
+}
+
+const Child = React.memo(function Child({ onClick }) {
+  return <button onClick={onClick}>クリック</button>;
+});
+```
+
+## いつ使うか
+
+### useMemo
+
+- **重い計算**がある
+- 大きな配列の filter/map/reduce
+
+### useCallback
+
+- **React.memo と組み合わせ**て子コンポーネントの再レンダリングを防ぐ
+- **useEffect の依存配列**に関数を渡すとき
+
+### React.memo
+
+- Props が**頻繁に変わらない**コンポーネント
+- **レンダリングコストが高い**コンポーネント
+
+## 使いすぎ注意
+
+```jsx
+// ❌ 過度な最適化（意味がないケース）
+const value = useMemo(() => 1 + 1, []);
+
+// ⭕ 本当に必要なときだけ
+const filteredItems = useMemo(() => {
+  return items.filter((item) => item.price > 1000);
+}, [items]);
+```
+
+## 開発者ツールでの計測
+
+1. Chrome DevTools → Profiler タブ
+2. Record ボタンで記録開始
+3. 操作を行う
+4. 記録停止して結果を確認
+
+レンダリングに時間がかかっているコンポーネントを特定できます。
+
+<!--
+📸 画像メモ: React DevTools Profiler の使い方
+- Chrome DevTools で Profiler タブを選択
+- Record ボタンの位置
+- フレームグラフの見方（長いバー = 時間がかかっている）
+-->
+
+## まとめ
+
+| フック      | 用途                   |
+| ----------- | ---------------------- |
+| React.memo  | コンポーネントのメモ化 |
+| useMemo     | 計算結果のメモ化       |
+| useCallback | 関数のメモ化           |
+
+- **まずは動くものを作る**
+- **遅くなってから**最適化を検討
+- **計測してから**対策する
+
+## 練習問題
+
+以下のコードに `React.memo` と `useCallback` を適用して、不要な再レンダリングを防いでみましょう：
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState("");
+
+  const handleClick = () => console.log("クリック");
+
+  return (
+    <div>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button onClick={() => setCount(count + 1)}>+1: {count}</button>
+      <Child onClick={handleClick} />
+    </div>
+  );
+}
+
+function Child({ onClick }) {
+  console.log("Child レンダリング");
+  return <button onClick={onClick}>子ボタン</button>;
+}
+```
+
+### 回答例
+
+```jsx
+import { useState, useCallback, memo } from "react";
+
+function Parent() {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState("");
+
+  const handleClick = useCallback(() => {
+    console.log("クリック");
+  }, []);
+
+  return (
+    <div>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button onClick={() => setCount(count + 1)}>+1: {count}</button>
+      <Child onClick={handleClick} />
+    </div>
+  );
+}
+
+const Child = memo(function Child({ onClick }) {
+  console.log("Child レンダリング");
+  return <button onClick={onClick}>子ボタン</button>;
+});
+```
+
+> 💡 `Parent` の State が変わっても `Child` は再レンダリングされなくなります。
+
+---
+
+## 🔗 次のステップ
+
+パフォーマンスがわかったら、[エラーハンドリングとローディング状態](./04-13_エラーハンドリングとローディング.md) に進みましょう！

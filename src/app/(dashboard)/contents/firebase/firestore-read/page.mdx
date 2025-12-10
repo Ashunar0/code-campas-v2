@@ -1,0 +1,182 @@
+# Firestore でデータを取得する（Read）
+
+> 📌 **この記事で学ぶこと**
+>
+> - 全ドキュメントの取得
+> - 特定ドキュメントの取得
+> - リアルタイムリスナー
+
+## 全ドキュメントを取得
+
+**getDocs** で コレクション内の全ドキュメントを取得します。
+
+```javascript
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+const fetchTodos = async () => {
+  const querySnapshot = await getDocs(collection(db, "todos"));
+  const todos = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+  return todos;
+};
+```
+
+### ポイント
+
+- `collection(db, "todos")` でコレクションを参照
+- `querySnapshot.docs` でドキュメントの配列を取得
+- `doc.id` でドキュメント ID、`doc.data()` でデータを取得
+
+> 💡 **querySnapshot とは？**
+>
+> クエリの結果を包んだオブジェクトです。`docs` プロパティにドキュメントの配列が入っています。
+> 各ドキュメントは `doc.id`（ID）と `doc.data()`（データ）でアクセスします。
+
+## React での実装
+
+```jsx
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "todos"));
+        const todosData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTodos(todosData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodos();
+  }, []);
+
+  if (loading) return <p>読み込み中...</p>;
+  if (error) return <p>エラー: {error}</p>;
+
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>{todo.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## 特定のドキュメントを取得
+
+**getDoc** で 特定のドキュメントを取得します。
+
+```javascript
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+const fetchTodo = async (id) => {
+  const docRef = doc(db, "todos", id);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() };
+  } else {
+    throw new Error("ドキュメントが存在しません");
+  }
+};
+```
+
+## リアルタイムリスナー
+
+**onSnapshot** を使うと、データが更新されたときに自動で再取得されます。
+
+```jsx
+import { useState, useEffect } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    // リアルタイムリスナーを設定
+    const unsubscribe = onSnapshot(collection(db, "todos"), (snapshot) => {
+      const todosData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTodos(todosData);
+    });
+
+    // クリーンアップ：リスナーを解除
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>{todo.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### なぜリアルタイムリスナーが必要？
+
+例えば、複数人で同じ Todo リストを共有している場合、他の人が Todo を追加すると自分の画面にも即座に反映されます。ページをリロードする必要がありません。
+
+### リアルタイムリスナーのメリット
+
+- 他のユーザーが更新したデータも即座に反映
+- 手動で再取得する必要がない
+
+### 注意点
+
+- クリーンアップで**必ず unsubscribe** する
+- リスナーが多いとコストがかかる
+
+## getDocs vs onSnapshot
+
+|                  | getDocs      | onSnapshot   |
+| ---------------- | ------------ | ------------ |
+| 取得タイミング   | 1 回だけ     | 継続的に監視 |
+| リアルタイム更新 | ❌           | ⭕           |
+| コスト           | 低い         | やや高い     |
+| 用途             | 静的なデータ | 動的なデータ |
+
+## まとめ
+
+- **getDocs**：コレクション内の全ドキュメントを 1 回取得
+- **getDoc**：特定のドキュメントを 1 回取得
+- **onSnapshot**：リアルタイムで変更を監視
+- React では useEffect 内で取得
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `getDocs` を使って Firebase Console で追加した `todos` データを取得してみましょう
+> 2. `onSnapshot` に変更して、Console でデータを変更するとリアルタイムで更新されることを確認
+> 3. コンソールに取得したデータを表示してみましょう
+>
+> **ヒント**: `console.log(todos)` でデータの中身を確認できます
+
+---
+
+## 🔗 次のステップ
+
+データ取得ができたら、[Firestore でデータを追加する（Create）](./05-05_Firestoreでデータを追加する.md) に進みましょう！

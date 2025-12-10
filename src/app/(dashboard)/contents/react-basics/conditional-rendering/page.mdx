@@ -1,0 +1,242 @@
+# 条件分岐での描画
+
+> 📌 **この記事で学ぶこと**
+>
+> - if 文での条件分岐
+> - 三項演算子での条件分岐
+> - && での条件分岐
+> - 早期リターン
+
+## 条件によって表示を切り替える
+
+React では、条件によって表示する内容を切り替えることがよくあります。
+
+- ログイン状態で表示を変える
+- データ取得中にローディングを表示
+- エラーがあればエラーメッセージを表示
+
+## 三項演算子
+
+最もよく使う方法です。
+
+```jsx
+const isLoggedIn = true;
+
+return (
+  <div>{isLoggedIn ? <p>ようこそ！</p> : <p>ログインしてください</p>}</div>
+);
+```
+
+### 構文
+
+```jsx
+{
+  条件 ? 真の場合 : 偽の場合;
+}
+```
+
+### 実践例
+
+```jsx
+function UserStatus({ isOnline }) {
+  return (
+    <span className={isOnline ? "online" : "offline"}>
+      {isOnline ? "オンライン" : "オフライン"}
+    </span>
+  );
+}
+```
+
+## && 演算子
+
+条件が true のときだけ表示したい場合に使います。
+
+```jsx
+const showMessage = true;
+
+return (
+  <div>
+    <h1>タイトル</h1>
+    {showMessage && <p>メッセージを表示</p>}
+  </div>
+);
+```
+
+### 構文
+
+```jsx
+{
+  条件 && 真の場合に表示する要素;
+}
+```
+
+### 実践例
+
+```jsx
+function TodoList({ todos }) {
+  return (
+    <div>
+      <h2>Todo リスト</h2>
+      {todos.length === 0 && <p>Todoがありません</p>}
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>{todo.text}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### 注意：0 を返すことがある
+
+```jsx
+// ⚠️ count が 0 のとき、0 が表示される
+{
+  count && <p>カウント: {count}</p>;
+}
+
+// ⭕ boolean に変換する
+{
+  count > 0 && <p>カウント: {count}</p>;
+}
+```
+
+## if 文（return 前）
+
+複雑な条件分岐は、return の前で if 文を使います。
+
+```jsx
+function Dashboard({ user, isLoading, error }) {
+  if (isLoading) {
+    return <p>読み込み中...</p>;
+  }
+
+  if (error) {
+    return <p>エラー: {error}</p>;
+  }
+
+  if (!user) {
+    return <p>ユーザーが見つかりません</p>;
+  }
+
+  return (
+    <div>
+      <h1>こんにちは、{user.name}さん！</h1>
+      <p>メール: {user.email}</p>
+    </div>
+  );
+}
+```
+
+## 早期リターン
+
+条件を満たさない場合に早めに return することで、コードがすっきりします。
+
+```jsx
+// ❌ ネストが深くなる
+function Profile({ user }) {
+  if (user) {
+    return <div>{user.name && <h1>{user.name}</h1>}</div>;
+  } else {
+    return <p>ログインしてください</p>;
+  }
+}
+
+// ⭕ 早期リターンでシンプルに
+function Profile({ user }) {
+  if (!user) {
+    return <p>ログインしてください</p>;
+  }
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+    </div>
+  );
+}
+```
+
+## 実践例：ログイン状態
+
+```jsx
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setUser({ name: "田中太郎" });
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+  };
+
+  return (
+    <div>
+      {isLoggedIn ? (
+        <div>
+          <p>ようこそ、{user.name}さん！</p>
+          <button onClick={handleLogout}>ログアウト</button>
+        </div>
+      ) : (
+        <div>
+          <p>ログインしてください</p>
+          <button onClick={handleLogin}>ログイン</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 実践例：ローディング
+
+```jsx
+function DataDisplay() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // useEffect でデータ取得（後で学びます）
+
+  if (loading) {
+    return <p>読み込み中...</p>;
+  }
+
+  if (error) {
+    return <p>エラー: {error}</p>;
+  }
+
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <p>{data.content}</p>
+    </div>
+  );
+}
+```
+
+## 使い分けまとめ
+
+| パターン          | 使いどころ                 |
+| ----------------- | -------------------------- |
+| 三項演算子        | 2 つの表示を切り替え       |
+| &&                | 条件が true のときだけ表示 |
+| if + 早期リターン | 複雑な条件分岐             |
+
+## まとめ
+
+- **三項演算子**：2 つの表示を切り替える
+- **&&**：条件が true のときだけ表示
+- **if 文**：return 前で複雑な条件を処理
+- **早期リターン**でコードをシンプルに
+- ローディング・エラー・データなしなど、様々な状態を考慮する
+
+---
+
+## 🔗 次のステップ
+
+条件分岐がわかったら、[フォームの基礎](./03-09_フォームの基礎.md) に進みましょう！

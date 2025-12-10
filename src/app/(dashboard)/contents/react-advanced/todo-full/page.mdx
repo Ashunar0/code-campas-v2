@@ -1,0 +1,419 @@
+# タスク管理アプリ（本格版）を作ろう【ハンズオン 1】
+
+> 📌 **この記事で学ぶこと**
+>
+> - CRUD の完全実装
+> - 検索・フィルター機能
+> - localStorage での永続化
+> - Tailwind CSS でスタイリング
+
+> 🎓 **React 基礎章の簡易版からのステップアップ**
+
+## 完成イメージ
+
+<!--
+📸 画像メモ: タスク管理アプリ（本格版）の完成画面
+-->
+
+### 簡易版との比較
+
+| 機能           | 簡易版 | 本格版 |
+| -------------- | ------ | ------ |
+| 追加           | ⭕     | ⭕     |
+| 削除           | ⭕     | ⭕     |
+| 完了切り替え   | ⭕     | ⭕     |
+| **編集**       | ❌     | ⭕     |
+| **検索**       | ❌     | ⭕     |
+| **フィルター** | ❌     | ⭕     |
+| **永続化**     | ❌     | ⭕     |
+
+## Step 1: プロジェクトの準備
+
+```bash
+cd ~/Desktop/webex
+npm create vite@latest todo-app-advanced -- --template react
+cd todo-app-advanced
+npm install
+```
+
+### Tailwind CSS を追加
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+**tailwind.config.js**
+
+```javascript
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};
+```
+
+**src/index.css**
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## Step 2: カスタムフックを作成
+
+> 💡 **なぜ最初にカスタムフック？**
+> CRUD ロジックを先に作っておくと、UI を作るときは「表示だけ」に集中できます。
+
+**src/hooks/useTodos.js**
+
+```jsx
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "todos";
+
+export function useTodos() {
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // localStorage に保存
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  }, [todos]);
+
+  const addTodo = (text) => {
+    setTodos([
+      ...todos,
+      { id: crypto.randomUUID(), text, done: false, createdAt: Date.now() },
+    ]);
+  };
+
+  const updateTodo = (id, updates) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  return { todos, addTodo, updateTodo, deleteTodo, toggleTodo };
+}
+```
+
+## Step 3: コンポーネントを作成
+
+**src/components/TodoForm.jsx**
+
+```jsx
+import { useState } from "react";
+
+export default function TodoForm({ onAdd }) {
+  const [text, setText] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="新しいタスクを入力..."
+        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+      >
+        追加
+      </button>
+    </form>
+  );
+}
+```
+
+**src/components/TodoFilter.jsx**
+
+```jsx
+export default function TodoFilter({
+  filter,
+  onFilterChange,
+  searchTerm,
+  onSearchChange,
+}) {
+  const filters = [
+    { value: "all", label: "すべて" },
+    { value: "active", label: "未完了" },
+    { value: "completed", label: "完了" },
+  ];
+
+  return (
+    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="検索..."
+        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <div className="flex gap-2">
+        {filters.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => onFilterChange(f.value)}
+            className={`px-4 py-2 rounded-lg transition ${
+              filter === f.value
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+**src/components/TodoItem.jsx**
+
+```jsx
+import { useState } from "react";
+
+export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+
+  const handleSave = () => {
+    if (!editText.trim()) return;
+    onUpdate(todo.id, { text: editText });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditText(todo.text);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <li className="flex gap-2 p-4 bg-white rounded-lg shadow">
+        <input
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          className="flex-1 px-2 py-1 border rounded"
+          autoFocus
+        />
+        <button
+          onClick={handleSave}
+          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          保存
+        </button>
+        <button
+          onClick={handleCancel}
+          className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
+        >
+          キャンセル
+        </button>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-3 p-4 bg-white rounded-lg shadow">
+      <input
+        type="checkbox"
+        checked={todo.done}
+        onChange={() => onToggle(todo.id)}
+        className="w-5 h-5"
+      />
+      <span
+        className={`flex-1 ${todo.done ? "line-through text-gray-400" : ""}`}
+      >
+        {todo.text}
+      </span>
+      <button
+        onClick={() => setIsEditing(true)}
+        className="px-3 py-1 text-blue-500 hover:bg-blue-50 rounded"
+      >
+        編集
+      </button>
+      <button
+        onClick={() => {
+          if (confirm("削除しますか？")) onDelete(todo.id);
+        }}
+        className="px-3 py-1 text-red-500 hover:bg-red-50 rounded"
+      >
+        削除
+      </button>
+    </li>
+  );
+}
+```
+
+**src/components/TodoList.jsx**
+
+```jsx
+import TodoItem from "./TodoItem";
+
+export default function TodoList({ todos, onToggle, onUpdate, onDelete }) {
+  if (todos.length === 0) {
+    return <p className="text-center text-gray-500 py-8">タスクがありません</p>;
+  }
+
+  return (
+    <ul className="space-y-3">
+      {todos.map((todo) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
+        />
+      ))}
+    </ul>
+  );
+}
+```
+
+## Step 4: App.jsx を完成
+
+**src/App.jsx**
+
+```jsx
+import { useState, useMemo } from "react";
+import { useTodos } from "./hooks/useTodos";
+import TodoForm from "./components/TodoForm";
+import TodoFilter from "./components/TodoFilter";
+import TodoList from "./components/TodoList";
+
+function App() {
+  const { todos, addTodo, updateTodo, deleteTodo, toggleTodo } = useTodos();
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredTodos = useMemo(() => {
+    return todos
+      .filter((todo) => {
+        if (filter === "active") return !todo.done;
+        if (filter === "completed") return todo.done;
+        return true;
+      })
+      .filter((todo) =>
+        todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+  }, [todos, filter, searchTerm]);
+
+  const stats = useMemo(
+    () => ({
+      total: todos.length,
+      active: todos.filter((t) => !t.done).length,
+      completed: todos.filter((t) => t.done).length,
+    }),
+    [todos]
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <h1 className="text-3xl font-bold text-center mb-8">📝 タスク管理</h1>
+
+        <TodoForm onAdd={addTodo} />
+
+        <TodoFilter
+          filter={filter}
+          onFilterChange={setFilter}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
+
+        <TodoList
+          todos={filteredTodos}
+          onToggle={toggleTodo}
+          onUpdate={updateTodo}
+          onDelete={deleteTodo}
+        />
+
+        <div className="mt-6 text-center text-gray-500">
+          合計: {stats.total} | 未完了: {stats.active} | 完了: {stats.completed}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## Step 5: 動作確認
+
+```bash
+npm run dev
+```
+
+## ポイント解説
+
+### localStorage での永続化
+
+```jsx
+// 初期値：localStorage から読み込み
+const [todos, setTodos] = useState(() => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
+});
+
+// todos が変わったら保存
+useEffect(() => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+}, [todos]);
+```
+
+> 💡 **useState の関数初期化** > `useState(関数)` の形式で渡すと、**初回レンダリング時のみ**実行されます。
+> localStorage の読み込みのような重い処理に適しています。
+
+### インライン編集
+
+State で「編集中かどうか」を管理し、UI を切り替えます。
+
+### 検索 + フィルターの組み合わせ
+
+```jsx
+const filteredTodos = todos.filter(/* フィルター */).filter(/* 検索 */);
+```
+
+## 発展課題
+
+1. **ドラッグ&ドロップ**で並べ替え
+2. **期限**を追加
+3. **カテゴリ**で分類
+4. **ダークモード**対応
+
+## まとめ
+
+- **CRUD** の完全実装（追加・読み取り・更新・削除）
+- **検索**と**フィルター**で絞り込み
+- **localStorage** でデータ永続化
+- **カスタムフック**でロジック分離
+- **Tailwind CSS** でスタイリング
+
+---
+
+## 🔗 次のステップ
+
+タスク管理アプリができたら、[ブックレビューアプリを作ろう](./04-15_ブックレビューアプリを作ろう.md)（ハンズオン 2）か、[まとめと次のステップ](./04-16_まとめと次のステップ.md) に進みましょう！

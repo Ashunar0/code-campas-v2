@@ -1,0 +1,278 @@
+# Grid でレイアウトを作る
+
+> 📌 **この記事で学ぶこと**
+>
+> - CSS Grid とは何か
+> - display: grid の使い方
+> - 行と列の定義
+> - Flexbox との使い分け
+
+## CSS Grid とは？
+
+**CSS Grid**（グリッド）は、**2 次元のレイアウト**を作るための CSS レイアウト手法です。
+
+Flexbox が「1 次元（横 or 縦）」の配置に強いのに対し、Grid は「2 次元（行 × 列）」の配置に強いです。
+
+<!--
+📸 画像メモ: Grid のイメージ
+- 格子状に並んだボックス
+- 「これが Grid！」
+-->
+
+## 基本的な使い方
+
+親要素に `display: grid` を指定し、行と列を定義します。
+
+```html
+<div class="container">
+  <div class="item">1</div>
+  <div class="item">2</div>
+  <div class="item">3</div>
+  <div class="item">4</div>
+  <div class="item">5</div>
+  <div class="item">6</div>
+</div>
+```
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 200px 200px 200px; /* 3列 */
+  grid-template-rows: 100px 100px; /* 2行 */
+  gap: 10px;
+}
+
+.item {
+  background-color: lightblue;
+  padding: 20px;
+  text-align: center;
+}
+```
+
+<!--
+📸 画像メモ: 3列×2行のグリッド
+- 6つのボックスが格子状に並んでいる
+-->
+
+## グリッドの定義
+
+### grid-template-columns（列の定義）
+
+列の幅を定義します。
+
+```css
+/* 固定幅 */
+grid-template-columns: 100px 200px 100px;
+
+/* パーセント */
+grid-template-columns: 25% 50% 25%;
+
+/* fr（fraction：分数単位） */
+grid-template-columns: 1fr 2fr 1fr; /* 1:2:1 の比率 */
+
+/* repeat 関数 */
+grid-template-columns: repeat(3, 1fr); /* 1fr を3回 = 3列 */
+grid-template-columns: repeat(4, 200px); /* 200px を4回 = 4列 */
+```
+
+> 💡 **fr** は「残りのスペースを分ける」単位。とても便利です！
+
+### grid-template-rows（行の定義）
+
+行の高さを定義します。使い方は columns と同じ。
+
+```css
+grid-template-rows: 100px 200px;
+grid-template-rows: repeat(3, 1fr);
+```
+
+### gap（グリッド間の隙間）
+
+グリッドアイテム間の隙間を指定します。
+
+```css
+gap: 20px; /* 行・列ともに 20px */
+gap: 10px 20px; /* 行 10px、列 20px */
+row-gap: 10px; /* 行だけ */
+column-gap: 20px; /* 列だけ */
+```
+
+## 便利な機能
+
+### auto-fill と auto-fit
+
+画面幅に応じて、自動で列数を調整できます。
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+```
+
+- **minmax(200px, 1fr)**：最小 200px、最大は均等分割
+- **auto-fill**：できるだけ多くの列を作る
+
+<!--
+📸 画像メモ: auto-fill の動作
+- 画面が広いとき: 4列
+- 画面が狭いとき: 2列
+-->
+
+### アイテムの配置
+
+特定のアイテムを複数セルにまたがって配置できます。
+
+```css
+.item1 {
+  grid-column: 1 / 3; /* 1列目から3列目の前まで（2列分） */
+  grid-row: 1 / 2; /* 1行目 */
+}
+
+/* 簡略表記 */
+.item1 {
+  grid-column: span 2; /* 2列分 */
+}
+```
+
+## 実践例
+
+### 1. 画像ギャラリー
+
+```html
+<div class="gallery">
+  <img src="photo1.jpg" alt="" />
+  <img src="photo2.jpg" alt="" />
+  <img src="photo3.jpg" alt="" />
+  <img src="photo4.jpg" alt="" />
+  <img src="photo5.jpg" alt="" />
+  <img src="photo6.jpg" alt="" />
+</div>
+```
+
+```css
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.gallery img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+```
+
+<!--
+📸 画像メモ: 画像ギャラリーの完成イメージ
+-->
+
+### 2. ページレイアウト
+
+```html
+<div class="page">
+  <header>Header</header>
+  <nav>Nav</nav>
+  <main>Main Content</main>
+  <aside>Sidebar</aside>
+  <footer>Footer</footer>
+</div>
+```
+
+```css
+.page {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  min-height: 100vh;
+}
+
+header {
+  grid-column: 1 / 3; /* 2列分 */
+}
+
+footer {
+  grid-column: 1 / 3; /* 2列分 */
+}
+```
+
+<!--
+📸 画像メモ: ページレイアウトの図解
+- Header（上部全体）
+- Nav（左）| Main（右大きい）
+- Sidebar などの配置
+- Footer（下部全体）
+-->
+
+### 3. カードグリッド
+
+```css
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+```
+
+## Flexbox と Grid の使い分け
+
+| 場面                    | おすすめ |
+| ----------------------- | -------- |
+| ナビゲーションバー      | Flexbox  |
+| ヘッダー（ロゴ + ナビ） | Flexbox  |
+| カードを均等に並べる    | Grid     |
+| 画像ギャラリー          | Grid     |
+| ページ全体のレイアウト  | Grid     |
+| 1 行で左右に配置        | Flexbox  |
+| 複雑な 2 次元レイアウト | Grid     |
+
+> 💡 **迷ったら Flexbox から試す**のがおすすめ。
+> Flexbox で対応しにくい場合に Grid を使う、という流れが多いです。
+
+## Grid チートシート
+
+| プロパティ              | 説明          | 例                      |
+| ----------------------- | ------------- | ----------------------- |
+| `display: grid`         | Grid を有効化 | -                       |
+| `grid-template-columns` | 列の定義      | `repeat(3, 1fr)`        |
+| `grid-template-rows`    | 行の定義      | `100px 200px`           |
+| `gap`                   | アイテム間隔  | `20px`                  |
+| `grid-column`           | 列の配置      | `1 / 3` または `span 2` |
+| `grid-row`              | 行の配置      | `1 / 3`                 |
+
+## 📚 さらに練習したい人へ
+
+[Grid Garden](https://cssgridgarden.com/#ja) — ゲーム形式で CSS Grid を楽しく学べます。植物に水をあげながら、Grid のプロパティをマスターしましょう！
+
+---
+
+## まとめ
+
+- **CSS Grid** は 2 次元（行 × 列）のレイアウトに最適
+- `display: grid` と `grid-template-columns/rows` で基本構造を定義
+- **fr** 単位と **repeat** 関数が便利
+- **auto-fill + minmax** でレスポンシブなグリッドが簡単に
+- Flexbox と Grid は場面に応じて使い分ける
+
+---
+
+## 🔗 次のステップ
+
+Grid がわかったら、[レスポンシブデザインの基礎](./01-06_レスポンシブデザインの基礎.md) に進みましょう！

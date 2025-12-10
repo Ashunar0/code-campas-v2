@@ -1,0 +1,153 @@
+# Firestore でデータを削除する（Delete）
+
+> 📌 **この記事で学ぶこと**
+>
+> - deleteDoc でデータを削除
+> - 削除前の確認
+> - 論理削除 vs 物理削除
+
+## deleteDoc でデータを削除
+
+**deleteDoc** を使うと、ドキュメントを削除できます。
+
+```javascript
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+const deleteTodo = async (id) => {
+  await deleteDoc(doc(db, "todos", id));
+};
+```
+
+## React での実装
+
+```jsx
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+function TodoItem({ todo }) {
+  const handleDelete = async () => {
+    if (!confirm("本当に削除しますか？")) return;
+
+    try {
+      await deleteDoc(doc(db, "todos", todo.id));
+    } catch (error) {
+      console.error("削除エラー:", error);
+      alert("削除に失敗しました");
+    }
+  };
+
+  return (
+    <li>
+      {todo.text}
+      <button onClick={handleDelete}>削除</button>
+    </li>
+  );
+}
+```
+
+## 確認ダイアログ
+
+削除は**取り消せない**ので、確認を入れましょう。
+
+```javascript
+const handleDelete = async () => {
+  if (!window.confirm("本当に削除しますか？")) {
+    return; // キャンセル
+  }
+  await deleteDoc(doc(db, "todos", id));
+};
+```
+
+## 論理削除 vs 物理削除
+
+### 物理削除（deleteDoc）
+
+```javascript
+// ドキュメントを完全に削除
+await deleteDoc(doc(db, "todos", id));
+```
+
+- ✅ データベースから完全に消える
+- ❌ 復元できない
+
+### 論理削除（updateDoc）
+
+```javascript
+// 削除フラグを立てる（実際には消さない）
+await updateDoc(doc(db, "todos", id), {
+  deleted: true,
+  deletedAt: serverTimestamp(),
+});
+```
+
+- ✅ 復元可能
+- ✅ 削除履歴が残る
+- ❌ データは残り続ける
+
+### 論理削除でのデータ取得
+
+```javascript
+// 削除されていないものだけ取得
+const q = query(collection(db, "todos"), where("deleted", "!=", true));
+```
+
+## エラーハンドリング
+
+```javascript
+try {
+  await deleteDoc(doc(db, "todos", id));
+} catch (error) {
+  if (error.code === "permission-denied") {
+    alert("削除権限がありません");
+  } else if (error.code === "not-found") {
+    alert("ドキュメントが見つかりません");
+  } else {
+    alert("削除に失敗しました");
+  }
+}
+```
+
+## 関連データの削除
+
+ユーザーを削除する際、関連する Todo も削除したい場合：
+
+```javascript
+const deleteUserAndTodos = async (userId) => {
+  // 1. ユーザーの Todo を取得
+  const q = query(collection(db, "todos"), where("userId", "==", userId));
+  const snapshot = await getDocs(q);
+
+  // 2. Todo を削除
+  const deletePromises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
+  await Promise.all(deletePromises);
+
+  // 3. ユーザーを削除
+  await deleteDoc(doc(db, "users", userId));
+};
+```
+
+> ⚠️ Firestore はカスケード削除（関連データの自動削除）をサポートしていません。
+
+## まとめ
+
+- **deleteDoc** でドキュメントを削除
+- 削除前に**確認ダイアログ**を表示
+- **論理削除**は復元可能だがデータは残る
+- 関連データの削除は手動で行う
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. 削除ボタンと `deleteDoc` を使って、Todo を削除できるようにしてみましょう
+> 2. 削除前に `confirm()` で確認ダイアログを表示してみましょう
+> 3. 論理削除（`deleted: true` フラグ）を試して、物理削除との違いを確認してみましょう
+>
+> **ヒント**: 論理削除した場合、`where("deleted", "!=", true)` でフィルタリングが必要です
+
+---
+
+## 🔗 次のステップ
+
+削除ができたら、[Firestore のクエリ](./05-08_Firestoreのクエリ.md) に進みましょう！

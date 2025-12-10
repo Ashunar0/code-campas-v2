@@ -1,0 +1,249 @@
+# プロジェクトのフォルダ構造を理解する
+
+> 📌 **この記事で学ぶこと**
+>
+> - Vite プロジェクトの基本構造
+> - 各ファイル・フォルダの役割
+> - package.json の読み方
+> - node_modules について
+
+## プロジェクトを開いてみよう
+
+VSCode で作成した `my-app` プロジェクトを開くと、こんなフォルダ構造になっています：
+
+```
+my-app/
+├── node_modules/      # パッケージが入っている
+├── public/            # 静的ファイル
+├── src/               # 開発するコード（メイン）
+│   ├── assets/        # 画像など
+│   ├── App.css        # App のスタイル
+│   ├── App.jsx        # メインのコンポーネント
+│   ├── index.css      # 全体のスタイル
+│   └── main.jsx       # エントリーポイント
+├── .gitignore         # Git で無視するファイル
+├── index.html         # HTML のベース
+├── package.json       # プロジェクトの設定
+├── package-lock.json  # パッケージのバージョン固定
+└── vite.config.js     # Vite の設定
+```
+
+<!--
+📸 画像メモ: VSCode のサイドバー
+- フォルダ構造が見えている状態
+- 各フォルダ・ファイルにアイコンがついている
+-->
+
+最初は全部を覚える必要はありません。
+まずは**よく使うものだけ**理解しましょう。
+
+## src/ フォルダ（最重要！）
+
+**`src/`** は、開発のメインとなるフォルダです。
+これから書くコードは、基本的にこの中に作っていきます。
+
+### main.jsx
+
+**アプリケーションのスタート地点**（エントリーポイント）。
+
+```jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+基本的にこのファイルは**触りません**。
+
+### App.jsx
+
+**メインのコンポーネント**。
+
+最初はここにコードを書いていきます。
+今表示されている画面は、このファイルの内容です。
+
+```jsx
+function App() {
+  return (
+    <div>
+      <h1>Vite + React</h1>
+      {/* ここに画面の内容を書いていく */}
+    </div>
+  );
+}
+
+export default App;
+```
+
+### index.css / App.css
+
+スタイル（CSS）を書くファイル。
+
+- **index.css**: 全体に適用されるスタイル
+- **App.css**: App コンポーネント用のスタイル
+
+### assets/
+
+画像やフォントなど、アプリで使う素材を入れるフォルダ。
+
+## public/ フォルダ
+
+**静的ファイル**を置く場所です。
+
+ここに置いたファイルは、そのままの形で公開されます。
+例えば、favicon（ブラウザのタブに表示されるアイコン）などを置きます。
+
+## index.html
+
+アプリケーションの**土台となる HTML ファイル**。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+```
+
+注目すべきは `<div id="root"></div>` の部分。
+ここに React のコンテンツが表示されます。
+
+基本的にこのファイルも**あまり触りません**。
+
+## package.json
+
+プロジェクトの**設定ファイル**。
+どんなパッケージを使っているか、どんなコマンドが使えるかが書いてあります。
+
+```json
+{
+  "name": "my-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0"
+  }
+}
+```
+
+### scripts
+
+使えるコマンドが定義されています。
+
+| コマンド | 実行方法          | 説明                   |
+| -------- | ----------------- | ---------------------- |
+| dev      | `npm run dev`     | 開発サーバーを起動     |
+| build    | `npm run build`   | 本番用にビルド         |
+| preview  | `npm run preview` | ビルド結果をプレビュー |
+
+### dependencies
+
+アプリに必要なパッケージ。
+`react` と `react-dom` が入っています。
+
+### devDependencies
+
+開発時にのみ必要なパッケージ。
+Vite などが入っています。
+
+## node_modules/
+
+**絶対に触ってはいけないフォルダ**です！
+
+`npm install` でインストールしたパッケージが全て入っています。
+ファイル数が非常に多く、サイズも大きいです。
+
+<!--
+📸 画像メモ: node_modules フォルダを開いた状態
+- たくさんのフォルダが入っている
+- 「触らないで！」的なアイコンを追加
+-->
+
+### なぜ触らないの？
+
+- パッケージは自動で管理されている
+- 手動で編集すると動かなくなる可能性がある
+- 必要なら `npm install` で再生成できる
+
+### Git には含めない
+
+`node_modules/` は非常に大きいので、Git には含めません。
+`.gitignore` に記載されているので、自動的に無視されます。
+
+## .gitignore
+
+Git で**管理しないファイル**を指定するファイル。
+
+```
+node_modules
+dist
+.env
+```
+
+- **node_modules**: サイズが大きく、`npm install` で再生成できる
+- **dist**: ビルド出力（後で作られる）
+- **.env**: 環境変数（秘密情報が入る）
+
+## vite.config.js
+
+Vite の設定ファイル。
+基本的にはデフォルトのままで OK。
+
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+});
+```
+
+## よく使うファイルまとめ
+
+| ファイル/フォルダ | 役割                   | 編集する？         |
+| ----------------- | ---------------------- | ------------------ |
+| `src/App.jsx`     | メインのコンポーネント | ⭕ よく編集        |
+| `src/main.jsx`    | エントリーポイント     | ❌ 基本触らない    |
+| `src/index.css`   | 全体のスタイル         | ⭕ 編集する        |
+| `public/`         | 静的ファイル           | ⭕ ファイルを追加  |
+| `index.html`      | HTML のベース          | △ たまに編集       |
+| `package.json`    | プロジェクト設定       | △ パッケージ追加時 |
+| `node_modules/`   | パッケージ             | ❌ 絶対触らない    |
+
+## まとめ
+
+- **src/** フォルダがメインの開発場所
+- **App.jsx** に画面の内容を書いていく
+- **node_modules/** は触らない
+- **package.json** でプロジェクトの設定を管理
+
+---
+
+## 🔗 次のステップ
+
+フォルダ構造がわかったら、[よくあるエラーと解決策](./00-07_よくあるエラーと解決策.md) を確認しておきましょう！

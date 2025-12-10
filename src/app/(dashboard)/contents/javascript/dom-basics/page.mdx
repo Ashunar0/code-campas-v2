@@ -1,0 +1,287 @@
+# DOM 操作の基礎【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - DOM とは何か
+> - 要素の取得
+> - 要素の作成・追加
+> - イベントリスナー
+
+> 💡 この記事は**任意**です。React では直接 DOM 操作をしないため、参考程度に理解しておきましょう。
+
+## DOM とは？
+
+**DOM**（Document Object Model）は、HTML を JavaScript から操作するための仕組みです。
+
+HTML の各要素を「オブジェクト」として扱い、取得・変更・追加・削除ができます。
+
+<!--
+📸 画像メモ: DOM ツリーの図解
+- html → head, body
+- body → div, p, button など
+- ツリー構造で表現
+-->
+
+## 要素の取得
+
+### getElementById
+
+ID で要素を取得します。
+
+```javascript
+const heading = document.getElementById("main-title");
+console.log(heading);
+```
+
+```html
+<h1 id="main-title">タイトル</h1>
+```
+
+### querySelector
+
+CSS セレクタで最初の 1 つを取得します。
+
+```javascript
+// ID
+const heading = document.querySelector("#main-title");
+
+// クラス
+const button = document.querySelector(".btn");
+
+// タグ
+const paragraph = document.querySelector("p");
+
+// 複合セレクタ
+const item = document.querySelector(".container .item");
+```
+
+### querySelectorAll
+
+CSS セレクタで**すべて**取得します。
+
+```javascript
+const buttons = document.querySelectorAll(".btn");
+
+// NodeList（配列のようなもの）が返る
+buttons.forEach((btn) => {
+  console.log(btn);
+});
+```
+
+## 要素の内容を変更
+
+### textContent
+
+テキストを変更します。
+
+```javascript
+const heading = document.getElementById("title");
+heading.textContent = "新しいタイトル";
+```
+
+### innerHTML
+
+HTML を含めて変更します。
+
+```javascript
+const container = document.getElementById("content");
+container.innerHTML = "<p>新しい<strong>内容</strong></p>";
+```
+
+> ⚠️ ユーザー入力を `innerHTML` に入れると XSS 攻撃のリスクがあります。`textContent` を使うか、エスケープ処理を行いましょう。
+
+## スタイルを変更
+
+### style プロパティ
+
+```javascript
+const box = document.getElementById("box");
+box.style.backgroundColor = "blue";
+box.style.color = "white";
+box.style.padding = "20px";
+```
+
+### classList
+
+クラスを追加・削除します。
+
+```javascript
+const button = document.getElementById("btn");
+
+// クラスを追加
+button.classList.add("active");
+
+// クラスを削除
+button.classList.remove("active");
+
+// クラスをトグル（あれば削除、なければ追加）
+button.classList.toggle("active");
+
+// クラスがあるかチェック
+if (button.classList.contains("active")) {
+  console.log("アクティブです");
+}
+```
+
+## 要素の作成・追加
+
+### createElement + appendChild
+
+```javascript
+// 新しい要素を作成
+const newParagraph = document.createElement("p");
+newParagraph.textContent = "新しい段落です";
+newParagraph.className = "new-text";
+
+// 親要素に追加
+const container = document.getElementById("container");
+container.appendChild(newParagraph);
+```
+
+### insertAdjacentHTML
+
+```javascript
+const container = document.getElementById("container");
+
+// 末尾に追加
+container.insertAdjacentHTML("beforeend", "<p>新しい段落</p>");
+
+// 先頭に追加
+container.insertAdjacentHTML("afterbegin", "<p>新しい段落</p>");
+```
+
+## 要素の削除
+
+```javascript
+const element = document.getElementById("target");
+
+// 自分自身を削除
+element.remove();
+
+// 子要素を削除
+const parent = document.getElementById("container");
+parent.removeChild(element);
+```
+
+## イベントリスナー
+
+ユーザーの操作（クリック、入力など）に反応する処理を設定します。
+
+### addEventListener
+
+```javascript
+const button = document.getElementById("btn");
+
+button.addEventListener("click", () => {
+  console.log("クリックされました");
+});
+```
+
+### よく使うイベント
+
+| イベント  | 発生タイミング |
+| --------- | -------------- |
+| click     | クリック       |
+| submit    | フォーム送信   |
+| input     | 入力中         |
+| change    | 入力確定時     |
+| keydown   | キーを押した   |
+| keyup     | キーを離した   |
+| mouseover | マウスが乗った |
+| mouseout  | マウスが離れた |
+
+### イベントオブジェクト
+
+```javascript
+button.addEventListener("click", (event) => {
+  console.log(event.target); // クリックされた要素
+  console.log(event.type); // イベントの種類
+});
+```
+
+### フォームの送信
+
+```javascript
+const form = document.getElementById("myForm");
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault(); // ページのリロードを防ぐ
+
+  const input = document.getElementById("nameInput");
+  console.log(input.value);
+});
+```
+
+## 属性の操作
+
+```javascript
+const image = document.querySelector("img");
+
+// 属性を取得
+console.log(image.getAttribute("src"));
+
+// 属性を設定
+image.setAttribute("src", "new-image.jpg");
+image.setAttribute("alt", "新しい画像");
+
+// 属性を削除
+image.removeAttribute("alt");
+```
+
+## React では DOM 操作しない
+
+React では、直接 DOM を操作することはほとんどありません。
+
+```javascript
+// ❌ React では使わない
+document.getElementById("title").textContent = "新しいタイトル";
+
+// ⭕ React の書き方
+const [title, setTitle] = useState("タイトル");
+setTitle("新しいタイトル");
+```
+
+React は「状態」を変更すると、自動で DOM を更新してくれます。
+これが React のメリットです！
+
+## DevTools で DOM を確認しよう
+
+ブラウザの DevTools の **Elements** タブで、DOM の状態をリアルタイムで確認できます。
+
+### 確認手順
+
+1. ブラウザで DevTools を開く（右クリック → 検証）
+2. **Elements** タブをクリック
+3. 要素にカーソルを合わせると、ページ上でハイライトされる
+4. Console で `document.getElementById("...")` を実行すると、Elements で該当要素がハイライトされる
+
+### やってみよう
+
+Console で以下を試してみましょう：
+
+```javascript
+// 要素を取得して Console に表示
+const body = document.querySelector("body");
+console.log(body); // Elements タブで確認できる
+
+// 要素を動的に変更
+document.body.style.backgroundColor = "lightblue";
+```
+
+> 💡 **Elements タブ**では、HTML の構造を確認したり、一時的に CSS を変更して表示を確かめたりできます。
+
+## まとめ
+
+- **DOM** は HTML を JavaScript から操作する仕組み
+- **querySelector** で要素を取得
+- **textContent / innerHTML** で内容を変更
+- **classList** でクラスを操作
+- **createElement** で要素を作成
+- **addEventListener** でイベントを処理
+- **React では直接 DOM 操作しない**
+
+---
+
+## 🔗 次のステップ
+
+DOM 操作がわかったら、[localStorage で保存する](./02-16_localStorageで保存する.md) に進みましょう！

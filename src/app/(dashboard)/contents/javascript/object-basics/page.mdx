@@ -1,0 +1,347 @@
+# オブジェクトの基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - オブジェクトとは何か
+> - プロパティへのアクセス
+> - 分割代入（Destructuring）
+> - スプレッド構文
+
+## オブジェクトとは？
+
+**オブジェクト**は、関連するデータをキーと値のペアでまとめたものです。
+
+```javascript
+const user = {
+  name: "田中太郎",
+  age: 25,
+  email: "tanaka@example.com",
+};
+```
+
+配列が「順番に並んだデータ」なのに対し、オブジェクトは「名前をつけたデータ」です。
+
+## オブジェクトの作成
+
+```javascript
+// 空のオブジェクト
+const empty = {};
+
+// プロパティを持つオブジェクト
+const user = {
+  name: "田中太郎",
+  age: 25,
+  isStudent: true,
+};
+
+// ネスト（入れ子）も可能
+const person = {
+  name: "田中太郎",
+  address: {
+    city: "東京",
+    zipCode: "100-0001",
+  },
+};
+```
+
+## プロパティへのアクセス
+
+### ドット記法
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+console.log(user.name); // "田中"
+console.log(user.age); // 25
+```
+
+### ブラケット記法
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+console.log(user["name"]); // "田中"
+console.log(user["age"]); // 25
+
+// 変数を使ってアクセスできる
+const key = "name";
+console.log(user[key]); // "田中"
+```
+
+### 存在しないプロパティ
+
+```javascript
+const user = { name: "田中" };
+console.log(user.email); // undefined
+```
+
+## プロパティの追加・変更・削除
+
+```javascript
+const user = { name: "田中" };
+
+// 追加
+user.age = 25;
+console.log(user); // { name: "田中", age: 25 }
+
+// 変更
+user.name = "佐藤";
+console.log(user); // { name: "佐藤", age: 25 }
+
+// 削除
+delete user.age;
+console.log(user); // { name: "佐藤" }
+```
+
+## 分割代入（Destructuring）⭐⭐⭐
+
+オブジェクトから値を取り出す便利な書き方。
+**React で非常によく使います！**
+
+### 基本形
+
+```javascript
+const user = { name: "田中", age: 25, email: "tanaka@example.com" };
+
+// 従来の書き方
+const name = user.name;
+const age = user.age;
+
+// 分割代入
+const { name, age } = user;
+
+console.log(name); // "田中"
+console.log(age); // 25
+```
+
+### 別名をつける
+
+```javascript
+const user = { name: "田中" };
+
+const { name: userName } = user;
+console.log(userName); // "田中"
+```
+
+### デフォルト値
+
+```javascript
+const user = { name: "田中" };
+
+const { name, age = 20 } = user;
+console.log(age); // 20（存在しないのでデフォルト値）
+```
+
+### ネストした分割代入
+
+```javascript
+const user = {
+  name: "田中",
+  address: {
+    city: "東京",
+    zipCode: "100-0001",
+  },
+};
+
+const {
+  address: { city },
+} = user;
+console.log(city); // "東京"
+```
+
+### React での使用例
+
+```jsx
+// Props の分割代入
+const UserCard = ({ name, age, email }) => {
+  return (
+    <div>
+      <h2>{name}</h2>
+      <p>{age}歳</p>
+      <p>{email}</p>
+    </div>
+  );
+};
+```
+
+## 配列の分割代入
+
+配列でも分割代入が使えます。
+
+```javascript
+const colors = ["赤", "青", "緑"];
+
+const [first, second, third] = colors;
+console.log(first); // "赤"
+console.log(second); // "青"
+console.log(third); // "緑"
+
+// 一部だけ取得
+const [primary] = colors;
+console.log(primary); // "赤"
+
+// 2番目以降を取得
+const [, ...rest] = colors;
+console.log(rest); // ["青", "緑"]
+```
+
+### React での使用例（useState）
+
+```jsx
+// useState の戻り値を分割代入
+const [count, setCount] = useState(0);
+```
+
+## オブジェクトのスプレッド構文（...）⭐
+
+オブジェクトを展開する便利な構文。
+
+### コピー
+
+```javascript
+const original = { name: "田中", age: 25 };
+const copy = { ...original };
+
+console.log(copy); // { name: "田中", age: 25 }
+console.log(original === copy); // false（別のオブジェクト）
+```
+
+### マージ（結合）
+
+```javascript
+const user = { name: "田中" };
+const details = { age: 25, email: "tanaka@example.com" };
+
+const merged = { ...user, ...details };
+console.log(merged);
+// { name: "田中", age: 25, email: "tanaka@example.com" }
+```
+
+### プロパティの更新（元のオブジェクトを変更しない）
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+// age だけ更新した新しいオブジェクトを作る
+const updated = { ...user, age: 26 };
+
+console.log(updated); // { name: "田中", age: 26 }
+console.log(user); // { name: "田中", age: 25 }（元は変わらない）
+```
+
+> 💡 React では state を更新するときに、元のオブジェクトを変更せずに新しいオブジェクトを作る必要があります。
+> スプレッド構文はそのために必須！
+
+## プロパティの省略記法
+
+変数名とプロパティ名が同じ場合、省略できます。
+
+```javascript
+const name = "田中";
+const age = 25;
+
+// 従来
+const user = { name: name, age: age };
+
+// 省略記法
+const user = { name, age };
+
+console.log(user); // { name: "田中", age: 25 }
+```
+
+## オブジェクトのループ
+
+### Object.keys
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+const keys = Object.keys(user);
+console.log(keys); // ["name", "age"]
+```
+
+### Object.values
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+const values = Object.values(user);
+console.log(values); // ["田中", 25]
+```
+
+### Object.entries
+
+```javascript
+const user = { name: "田中", age: 25 };
+
+const entries = Object.entries(user);
+console.log(entries); // [["name", "田中"], ["age", 25]]
+```
+
+## ミニ演習：分割代入のパターンを試そう
+
+Console で以下を試して、分割代入のパターンを確認しましょう：
+
+```javascript
+const user = {
+  name: "田中",
+  age: 25,
+  address: { city: "東京", zip: "100-0001" },
+};
+
+// 1. 基本の分割代入
+const { name, age } = user;
+console.log(name, age); // "田中" 25
+
+// 2. 別名をつける
+const { name: userName } = user;
+console.log(userName); // "田中"
+
+// 3. デフォルト値
+const { email = "未設定" } = user;
+console.log(email); // "未設定"
+
+// 4. ネストした分割代入
+const {
+  address: { city },
+} = user;
+console.log(city); // "東京"
+```
+
+> 💡 **React でよく使う**: Props を受け取るときに `({ name, age }) =>` のように書きます。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+const product = {
+  name: "JavaScript入門",
+  price: 2980,
+  author: "山田太郎",
+  category: "プログラミング"
+};
+
+// 1. 分割代入で name と price を取り出す
+const { name, price } = // ここを書く
+
+// 2. スプレッド構文で price を 3500 に更新した新しいオブジェクトを作る
+const updated = // ここを書く
+
+// 3. Object.keys でキーの配列を取得
+const keys = // ここを書く
+```
+
+## まとめ
+
+- **オブジェクト**はキーと値のペアでデータをまとめる
+- **ドット記法**または**ブラケット記法**でアクセス
+- **分割代入**で値を取り出す（React で必須）
+- **スプレッド構文（...）**でコピー・マージ・更新
+- **省略記法**で変数名とプロパティ名が同じなら省略可能
+
+---
+
+## 🔗 次のステップ
+
+オブジェクトの基礎がわかったら、[オブジェクトの配列を扱う](./02-07_オブジェクトの配列を扱う.md) に進みましょう！

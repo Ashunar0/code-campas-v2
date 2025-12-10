@@ -1,0 +1,242 @@
+# JSX の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - JSX とは何か
+> - JSX の基本ルール
+> - JavaScript を埋め込む方法
+> - JSX と HTML の違い
+
+## JSX とは？
+
+**JSX**（JavaScript XML）は、JavaScript の中に HTML のような構文を書ける拡張構文です。
+
+```jsx
+const element = <h1>Hello, React!</h1>;
+```
+
+見た目は HTML っぽいですが、これは **JavaScript** です。
+ビルド時に通常の JavaScript に変換されます。
+
+## JSX の基本ルール
+
+### 1. 1 つのルート要素で囲む
+
+JSX は**1 つの要素**を返す必要があります。
+
+```jsx
+// ❌ エラー（複数の要素がバラバラ）
+function App() {
+  return (
+    <h1>タイトル</h1>
+    <p>段落</p>
+  );
+}
+
+// ⭕ 正しい（1つの要素で囲む）
+function App() {
+  return (
+    <div>
+      <h1>タイトル</h1>
+      <p>段落</p>
+    </div>
+  );
+}
+
+// ⭕ Fragment を使う（余分な div を避けたいとき）
+function App() {
+  return (
+    <>
+      <h1>タイトル</h1>
+      <p>段落</p>
+    </>
+  );
+}
+```
+
+> 💡 `<> </>` は **Fragment** と呼ばれ、余分な DOM 要素を作りません。
+
+### 2. タグは必ず閉じる
+
+HTML では閉じなくてもいいタグも、JSX では閉じる必要があります。
+
+```jsx
+// ❌ エラー
+<input type="text">
+<img src="image.jpg">
+<br>
+
+// ⭕ 正しい（自己終了タグ）
+<input type="text" />
+<img src="image.jpg" />
+<br />
+```
+
+### 3. class → className
+
+HTML の `class` は、JSX では `className` になります。
+
+```jsx
+// ❌ 動くけど警告が出る
+<div class="container">
+
+// ⭕ 正しい
+<div className="container">
+```
+
+### 4. キャメルケースを使う
+
+イベントハンドラやスタイルプロパティはキャメルケースになります。
+
+```jsx
+// HTML
+<button onclick="handleClick()">
+<div style="background-color: blue;">
+
+// JSX
+<button onClick={handleClick}>
+<div style={{ backgroundColor: "blue" }}>
+```
+
+## JavaScript を埋め込む
+
+`{ }` の中に JavaScript の式を書けます。
+
+### 変数の表示
+
+```jsx
+const name = "田中";
+const age = 25;
+
+return (
+  <div>
+    <p>名前: {name}</p>
+    <p>年齢: {age}</p>
+  </div>
+);
+```
+
+### 式の評価
+
+```jsx
+const price = 1000;
+const tax = 0.1;
+
+return <p>税込価格: {price + price * tax}円</p>;
+```
+
+### 関数の呼び出し
+
+```jsx
+const formatName = (name) => `${name}さん`;
+
+return <p>こんにちは、{formatName("田中")}</p>;
+```
+
+### 三項演算子
+
+```jsx
+const isLoggedIn = true;
+
+return <p>{isLoggedIn ? "ログイン中" : "未ログイン"}</p>;
+```
+
+## スタイルの書き方
+
+### インラインスタイル
+
+オブジェクトで指定します。
+
+```jsx
+<div
+  style={{
+    backgroundColor: "blue",
+    color: "white",
+    padding: "20px",
+  }}
+>
+  スタイル付き
+</div>
+```
+
+> 💡 `{{ }}` は「オブジェクトを JSX に埋め込む」という意味です。
+
+### className を使う（推奨）
+
+```jsx
+// App.jsx
+<div className="container">
+  <p className="title">タイトル</p>
+</div>
+
+// App.css
+.container {
+  padding: 20px;
+}
+.title {
+  font-size: 24px;
+}
+```
+
+## JSX でのコメント
+
+```jsx
+return (
+  <div>
+    {/* これはコメント */}
+    <p>内容</p>
+    {/* 
+      複数行の
+      コメント
+    */}
+  </div>
+);
+```
+
+## JSX と HTML の主な違い
+
+| 項目     | HTML               | JSX            |
+| -------- | ------------------ | -------------- |
+| クラス   | `class`            | `className`    |
+| for 属性 | `for`              | `htmlFor`      |
+| スタイル | 文字列             | オブジェクト   |
+| イベント | 小文字             | キャメルケース |
+| 閉じタグ | 省略可能なものあり | 必須           |
+| コメント | `<!-- -->`         | `{/* */}`      |
+
+## 実践例
+
+```jsx
+function Profile() {
+  const user = {
+    name: "田中太郎",
+    age: 25,
+    isAdmin: true,
+  };
+
+  return (
+    <div className="profile">
+      <h2>{user.name}</h2>
+      <p>年齢: {user.age}歳</p>
+      <p>役割: {user.isAdmin ? "管理者" : "一般ユーザー"}</p>
+      <button onClick={() => console.log("クリック!")}>ボタン</button>
+    </div>
+  );
+}
+```
+
+## まとめ
+
+- **JSX** は JavaScript の中に HTML のような構文を書ける
+- **1 つのルート要素**で囲む（または Fragment）
+- タグは**必ず閉じる**
+- `class` → `className`
+- イベントは**キャメルケース**（onClick, onChange）
+- `{ }` で**JavaScript を埋め込む**
+- スタイルは**オブジェクト**で指定
+
+---
+
+## 🔗 次のステップ
+
+JSX がわかったら、[コンポーネントを作る](./03-03_コンポーネントを作る.md) に進みましょう！

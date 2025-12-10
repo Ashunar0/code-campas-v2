@@ -1,0 +1,407 @@
+# ポートフォリオサイトを作ろう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - HTML / CSS を使った実践的なサイト制作
+> - セクションごとの実装
+> - レスポンシブ対応
+
+## 完成イメージ
+
+シンプルなポートフォリオサイトを作ります。
+
+構成：
+
+1. **ヘッダー**（ナビゲーション）
+2. **ヒーローセクション**（自己紹介のメインビジュアル）
+3. **About**（自己紹介）
+4. **Projects**（作品紹介）
+5. **Contact**（お問い合わせ）
+6. **フッター**
+
+<!--
+📸 画像メモ: 完成イメージ（ワイヤーフレーム的な図）
+- 各セクションの配置がわかる図
+-->
+
+## プロジェクトの準備
+
+`webex` フォルダ内に新しいフォルダを作成します。
+
+```bash
+cd ~/Desktop/webex
+mkdir portfolio
+cd portfolio
+```
+
+以下のファイルを作成：
+
+```
+portfolio/
+├── index.html
+├── style.css
+└── images/        # 画像を入れるフォルダ（任意）
+```
+
+## 1. HTML の基本構造
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Portfolio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ヘッダー -->
+    <header class="header">
+      <div class="container">
+        <h1 class="logo">Portfolio</h1>
+        <nav class="nav">
+          <a href="#about">About</a>
+          <a href="#projects">Projects</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ヒーロー -->
+    <section class="hero">
+      <div class="container">
+        <h2>Hello, I'm <span>Your Name</span></h2>
+        <p>Web Developer / Designer</p>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="about">
+      <div class="container">
+        <h2>About Me</h2>
+        <p>
+          プログラミングを学んでいる大学生です。Web 開発に興味があり、React や
+          Firebase を勉強中。
+        </p>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="projects">
+      <div class="container">
+        <h2>Projects</h2>
+        <div class="project-grid">
+          <div class="project-card">
+            <h3>Project 1</h3>
+            <p>プロジェクトの説明文がここに入ります。</p>
+          </div>
+          <div class="project-card">
+            <h3>Project 2</h3>
+            <p>プロジェクトの説明文がここに入ります。</p>
+          </div>
+          <div class="project-card">
+            <h3>Project 3</h3>
+            <p>プロジェクトの説明文がここに入ります。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="contact">
+      <div class="container">
+        <h2>Contact</h2>
+        <p>お気軽にお問い合わせください。</p>
+        <a href="mailto:example@email.com" class="btn">Email Me</a>
+      </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2024 Your Name. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>
+```
+
+## 2. リセット CSS と基本スタイル
+
+**style.css**
+
+```css
+/* リセット */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 基本設定 */
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* セクション共通 */
+section {
+  padding: 80px 0;
+}
+
+section h2 {
+  font-size: 32px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+```
+
+## 3. ヘッダー
+
+```css
+/* ヘッダー */
+.header {
+  background-color: #333;
+  color: white;
+  padding: 16px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+}
+
+.nav a {
+  color: white;
+  transition: opacity 0.3s;
+}
+
+.nav a:hover {
+  opacity: 0.7;
+}
+
+/* ヘッダー固定の分だけ body に余白 */
+body {
+  padding-top: 60px;
+}
+```
+
+## 4. ヒーローセクション
+
+```css
+/* ヒーロー */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 120px 0;
+}
+
+.hero h2 {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.hero h2 span {
+  color: #ffd700;
+}
+
+.hero p {
+  font-size: 20px;
+  opacity: 0.9;
+}
+```
+
+<!--
+📸 画像メモ: ヒーローセクションの表示例
+- グラデーション背景に白文字
+-->
+
+## 5. About セクション
+
+```css
+/* About */
+.about {
+  background-color: #f9f9f9;
+}
+
+.about p {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 18px;
+}
+```
+
+## 6. Projects セクション
+
+```css
+/* Projects */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.project-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.project-card h3 {
+  margin-bottom: 12px;
+  color: #667eea;
+}
+```
+
+## 7. Contact セクション
+
+```css
+/* Contact */
+.contact {
+  background-color: #333;
+  color: white;
+  text-align: center;
+}
+
+.contact h2 {
+  color: white;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 32px;
+  background-color: #667eea;
+  color: white;
+  border-radius: 30px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn:hover {
+  background-color: #764ba2;
+  transform: scale(1.05);
+}
+```
+
+## 8. フッター
+
+```css
+/* フッター */
+.footer {
+  background-color: #222;
+  color: #888;
+  text-align: center;
+  padding: 24px 0;
+  font-size: 14px;
+}
+```
+
+## 9. レスポンシブ対応
+
+```css
+/* タブレット以下 */
+@media (max-width: 768px) {
+  .hero h2 {
+    font-size: 32px;
+  }
+
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nav {
+    gap: 16px;
+  }
+}
+
+/* スマホ */
+@media (max-width: 480px) {
+  .header .container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .hero h2 {
+    font-size: 24px;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  section {
+    padding: 60px 0;
+  }
+}
+```
+
+## 確認してみよう
+
+1. `index.html` をブラウザで開く
+2. 各セクションが表示されることを確認
+3. 開発者ツールで画面サイズを変えてレスポンシブを確認
+4. ホバーエフェクトが動作することを確認
+
+<!--
+📸 画像メモ: 完成したポートフォリオサイト
+- PC表示とスマホ表示の両方
+-->
+
+## カスタマイズしてみよう
+
+- 自分の名前や自己紹介に変更
+- 色を変えてみる
+- 画像を追加してみる
+- SNS リンクを追加
+
+## まとめ
+
+- HTML で構造を作り、CSS で装飾
+- **セクション** ごとに分けて実装
+- **Flexbox** と **Grid** でレイアウト
+- **レスポンシブ対応** でスマホにも対応
+
+---
+
+## 🔗 次のステップ
+
+ポートフォリオが完成したら、[Tailwind CSS 入門](./01-09_TailwindCSS入門.md) に進みましょう！

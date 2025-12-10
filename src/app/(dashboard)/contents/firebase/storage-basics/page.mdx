@@ -1,0 +1,168 @@
+# Firebase Storage の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firebase Storage とは
+> - ファイルのアップロード
+> - ダウンロード URL の取得
+
+## Firebase Storage とは？
+
+**Firebase Storage** は、画像や動画などのファイルを保存できるサービスです。
+
+- プロフィール画像
+- 投稿画像
+- ドキュメントファイル
+
+## Storage の構造
+
+```
+storage/
+├── images/
+│   ├── profile_abc123.jpg
+│   └── post_def456.png
+└── documents/
+    └── file_xyz.pdf
+```
+
+フォルダとファイルで構成されています。
+
+## 基本的な使い方
+
+**src/lib/firebase.js** で既にエクスポート済み：
+
+```javascript
+export const storage = getStorage(app);
+```
+
+## ファイルのアップロード
+
+```javascript
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./lib/firebase";
+
+const uploadImage = async (file) => {
+  // 1. 保存先の参照を作成
+  const storageRef = ref(storage, `images/${file.name}`);
+
+  // 2. ファイルをアップロード
+  const snapshot = await uploadBytes(storageRef, file);
+
+  // 3. ダウンロード URL を取得
+  const url = await getDownloadURL(snapshot.ref);
+
+  return url;
+};
+```
+
+> 💡 **ref とは？**
+>
+> Storage 内のパス（保存先）を指す参照です。
+> `images/photo.jpg` のようなパスを指定して、そこにファイルをアップロードします。
+
+## ユニークなファイル名
+
+同じファイル名だと上書きされるので、ユニークな名前を付けます：
+
+```javascript
+const uniqueFileName = `${Date.now()}_${file.name}`;
+const storageRef = ref(storage, `images/${uniqueFileName}`);
+```
+
+または、ユーザー ID を使う：
+
+```javascript
+const storageRef = ref(storage, `users/${userId}/profile.jpg`);
+```
+
+## アップロード進捗の取得
+
+**uploadBytesResumable** を使うと、アップロードの進捗を取得できます：
+
+```javascript
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+const uploadWithProgress = (file, onProgress) => {
+  const storageRef = ref(storage, `images/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress?.(progress);
+      },
+      (error) => {
+        reject(error);
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        resolve(url);
+      }
+    );
+  });
+};
+
+// 使用例
+const url = await uploadWithProgress(file, (progress) => {
+  console.log(`アップロード進捗: ${progress}%`);
+});
+```
+
+## ファイルの削除
+
+```javascript
+import { ref, deleteObject } from "firebase/storage";
+
+const deleteImage = async (filePath) => {
+  const storageRef = ref(storage, filePath);
+  await deleteObject(storageRef);
+};
+
+// 使用例
+await deleteImage("images/old_image.jpg");
+```
+
+## ファイルサイズ・形式の制限
+
+アップロード前にチェックします：
+
+```javascript
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
+
+const validateFile = (file) => {
+  if (file.size > MAX_SIZE) {
+    throw new Error("ファイルサイズは5MB以下にしてください");
+  }
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error("JPEG, PNG, GIF のみアップロード可能です");
+  }
+};
+```
+
+## まとめ
+
+- **Firebase Storage** でファイルを保存
+- **ref** で保存先を指定
+- **uploadBytes** でアップロード
+- **getDownloadURL** で URL を取得
+- ファイルサイズ・形式は事前にチェック
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. ファイル選択ボタンを作成し、`uploadBytes` で画像をアップロード
+> 2. `getDownloadURL` で URL を取得し、`<img>` タグで表示
+> 3. Firebase Console の Storage でファイルがアップロードされていることを確認
+>
+> **ヒント**: Console の Storage でフォルダ構造を確認できます
+
+---
+
+## 🔗 次のステップ
+
+Storage の基礎がわかったら、[画像アップロード機能の実装](./05-16_画像アップロード機能の実装.md) に進みましょう！

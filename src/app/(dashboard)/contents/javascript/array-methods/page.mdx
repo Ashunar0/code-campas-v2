@@ -1,0 +1,296 @@
+# 配列の高階関数（map, filter, find）
+
+> 📌 **この記事で学ぶこと**
+>
+> - 高階関数とは
+> - map（最重要）
+> - filter
+> - find
+> - 複数の高階関数を組み合わせる
+
+## 高階関数とは？
+
+**高階関数**は、「関数を引数として受け取る関数」のことです。
+
+配列には便利な高階関数がいくつか用意されていて、これらを使いこなすと配列の操作がとてもシンプルになります。
+
+**React では必須の知識**なので、しっかり覚えましょう！
+
+## map（最重要）⭐⭐⭐
+
+配列の各要素を変換して、**新しい配列**を作ります。
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// 各要素を2倍にする
+const doubled = numbers.map((num) => num * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+
+// 元の配列は変わらない
+console.log(numbers); // [1, 2, 3, 4, 5]
+```
+
+### 書き方
+
+```javascript
+配列.map((要素) => 変換後の値);
+```
+
+### 実践例
+
+```javascript
+// 名前の配列から挨拶文の配列を作る
+const names = ["田中", "佐藤", "鈴木"];
+const greetings = names.map((name) => `こんにちは、${name}さん！`);
+console.log(greetings);
+// ["こんにちは、田中さん！", "こんにちは、佐藤さん！", "こんにちは、鈴木さん！"]
+
+// オブジェクトから特定のプロパティだけ取り出す
+const users = [
+  { id: 1, name: "田中" },
+  { id: 2, name: "佐藤" },
+  { id: 3, name: "鈴木" },
+];
+const names2 = users.map((user) => user.name);
+console.log(names2); // ["田中", "佐藤", "鈴木"]
+```
+
+### React での使用例
+
+React でリストを表示するときに map を使います：
+
+```jsx
+const users = ["田中", "佐藤", "鈴木"];
+
+return (
+  <ul>
+    {users.map((user) => (
+      <li key={user}>{user}</li>
+    ))}
+  </ul>
+);
+```
+
+## filter
+
+条件に合う要素だけを抽出して、**新しい配列**を作ります。
+
+```javascript
+const numbers = [1, 2, 3, 4, 5, 6];
+
+// 偶数だけ抽出
+const evens = numbers.filter((num) => num % 2 === 0);
+console.log(evens); // [2, 4, 6]
+```
+
+### 書き方
+
+```javascript
+配列.filter((要素) => 条件);
+// 条件がtrueの要素だけが残る
+```
+
+### 実践例
+
+```javascript
+const users = [
+  { name: "田中", age: 25 },
+  { name: "佐藤", age: 17 },
+  { name: "鈴木", age: 32 },
+];
+
+// 20歳以上のユーザーだけ抽出
+const adults = users.filter((user) => user.age >= 20);
+console.log(adults);
+// [{ name: "田中", age: 25 }, { name: "鈴木", age: 32 }]
+
+// 名前に「田」が含まれるユーザー
+const tanakaFamily = users.filter((user) => user.name.includes("田"));
+console.log(tanakaFamily); // [{ name: "田中", age: 25 }]
+```
+
+### React での使用例
+
+検索機能やフィルター機能で使います：
+
+```jsx
+const [searchText, setSearchText] = useState("");
+const filteredUsers = users.filter((user) => user.name.includes(searchText));
+```
+
+## find
+
+条件に合う**最初の 1 つの要素**を取得します。
+
+```javascript
+const users = [
+  { id: 1, name: "田中" },
+  { id: 2, name: "佐藤" },
+  { id: 3, name: "鈴木" },
+];
+
+// IDが2のユーザーを検索
+const user = users.find((user) => user.id === 2);
+console.log(user); // { id: 2, name: "佐藤" }
+
+// 見つからない場合
+const notFound = users.find((user) => user.id === 99);
+console.log(notFound); // undefined
+```
+
+### filter との違い
+
+| メソッド | 戻り値    | 用途                  |
+| -------- | --------- | --------------------- |
+| filter   | 配列      | 条件に合うもの全部    |
+| find     | 要素 1 つ | 条件に合う最初の 1 つ |
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+console.log(numbers.filter((n) => n > 2)); // [3, 4, 5]
+console.log(numbers.find((n) => n > 2)); // 3
+```
+
+## forEach（参考）
+
+配列の各要素に対して処理を実行します。
+戻り値がないので、副作用（console.log など）に使います。
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+
+fruits.forEach((fruit) => {
+  console.log(fruit);
+});
+// "りんご"
+// "バナナ"
+// "みかん"
+```
+
+> 💡 React では map をよく使い、forEach はあまり使いません。
+
+## some と every
+
+### some（1 つでも条件を満たすか）
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+console.log(numbers.some((n) => n > 3)); // true（4と5がある）
+console.log(numbers.some((n) => n > 10)); // false
+```
+
+### every（すべてが条件を満たすか）
+
+```javascript
+const numbers = [2, 4, 6, 8];
+
+console.log(numbers.every((n) => n % 2 === 0)); // true（全部偶数）
+console.log(numbers.every((n) => n > 5)); // false
+```
+
+## 高階関数を組み合わせる
+
+高階関数はチェーン（連鎖）して使えます。
+
+```javascript
+const users = [
+  { name: "田中", age: 25, active: true },
+  { name: "佐藤", age: 17, active: true },
+  { name: "鈴木", age: 32, active: false },
+  { name: "高橋", age: 28, active: true },
+];
+
+// アクティブな20歳以上のユーザーの名前一覧
+const result = users
+  .filter((user) => user.active) // アクティブなユーザーだけ
+  .filter((user) => user.age >= 20) // 20歳以上
+  .map((user) => user.name); // 名前だけ取り出す
+
+console.log(result); // ["田中", "高橋"]
+```
+
+## インデックスを使う
+
+map や filter のコールバック関数は、第 2 引数でインデックスを受け取れます。
+
+```javascript
+const fruits = ["りんご", "バナナ", "みかん"];
+
+const numbered = fruits.map((fruit, index) => {
+  return `${index + 1}. ${fruit}`;
+});
+console.log(numbered);
+// ["1. りんご", "2. バナナ", "3. みかん"]
+```
+
+## ミニ演習：高階関数をチェーンしよう
+
+Console で以下を試して、**各ステップの結果**を確認しましょう：
+
+```javascript
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// ステップ1: 偶数だけ抽出
+const evens = numbers.filter((n) => n % 2 === 0);
+console.log("偶数:", evens); // [2, 4, 6, 8, 10]
+
+// ステップ2: 2倍にする
+const doubled = evens.map((n) => n * 2);
+console.log("2倍:", doubled); // [4, 8, 12, 16, 20]
+
+// チェーンで一気に書く
+const result = numbers.filter((n) => n % 2 === 0).map((n) => n * 2);
+console.log("結果:", result); // [4, 8, 12, 16, 20]
+```
+
+> 💡 **ポイント**: チェーンを使うと、中間変数を減らしてコードをすっきり書けます。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+const products = [
+  { name: "りんご", price: 150, inStock: true },
+  { name: "バナナ", price: 100, inStock: false },
+  { name: "みかん", price: 80, inStock: true },
+  { name: "ぶどう", price: 300, inStock: true }
+];
+
+// 1. 商品名だけの配列を作る（map）
+const names = // ここを書く
+
+// 2. 在庫がある商品だけ抽出（filter）
+const inStockProducts = // ここを書く
+
+// 3. 価格が100円以上の商品で、名前だけの配列（filter + map）
+const expensiveNames = // ここを書く
+
+// 4. 「みかん」を検索（find）
+const mikan = // ここを書く
+```
+
+## まとめ
+
+| メソッド   | 説明                   | 戻り値               |
+| ---------- | ---------------------- | -------------------- |
+| **map**    | 各要素を変換           | 新しい配列           |
+| **filter** | 条件で絞り込み         | 新しい配列           |
+| **find**   | 条件に合う最初の 1 つ  | 要素（or undefined） |
+| forEach    | 各要素に処理実行       | なし                 |
+| some       | 1 つでも条件を満たす？ | boolean              |
+| every      | すべて条件を満たす？   | boolean              |
+
+- **map** は React でリスト表示に必須
+- **filter** は検索・絞り込みに使う
+- **find** は ID などで特定の要素を探すときに使う
+- 高階関数は**チェーン**して使える
+
+---
+
+## 🔗 次のステップ
+
+配列の高階関数がわかったら、[オブジェクトの基礎](./02-06_オブジェクトの基礎.md) に進みましょう！

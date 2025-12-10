@@ -1,0 +1,293 @@
+# React Hook Form【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - React Hook Form とは
+> - 基本的な使い方
+> - バリデーションルール
+
+> 💡 この記事は**任意**です。手動でのバリデーションで十分な場合はスキップ可能です。
+
+## React Hook Form とは？
+
+**React Hook Form** は、React でフォームを簡単に扱うためのライブラリです。
+
+### メリット
+
+- コード量が減る
+- パフォーマンスが良い（再レンダリングが少ない）
+- バリデーションが簡単
+
+## インストール
+
+```bash
+npm install react-hook-form
+```
+
+## 基本的な使い方
+
+```jsx
+import { useForm } from "react-hook-form";
+
+function MyForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register("name")} />
+      <button type="submit">送信</button>
+    </form>
+  );
+}
+```
+
+### ポイント
+
+- `useForm()` でフォームの機能を取得
+- `register("フィールド名")` でフォームに登録
+- `handleSubmit(onSubmit)` で送信処理をラップ
+
+> 💡 `{...register("name")}` の **spread 構文**は、`register()` が返すオブジェクト（`onChange`, `onBlur`, `name`, `ref`）を展開して input に渡しています。
+> 手動で `value` と `onChange` を書く必要がなくなるのがポイントです。
+
+## バリデーションルール
+
+```jsx
+<input
+  {...register("name", {
+    required: "名前は必須です",
+    minLength: { value: 2, message: "2文字以上で入力してください" },
+  })}
+/>;
+{
+  errors.name && <p>{errors.name.message}</p>;
+}
+```
+
+### よく使うルール
+
+```jsx
+// 必須
+{ required: "必須項目です" }
+
+// 最小文字数
+{ minLength: { value: 3, message: "3文字以上" } }
+
+// 最大文字数
+{ maxLength: { value: 100, message: "100文字以内" } }
+
+// パターン（正規表現）
+{ pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: "メールアドレス形式で" } }
+
+// カスタムバリデーション
+{ validate: (value) => value.length >= 8 || "8文字以上" }
+```
+
+## 実践例：登録フォーム
+
+```jsx
+import { useForm } from "react-hook-form";
+
+function RegisterForm() {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm();
+
+  const password = watch("password");
+
+  const onSubmit = async (data) => {
+    console.log(data);
+    // 送信処理...
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
+        <label>名前</label>
+        <input
+          {...register("name", {
+            required: "名前は必須です",
+          })}
+        />
+        {errors.name && <p className="error">{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <label>メールアドレス</label>
+        <input
+          type="email"
+          {...register("email", {
+            required: "メールアドレスは必須です",
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: "メールアドレスの形式が正しくありません",
+            },
+          })}
+        />
+        {errors.email && <p className="error">{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <label>パスワード</label>
+        <input
+          type="password"
+          {...register("password", {
+            required: "パスワードは必須です",
+            minLength: {
+              value: 8,
+              message: "8文字以上で入力してください",
+            },
+          })}
+        />
+        {errors.password && <p className="error">{errors.password.message}</p>}
+      </div>
+
+      <div>
+        <label>パスワード（確認）</label>
+        <input
+          type="password"
+          {...register("confirmPassword", {
+            required: "パスワード（確認）は必須です",
+            validate: (value) =>
+              value === password || "パスワードが一致しません",
+          })}
+        />
+        {errors.confirmPassword && (
+          <p className="error">{errors.confirmPassword.message}</p>
+        )}
+      </div>
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "送信中..." : "登録"}
+      </button>
+    </form>
+  );
+}
+```
+
+## デフォルト値の設定
+
+```jsx
+const { register, handleSubmit } = useForm({
+  defaultValues: {
+    name: "",
+    email: "",
+    category: "tech",
+  },
+});
+```
+
+## フォームのリセット
+
+```jsx
+const { reset } = useForm();
+
+const onSubmit = (data) => {
+  console.log(data);
+  reset(); // フォームをリセット
+};
+```
+
+## 手動バリデーションとの比較
+
+| 観点           | 手動 | React Hook Form |
+| -------------- | ---- | --------------- |
+| コード量       | 多い | 少ない          |
+| 学習コスト     | 低い | 少し高い        |
+| パフォーマンス | 普通 | 良い            |
+| 柔軟性         | 高い | 高い            |
+
+## まとめ
+
+- **React Hook Form** でフォーム実装が簡単に
+- `register` でフィールドを登録
+- バリデーションルールを宣言的に記述
+- `errors` でエラーメッセージを表示
+- 手動バリデーションより**コードがシンプル**
+
+> 💡 **手動 vs React Hook Form、どちらを使う？**
+>
+> - シンプルなフォーム（～ 3 項目）→ 手動で十分
+> - 複雑なフォーム（バリデーションが多い、項目が多い）→ React Hook Form が便利
+
+## 練習問題
+
+React Hook Form を使って以下のプロフィール編集フォームを作ってみましょう：
+
+1. ニックネーム（必須、2 文字以上）
+2. 自己紹介（100 文字以内）
+3. Web サイト URL（任意、URL 形式）
+4. デフォルト値を設定
+
+### 回答例
+
+```jsx
+import { useForm } from "react-hook-form";
+
+function ProfileForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      nickname: "",
+      bio: "",
+      website: "",
+    },
+  });
+
+  const onSubmit = (data) => console.log(data);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
+        <input
+          {...register("nickname", {
+            required: "ニックネームは必須です",
+            minLength: { value: 2, message: "2文字以上" },
+          })}
+          placeholder="ニックネーム"
+        />
+        {errors.nickname && <p>{errors.nickname.message}</p>}
+      </div>
+      <div>
+        <textarea
+          {...register("bio", {
+            maxLength: { value: 100, message: "100文字以内" },
+          })}
+          placeholder="自己紹介"
+        />
+        {errors.bio && <p>{errors.bio.message}</p>}
+      </div>
+      <div>
+        <input
+          {...register("website", {
+            pattern: { value: /^https?:\/\/.+/, message: "URL形式で入力" },
+          })}
+          placeholder="Webサイト"
+        />
+        {errors.website && <p>{errors.website.message}</p>}
+      </div>
+      <button type="submit">保存</button>
+    </form>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+React Hook Form がわかったら、[State 管理の設計](./04-04_State管理の設計.md) に進みましょう！

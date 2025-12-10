@@ -1,0 +1,246 @@
+# Box Model を理解する
+
+> 📌 **この記事で学ぶこと**
+>
+> - Box Model とは何か
+> - content, padding, border, margin の関係
+> - box-sizing の重要性
+> - 開発者ツールでの確認方法
+
+## Box Model とは？
+
+CSS では、すべての要素は「ボックス（箱）」として扱われます。
+この箱の構造を **Box Model（ボックスモデル）** と呼びます。
+
+Box Model を理解すると、要素のサイズや余白を正しく設定できるようになります。
+
+<!--
+📸 画像メモ: Box Model の図解
+- 中心: content（青）
+- その周り: padding（緑）
+- その周り: border（黄）
+- 一番外側: margin（オレンジ）
+-->
+
+## Box Model の構成
+
+ボックスは、内側から順に以下の 4 つの層で構成されます：
+
+```
+┌─────────────────────────────────────────┐
+│                margin                    │
+│   ┌─────────────────────────────────┐   │
+│   │           border                │   │
+│   │   ┌─────────────────────────┐   │   │
+│   │   │       padding           │   │   │
+│   │   │   ┌─────────────────┐   │   │   │
+│   │   │   │    content      │   │   │   │
+│   │   │   │   (中身)        │   │   │   │
+│   │   │   └─────────────────┘   │   │   │
+│   │   └─────────────────────────┘   │   │
+│   └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+| 名前        | 説明                                 |
+| ----------- | ------------------------------------ |
+| **content** | 要素の中身（テキストや画像など）     |
+| **padding** | 内側の余白（content と border の間） |
+| **border**  | 境界線                               |
+| **margin**  | 外側の余白（他の要素との間隔）       |
+
+## padding と margin の違い
+
+初心者が混乱しやすいポイントです！
+
+### padding（内側の余白）
+
+**ボックスの内側**にスペースを作ります。
+背景色は padding にも適用されます。
+
+```css
+.box {
+  background-color: lightblue;
+  padding: 20px;
+}
+```
+
+### margin（外側の余白）
+
+**ボックスの外側**にスペースを作ります。
+他の要素との間隔を調整します。
+
+```css
+.box {
+  margin: 20px;
+}
+```
+
+<!--
+📸 画像メモ: padding と margin の違いを視覚的に示す
+- 同じ背景色のボックス2つ
+- 左: padding を設定（内側が広がる）
+- 右: margin を設定（外側に余白）
+-->
+
+## box-sizing について
+
+ここが **超重要** です！
+
+### これが落とし穴
+
+例えば、以下のように書いたとき：
+
+```css
+.box {
+  width: 200px;
+  padding: 20px;
+  border: 5px solid black;
+}
+```
+
+**実際の幅はいくつでしょう？**
+
+答え：**250px**
+
+- content: 200px
+- padding: 20px × 2（左右）= 40px
+- border: 5px × 2（左右）= 10px
+- **合計: 250px**
+
+「width: 200px って書いたのに 250px になった！」というのは、よくあるトラップです。
+
+### 解決策：box-sizing: border-box
+
+```css
+.box {
+  box-sizing: border-box;
+  width: 200px;
+  padding: 20px;
+  border: 5px solid black;
+}
+```
+
+`box-sizing: border-box` を指定すると、**width は border と padding を含んだサイズ**になります。
+つまり、width: 200px なら本当に 200px になります。
+
+### 全要素に適用する（おすすめ）
+
+通常、すべての要素に border-box を適用しておきます：
+
+```css
+* {
+  box-sizing: border-box;
+}
+```
+
+> 💡 **React や Tailwind CSS を使う場合**、この設定は最初から適用されていることが多いです。
+
+## margin の特殊な挙動
+
+### margin: auto で中央揃え
+
+ブロック要素を水平方向に中央揃えにするときに使います：
+
+```css
+.container {
+  width: 800px;
+  margin: 0 auto; /* 上下 0、左右 auto */
+}
+```
+
+### マージンの相殺（Margin Collapse）
+
+縦方向に並んだ要素のマージンは、**重なり合って 1 つになる**ことがあります。
+
+```css
+.box1 {
+  margin-bottom: 30px;
+}
+.box2 {
+  margin-top: 20px;
+}
+```
+
+この場合、box1 と box2 の間隔は 50px ではなく **30px**（大きい方が採用）になります。
+
+> 💡 これは「バグ」ではなく CSS の仕様です。
+> Flexbox や Grid を使うと、この相殺は起きません。
+
+## 開発者ツールで確認する
+
+ブラウザの開発者ツールを使うと、Box Model を視覚的に確認できます。
+
+1. ブラウザで右クリック → 「検証」または「調査」
+2. 要素を選択
+3. 「Computed」または「ボックスモデル」タブを確認
+
+<!--
+📸 画像メモ: Chrome DevTools の Box Model 表示
+- 青（content）、緑（padding）、黄（border）、オレンジ（margin）が表示されている様子
+-->
+
+## 実践演習
+
+以下のコードを試して、Box Model を体験しましょう：
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Box Model</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      .box {
+        width: 200px;
+        height: 100px;
+        padding: 20px;
+        border: 3px solid #333;
+        margin: 20px;
+        background-color: lightblue;
+      }
+
+      .box:hover {
+        background-color: lightcoral;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">Box 1</div>
+    <div class="box">Box 2</div>
+    <div class="box">Box 3</div>
+  </body>
+</html>
+```
+
+開発者ツールで各ボックスを選択し、Box Model を確認してみてください。
+
+### 🎯 DevTools で値を変えてみよう
+
+開発者ツールでは、値をリアルタイムに変更して結果を確認できます：
+
+1. 要素を選択した状態で「Styles」タブを開く
+2. `padding: 20px` の `20` をクリック
+3. 数値を `50` に変更 → ボックスが大きくなる！
+4. `margin: 20px` も同様に変更してみる
+
+> 💡 この変更は一時的なもので、ページを更新すると元に戻ります。
+> 気軽に色々な値を試してみましょう！
+
+## まとめ
+
+- すべての要素は **Box Model** に従う
+- 内側から **content → padding → border → margin**
+- **padding** は内側の余白、**margin** は外側の余白
+- **box-sizing: border-box** を使うと直感的にサイズ指定できる
+- **開発者ツール**で Box Model を確認できる
+
+---
+
+## 🔗 次のステップ
+
+Box Model を理解したら、[Flexbox でレイアウトを作る](./01-04_Flexboxでレイアウトを作る.md) に進みましょう！

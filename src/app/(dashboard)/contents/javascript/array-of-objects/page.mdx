@@ -1,0 +1,307 @@
+# オブジェクトの配列を扱う
+
+> 📌 **この記事で学ぶこと**
+>
+> - オブジェクトの配列とは
+> - map, filter, find でオブジェクトの配列を操作
+> - 実践演習
+
+## オブジェクトの配列
+
+実際の開発では、オブジェクトを配列で管理することが非常に多いです。
+API から取得するデータも、多くの場合この形式です。
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 30 },
+  { id: 3, name: "鈴木", age: 22 },
+];
+```
+
+<!--
+📸 画像メモ: オブジェクトの配列のイメージ
+- 表形式でデータを表現
+- id | name | age みたいな感じ
+-->
+
+## map で加工
+
+各オブジェクトから特定のプロパティだけを取り出したり、加工したりできます。
+
+### 名前だけ取り出す
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 30 },
+  { id: 3, name: "鈴木", age: 22 },
+];
+
+const names = users.map((user) => user.name);
+console.log(names); // ["田中", "佐藤", "鈴木"]
+```
+
+### 新しいプロパティを追加
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 30 },
+];
+
+const usersWithGreeting = users.map((user) => ({
+  ...user,
+  greeting: `こんにちは、${user.name}さん！`,
+}));
+
+console.log(usersWithGreeting);
+// [
+//   { id: 1, name: "田中", age: 25, greeting: "こんにちは、田中さん！" },
+//   { id: 2, name: "佐藤", age: 30, greeting: "こんにちは、佐藤さん！" }
+// ]
+```
+
+> ⚠️ オブジェクトを返すときは `({ })` と括弧で囲む必要があります。
+
+## filter で絞り込み
+
+条件に合うオブジェクトだけを抽出できます。
+
+### 年齢で絞り込み
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 17 },
+  { id: 3, name: "鈴木", age: 32 },
+];
+
+// 20歳以上
+const adults = users.filter((user) => user.age >= 20);
+console.log(adults);
+// [{ id: 1, name: "田中", age: 25 }, { id: 3, name: "鈴木", age: 32 }]
+```
+
+### 特定の条件で絞り込み
+
+```javascript
+const products = [
+  { id: 1, name: "りんご", price: 150, inStock: true },
+  { id: 2, name: "バナナ", price: 100, inStock: false },
+  { id: 3, name: "みかん", price: 80, inStock: true },
+];
+
+// 在庫ありの商品
+const available = products.filter((p) => p.inStock);
+console.log(available);
+// [{ id: 1, name: "りんご"... }, { id: 3, name: "みかん"... }]
+
+// 100円以上の在庫あり商品
+const expensive = products.filter((p) => p.inStock && p.price >= 100);
+console.log(expensive);
+// [{ id: 1, name: "りんご", price: 150, inStock: true }]
+```
+
+## find で検索
+
+ID などで特定のオブジェクトを探すときに使います。
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 30 },
+  { id: 3, name: "鈴木", age: 22 },
+];
+
+// ID: 2 のユーザーを検索
+const user = users.find((u) => u.id === 2);
+console.log(user); // { id: 2, name: "佐藤", age: 30 }
+
+// 名前で検索
+const tanaka = users.find((u) => u.name === "田中");
+console.log(tanaka); // { id: 1, name: "田中", age: 25 }
+
+// 見つからない場合
+const notFound = users.find((u) => u.id === 999);
+console.log(notFound); // undefined
+```
+
+### よくあるエラー：undefined のプロパティにアクセス
+
+```javascript
+const users = [{ id: 1, name: "田中" }];
+
+// ❌ エラーになるパターン
+const user = users.find((u) => u.id === 999);
+console.log(user.name); // TypeError: Cannot read properties of undefined
+
+// ⭕ 安全なパターン1: if でチェック
+const user2 = users.find((u) => u.id === 999);
+if (user2) {
+  console.log(user2.name);
+} else {
+  console.log("ユーザーが見つかりません");
+}
+
+// ⭕ 安全なパターン2: オプショナルチェーン（?.）
+const user3 = users.find((u) => u.id === 999);
+console.log(user3?.name); // undefined（エラーにならない）
+```
+
+> 💡 **オプショナルチェーン（`?.`）** は React でも頻繁に使います！
+
+## 組み合わせて使う
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25, department: "営業" },
+  { id: 2, name: "佐藤", age: 30, department: "開発" },
+  { id: 3, name: "鈴木", age: 22, department: "開発" },
+  { id: 4, name: "高橋", age: 35, department: "営業" },
+];
+
+// 開発部門の人の名前一覧
+const devNames = users
+  .filter((user) => user.department === "開発")
+  .map((user) => user.name);
+
+console.log(devNames); // ["佐藤", "鈴木"]
+
+// 25歳以上の営業部門
+const seniorSales = users
+  .filter((user) => user.department === "営業")
+  .filter((user) => user.age >= 25);
+
+console.log(seniorSales);
+// [{ id: 1, name: "田中"... }, { id: 4, name: "高橋"... }]
+```
+
+## 特定の ID を除外する
+
+削除機能などで使います。
+
+```javascript
+const users = [
+  { id: 1, name: "田中" },
+  { id: 2, name: "佐藤" },
+  { id: 3, name: "鈴木" },
+];
+
+// id: 2 を削除
+const filtered = users.filter((user) => user.id !== 2);
+console.log(filtered);
+// [{ id: 1, name: "田中" }, { id: 3, name: "鈴木" }]
+```
+
+## 特定の ID を更新する
+
+```javascript
+const users = [
+  { id: 1, name: "田中", age: 25 },
+  { id: 2, name: "佐藤", age: 30 },
+  { id: 3, name: "鈴木", age: 22 },
+];
+
+// id: 2 の age を 31 に更新
+const updated = users.map((user) =>
+  user.id === 2 ? { ...user, age: 31 } : user
+);
+
+console.log(updated);
+// [
+//   { id: 1, name: "田中", age: 25 },
+//   { id: 2, name: "佐藤", age: 31 },  // ← 更新された
+//   { id: 3, name: "鈴木", age: 22 }
+// ]
+```
+
+## 合計や集計
+
+### reduce で合計
+
+```javascript
+const products = [
+  { name: "りんご", price: 150 },
+  { name: "バナナ", price: 100 },
+  { name: "みかん", price: 80 },
+];
+
+const total = products.reduce((sum, product) => sum + product.price, 0);
+console.log(total); // 330
+```
+
+### 最大値・最小値
+
+```javascript
+const users = [
+  { name: "田中", age: 25 },
+  { name: "佐藤", age: 30 },
+  { name: "鈴木", age: 22 },
+];
+
+const ages = users.map((u) => u.age);
+const maxAge = Math.max(...ages);
+const minAge = Math.min(...ages);
+
+console.log(maxAge); // 30
+console.log(minAge); // 22
+```
+
+## 実践演習
+
+以下のデータを使って課題に挑戦しましょう：
+
+```javascript
+const products = [
+  {
+    id: 1,
+    name: "JavaScript入門",
+    price: 2500,
+    category: "書籍",
+    inStock: true,
+  },
+  {
+    id: 2,
+    name: "React実践ガイド",
+    price: 3200,
+    category: "書籍",
+    inStock: true,
+  },
+  { id: 3, name: "MacBook Pro", price: 198000, category: "PC", inStock: false },
+  {
+    id: 4,
+    name: "キーボード",
+    price: 12000,
+    category: "周辺機器",
+    inStock: true,
+  },
+  { id: 5, name: "マウス", price: 5000, category: "周辺機器", inStock: true },
+];
+
+// 課題1: 在庫ありの商品名だけの配列を作る
+
+// 課題2: 「書籍」カテゴリの商品だけ抽出
+
+// 課題3: id: 4 の商品を検索
+
+// 課題4: 在庫ありの商品の合計金額
+
+// 課題5: id: 2 の価格を 3500 に更新した新しい配列
+```
+
+## まとめ
+
+- **オブジェクトの配列**は実際の開発で頻出
+- **map**で値の取り出しや変換
+- **filter**で条件に合うものを抽出
+- **find**で特定の 1 つを検索
+- **組み合わせ**で複雑な操作も可能
+- 削除は `filter(x => x.id !== targetId)`
+- 更新は `map(x => x.id === targetId ? {...x, 新しい値} : x)`
+
+---
+
+## 🔗 次のステップ
+
+オブジェクトの配列がわかったら、[非同期処理の基礎](./02-08_非同期処理の基礎.md) に進みましょう！

@@ -1,0 +1,239 @@
+# shadcn/ui 入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - shadcn/ui とは
+> - インストールと設定
+> - よく使うコンポーネント
+
+> 💡 この記事は**任意**です。Tailwind だけで十分な場合はスキップ可能です。
+
+## shadcn/ui とは？
+
+**shadcn/ui** は、Tailwind CSS ベースの美しいコンポーネント集です。
+
+特徴：
+
+- コピー&ペーストで使える
+- Tailwind CSS との相性抜群
+- カスタマイズ自由
+
+### なぜ shadcn/ui を使う？
+
+- **ゼロから作るより素早く**「良い感じ」の UI が作れる
+- **コードが自分のもの**：ライブラリではなく、ファイルをコピーするので自由に編集可能
+- **Tailwind と同じ考え方**：ユーティリティクラスでスタイルを変更できる
+
+> 💡 Tailwind だけで十分な場合もありますが、
+> モーダルやドロップダウンなど**複雑な UI** を作るときに shadcn/ui が役立ちます。
+
+## インストール
+
+```bash
+npx shadcn@latest init
+```
+
+質問に答えていきます（バージョンによっては表示されない質問もあります）：
+
+```
+Would you like to use TypeScript? › No
+Which style would you like to use? › Default
+Which color would you like to use? › Slate
+Where is your global CSS file? › src/index.css
+Would you like to use CSS variables? › Yes
+Where is your tailwind.config.js? › tailwind.config.js
+Configure the import alias for components? › @/components
+Configure the import alias for utils? › @/lib/utils
+```
+
+## コンポーネントの追加
+
+```bash
+# Button を追加
+npx shadcn@latest add button
+
+# 複数追加
+npx shadcn@latest add button input card dialog
+```
+
+追加されたコンポーネントは `src/components/ui/` に配置されます。
+
+## よく使うコンポーネント
+
+### Button
+
+```jsx
+import { Button } from "@/components/ui/button";
+
+<Button>デフォルト</Button>
+<Button variant="secondary">セカンダリ</Button>
+<Button variant="destructive">削除</Button>
+<Button variant="outline">アウトライン</Button>
+<Button variant="ghost">ゴースト</Button>
+<Button size="sm">小さい</Button>
+<Button size="lg">大きい</Button>
+```
+
+### Input
+
+```jsx
+import { Input } from "@/components/ui/input";
+
+<Input type="text" placeholder="名前を入力" />
+<Input type="email" placeholder="メールアドレス" />
+```
+
+### Card
+
+```jsx
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+<Card>
+  <CardHeader>
+    <CardTitle>カードタイトル</CardTitle>
+    <CardDescription>説明文</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>カードの内容</p>
+  </CardContent>
+  <CardFooter>
+    <Button>アクション</Button>
+  </CardFooter>
+</Card>;
+```
+
+### Dialog（モーダル）
+
+```jsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>開く</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>タイトル</DialogTitle>
+      <DialogDescription>説明</DialogDescription>
+    </DialogHeader>
+    <p>ダイアログの内容</p>
+  </DialogContent>
+</Dialog>;
+```
+
+## 実践例：タスク追加フォーム
+
+```jsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+function TaskForm({ onAdd }) {
+  const [text, setText] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>タスク追加</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="新しいタスク"
+          />
+          <Button type="submit">追加</Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## カスタマイズ
+
+コンポーネントは `src/components/ui/` にあるので、直接編集できます。
+
+```jsx
+// src/components/ui/button.jsx を編集
+const buttonVariants = cva("...", {
+  variants: {
+    variant: {
+      default: "bg-primary text-primary-foreground",
+      // カスタム variant を追加
+      success: "bg-green-500 text-white hover:bg-green-600",
+    },
+  },
+});
+```
+
+## まとめ
+
+- **shadcn/ui** は美しいコンポーネント集
+- `npx shadcn@latest add` でコンポーネントを追加
+- **Tailwind CSS** と組み合わせて使う
+- コンポーネントは**直接カスタマイズ可能**
+
+## 練習問題
+
+shadcn/ui の `Button`, `Input`, `Card` を使って以下のログインフォームを作ってみましょう：
+
+1. Card 内にフォームを配置
+2. メールとパスワードの Input
+3. 「ログイン」ボタン
+
+### 回答例
+
+```jsx
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+function LoginForm() {
+  return (
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>ログイン</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-4">
+          <Input type="email" placeholder="メールアドレス" />
+          <Input type="password" placeholder="パスワード" />
+          <Button type="submit" className="w-full">
+            ログイン
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+shadcn/ui がわかったら、[React Router 入門](./04-10_ReactRouter入門.md)（任意）か、[UI とロジックの分離](./04-11_UIとロジックの分離.md) に進みましょう！

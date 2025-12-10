@@ -1,0 +1,284 @@
+# Tailwind CSS を使いこなす
+
+> 📌 **この記事で学ぶこと**
+>
+> - Tailwind の復習
+> - よく使うユーティリティ
+> - レスポンシブ対応
+> - ダークモード
+
+## Tailwind CSS とは？（復習）
+
+**Tailwind CSS** は、ユーティリティファーストの CSS フレームワークです。
+
+```jsx
+// 従来のCSS
+<button className="primary-button">送信</button>
+
+// Tailwind
+<button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+  送信
+</button>
+```
+
+### なぜ Tailwind を使う？
+
+- **ファイルの切り替えが不要**: HTML と CSS を行ったり来たりしない
+- **命名の悩みがない**: クラス名を考えなくていい
+- **一貫性が保たれる**: デザインシステムが組み込まれている
+
+> 💡 最初は「クラス名が長い」と感じるかもしれませんが、
+> 慣れると CSS を書くより**素早くスタイリング**できます。
+
+## Vite + React での設定
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+**tailwind.config.js**
+
+```javascript
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+**src/index.css**
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## よく使うユーティリティ
+
+### スペーシング
+
+```jsx
+// Padding
+<div className="p-4">    // 全方向 16px
+<div className="px-4">   // 左右 16px
+<div className="py-2">   // 上下 8px
+<div className="pt-4">   // 上 16px
+
+// Margin
+<div className="m-4">    // 全方向 16px
+<div className="mx-auto"> // 中央寄せ
+<div className="mt-8">   // 上 32px
+```
+
+### Flexbox
+
+```jsx
+<div className="flex">              // display: flex
+<div className="flex items-center"> // 縦中央
+<div className="flex justify-between"> // 両端に配置
+<div className="flex gap-4">        // 間隔 16px
+<div className="flex flex-col">     // 縦並び
+```
+
+### Grid
+
+```jsx
+<div className="grid grid-cols-2 gap-4">  // 2列
+<div className="grid grid-cols-3 gap-4">  // 3列
+```
+
+### サイズ
+
+```jsx
+<div className="w-full">    // width: 100%
+<div className="w-1/2">     // width: 50%
+<div className="max-w-md">  // max-width: 28rem
+<div className="h-screen">  // height: 100vh
+```
+
+### テキスト
+
+```jsx
+<p className="text-sm">     // 小さい
+<p className="text-lg">     // 大きい
+<p className="text-2xl">    // より大きい
+<p className="font-bold">   // 太字
+<p className="text-center"> // 中央寄せ
+<p className="text-gray-500"> // グレー
+```
+
+### 背景・枠線
+
+```jsx
+<div className="bg-white">        // 背景白
+<div className="bg-gray-100">     // 背景グレー
+<div className="rounded">         // 角丸
+<div className="rounded-lg">      // 大きい角丸
+<div className="border">          // 枠線
+<div className="border-gray-200"> // 枠線の色
+<div className="shadow">          // 影
+<div className="shadow-lg">       // 大きい影
+```
+
+## レスポンシブデザイン
+
+ブレークポイントのプレフィックス：
+
+| プレフィックス | 画面幅      |
+| -------------- | ----------- |
+| `sm:`          | 640px 以上  |
+| `md:`          | 768px 以上  |
+| `lg:`          | 1024px 以上 |
+| `xl:`          | 1280px 以上 |
+
+```jsx
+// モバイル: 1列、タブレット: 2列、PC: 3列
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+// モバイル: 縦並び、PC: 横並び
+<div className="flex flex-col md:flex-row">
+```
+
+## ホバー・フォーカス
+
+```jsx
+// ホバー時
+<button className="bg-blue-500 hover:bg-blue-600">
+
+// フォーカス時
+<input className="border focus:border-blue-500 focus:ring-2">
+
+// アクティブ時
+<button className="active:scale-95">
+```
+
+## ダークモード
+
+**tailwind.config.js**
+
+```javascript
+export default {
+  darkMode: "class", // または 'media'
+  // ...
+};
+```
+
+```jsx
+// ライト: 白背景 → ダーク: 黒背景
+<div className="bg-white dark:bg-gray-900">
+
+// ライト: 黒文字 → ダーク: 白文字
+<p className="text-black dark:text-white">
+
+// 切り替えボタン
+<button onClick={() => document.documentElement.classList.toggle("dark")}>
+  テーマ切り替え
+</button>
+```
+
+## コンポーネントの再利用
+
+### 方法 1: 変数にまとめる
+
+```jsx
+const buttonClasses =
+  "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600";
+
+<button className={buttonClasses}>送信</button>;
+```
+
+### 方法 2: コンポーネント化
+
+```jsx
+function Button({ children, variant = "primary", onClick }) {
+  const baseClasses = "px-4 py-2 rounded font-medium";
+  const variants = {
+    primary: "bg-blue-500 text-white hover:bg-blue-600",
+    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+    danger: "bg-red-500 text-white hover:bg-red-600",
+  };
+
+  return (
+    <button className={`${baseClasses} ${variants[variant]}`} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+// 使用例
+<Button variant="primary">保存</Button>
+<Button variant="danger">削除</Button>
+```
+
+## 実践例：カード
+
+```jsx
+function Card({ title, children }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <h3 className="text-lg font-bold mb-4">{title}</h3>
+      <div className="text-gray-600">{children}</div>
+    </div>
+  );
+}
+```
+
+## Tailwind のベストプラクティス
+
+1. **クラスは読みやすい順序で**（レイアウト → サイズ → 色 → 状態）
+2. **繰り返すなら**コンポーネント化
+3. **カスタムカラー**は `tailwind.config.js` で定義
+4. **長すぎるクラス**は分割を検討
+
+## まとめ
+
+- **ユーティリティクラス**で素早くスタイリング
+- **レスポンシブ**は `sm:`, `md:`, `lg:` プレフィックス
+- **ホバー・フォーカス**は `hover:`, `focus:` プレフィックス
+- **ダークモード**は `dark:` プレフィックス
+- 再利用は**コンポーネント化**で対応
+
+## 練習問題
+
+以下のボタンバリエーションを Tailwind で作ってみましょう：
+
+1. **Primary**：青背景、白文字
+2. **Secondary**：グレー背景、黒文字
+3. **Danger**：赤背景、白文字
+4. すべてホバー時に少し濃くなる
+
+### 回答例
+
+```jsx
+function Button({ variant = "primary", children, ...props }) {
+  const variants = {
+    primary: "bg-blue-500 hover:bg-blue-600 text-white",
+    secondary: "bg-gray-200 hover:bg-gray-300 text-gray-800",
+    danger: "bg-red-500 hover:bg-red-600 text-white"
+  };
+
+  return (
+    <button
+      className={`px-4 py-2 rounded font-medium transition ${variants[variant]}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+// 使用例
+<Button variant="primary">保存</Button>
+<Button variant="secondary">キャンセル</Button>
+<Button variant="danger">削除</Button>
+```
+
+---
+
+## 🔗 次のステップ
+
+Tailwind がわかったら、[shadcn/ui 入門](./04-09_shadcnui入門.md)（任意）か、[React Router 入門](./04-10_ReactRouter入門.md)（任意）に進みましょう！

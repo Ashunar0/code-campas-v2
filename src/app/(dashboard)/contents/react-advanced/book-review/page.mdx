@@ -1,0 +1,412 @@
+# ブックレビューアプリを作ろう【ハンズオン 2】
+
+> 📌 **この記事で学ぶこと**
+>
+> - 本の一覧・追加・編集・削除
+> - レビュー機能
+> - 星 5 段階評価
+
+## 完成イメージ
+
+<!--
+📸 画像メモ: ブックレビューアプリの完成画面
+-->
+
+機能：
+
+- 本の一覧表示
+- 本の追加フォーム
+- レビューの投稿
+- 評価（星 5 段階）
+- 検索機能
+
+## Step 1: プロジェクトの準備
+
+```bash
+cd ~/Desktop/webex
+npm create vite@latest book-review -- --template react
+cd book-review
+npm install
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+Tailwind の設定は前の記事と同様です。
+
+## Step 2: カスタムフックを作成
+
+**src/hooks/useBooks.js**
+
+```jsx
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "books";
+
+export function useBooks() {
+  const [books, setBooks] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+  }, [books]);
+
+  const addBook = (bookData) => {
+    const newBook = {
+      id: crypto.randomUUID(),
+      ...bookData,
+      reviews: [],
+      createdAt: Date.now(),
+    };
+    setBooks([...books, newBook]);
+  };
+
+  const updateBook = (id, updates) => {
+    setBooks(books.map((b) => (b.id === id ? { ...b, ...updates } : b)));
+  };
+
+  const deleteBook = (id) => {
+    if (confirm("この本を削除しますか？")) {
+      setBooks(books.filter((b) => b.id !== id));
+    }
+  };
+
+  const addReview = (bookId, review) => {
+    setBooks(
+      books.map((b) => {
+        if (b.id === bookId) {
+          return {
+            ...b,
+            reviews: [
+              ...b.reviews,
+              { id: crypto.randomUUID(), ...review, createdAt: Date.now() },
+            ],
+          };
+        }
+        return b;
+      })
+    );
+  };
+
+  return { books, addBook, updateBook, deleteBook, addReview };
+}
+```
+
+## Step 3: コンポーネント作成
+
+**src/components/StarRating.jsx**
+
+```jsx
+export default function StarRating({ rating, onRate, readonly = false }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => !readonly && onRate?.(star)}
+          disabled={readonly}
+          className={`text-2xl ${
+            star <= rating ? "text-yellow-400" : "text-gray-300"
+          } ${!readonly && "cursor-pointer hover:scale-110 transition"}`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+**src/components/BookForm.jsx**
+
+```jsx
+import { useState } from "react";
+
+export default function BookForm({ onAdd }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    author: "",
+    description: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.title.trim()) return;
+    onAdd(formData);
+    setFormData({ title: "", author: "", description: "" });
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-6 rounded-lg shadow mb-6"
+    >
+      <h2 className="text-lg font-bold mb-4">📚 本を追加</h2>
+      <div className="space-y-4">
+        <input
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="タイトル"
+          className="w-full px-4 py-2 border rounded-lg"
+          required
+        />
+        <input
+          name="author"
+          value={formData.author}
+          onChange={handleChange}
+          placeholder="著者"
+          className="w-full px-4 py-2 border rounded-lg"
+        />
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="説明"
+          className="w-full px-4 py-2 border rounded-lg"
+          rows={3}
+        />
+        <button
+          type="submit"
+          className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          追加
+        </button>
+      </div>
+    </form>
+  );
+}
+```
+
+**src/components/ReviewForm.jsx**
+
+```jsx
+import { useState } from "react";
+import StarRating from "./StarRating";
+
+export default function ReviewForm({ onSubmit }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!rating) return alert("評価を選択してください");
+    onSubmit({ rating, comment });
+    setRating(0);
+    setComment("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-gray-50 p-4 rounded-lg">
+      <h3 className="font-bold mb-2">レビューを投稿</h3>
+      <div className="mb-2">
+        <StarRating rating={rating} onRate={setRating} />
+      </div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="コメント（任意）"
+        className="w-full px-3 py-2 border rounded mb-2"
+        rows={2}
+      />
+      <button
+        type="submit"
+        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        投稿
+      </button>
+    </form>
+  );
+}
+```
+
+**src/components/BookCard.jsx**
+
+```jsx
+import { useState } from "react";
+import StarRating from "./StarRating";
+import ReviewForm from "./ReviewForm";
+
+export default function BookCard({ book, onDelete, onAddReview }) {
+  const [showReviews, setShowReviews] = useState(false);
+
+  const avgRating =
+    book.reviews.length > 0
+      ? book.reviews.reduce((sum, r) => sum + r.rating, 0) / book.reviews.length
+      : 0;
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="text-xl font-bold">{book.title}</h3>
+        <button
+          onClick={() => onDelete(book.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          削除
+        </button>
+      </div>
+
+      {book.author && <p className="text-gray-600 mb-2">著者: {book.author}</p>}
+      {book.description && (
+        <p className="text-gray-500 mb-4">{book.description}</p>
+      )}
+
+      <div className="flex items-center gap-2 mb-4">
+        <StarRating rating={Math.round(avgRating)} readonly />
+        <span className="text-gray-500">
+          ({book.reviews.length} 件のレビュー)
+        </span>
+      </div>
+
+      <button
+        onClick={() => setShowReviews(!showReviews)}
+        className="text-blue-500 hover:underline"
+      >
+        {showReviews ? "閉じる" : "レビューを見る"}
+      </button>
+
+      {showReviews && (
+        <div className="mt-4 space-y-4">
+          {book.reviews.map((review) => (
+            <div key={review.id} className="border-t pt-3">
+              <StarRating rating={review.rating} readonly />
+              {review.comment && <p className="mt-1">{review.comment}</p>}
+            </div>
+          ))}
+          <ReviewForm onSubmit={(review) => onAddReview(book.id, review)} />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Step 4: App.jsx を完成
+
+**src/App.jsx**
+
+```jsx
+import { useState, useMemo } from "react";
+import { useBooks } from "./hooks/useBooks";
+import BookForm from "./components/BookForm";
+import BookCard from "./components/BookCard";
+
+function App() {
+  const { books, addBook, deleteBook, addReview } = useBooks();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredBooks = useMemo(() => {
+    return books.filter(
+      (book) =>
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [books, searchTerm]);
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <h1 className="text-3xl font-bold text-center mb-8">
+          📖 ブックレビュー
+        </h1>
+
+        <BookForm onAdd={addBook} />
+
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="本を検索..."
+          className="w-full px-4 py-2 border rounded-lg mb-6"
+        />
+
+        <div className="space-y-6">
+          {filteredBooks.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">本がありません</p>
+          ) : (
+            filteredBooks.map((book) => (
+              <BookCard
+                key={book.id}
+                book={book}
+                onDelete={deleteBook}
+                onAddReview={addReview}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## ポイント解説
+
+### ネストされたデータ
+
+本の中にレビューの配列がある「ネスト構造」を更新する例です。
+
+```jsx
+const addReview = (bookId, review) => {
+  setBooks(
+    books.map((b) => {
+      if (b.id === bookId) {
+        return {
+          ...b,
+          reviews: [...b.reviews, { id: crypto.randomUUID(), ...review }],
+        };
+      }
+      return b;
+    })
+  );
+};
+```
+
+> 💡 **ネストされたデータ更新のコツ**
+>
+> 1. `map` で対象の本を見つける
+> 2. スプレッド構文で本をコピー（`...b`）
+> 3. `reviews` 配列もスプレッドで新規追加（`[...b.reviews, 新レビュー]`）
+>
+> **元のデータを変更せず、常に新しいオブジェクトを作る**のがポイントです。
+
+### 平均評価の計算
+
+```jsx
+const avgRating =
+  book.reviews.length > 0
+    ? book.reviews.reduce((sum, r) => sum + r.rating, 0) / book.reviews.length
+    : 0;
+```
+
+## 発展課題
+
+1. **レビューの編集・削除**
+2. **評価順でソート**
+3. **React Router** で詳細ページ
+4. **カテゴリ**で分類
+
+## まとめ
+
+- **本とレビュー**のネストしたデータ構造
+- **星評価**コンポーネント
+- **CRUD** の実装
+- **検索機能**
+
+> 💡 **次のステップ**
+> このアプリに Firebase を連携すると、**複数ユーザーで共有**できるレビューサイトになります！
+
+---
+
+## 🔗 次のステップ
+
+ブックレビューアプリができたら、[まとめと次のステップ](./04-16_まとめと次のステップ.md) に進みましょう！

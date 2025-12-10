@@ -1,0 +1,225 @@
+# State のリフトアップ
+
+> 📌 **この記事で学ぶこと**
+>
+> - State はどこに置くべきか
+> - State のリフトアップとは
+> - 親子間でのデータのやり取り
+> - コールバック Props
+
+## State をどこに置くか
+
+React では、State を**どのコンポーネントに持たせるか**が重要です。
+
+### 基本ルール
+
+1. **その State を使うコンポーネント**に置く
+2. 複数のコンポーネントで使うなら**共通の親**に置く
+
+## 問題：兄弟コンポーネント間でデータを共有したい
+
+```
+App
+├── Input（入力値を持っている）
+└── Display（入力値を表示したい）
+```
+
+Input と Display は兄弟なので、直接データをやり取りできません。
+
+## 解決：State のリフトアップ
+
+State を**親コンポーネント**に移動（リフトアップ）します。
+
+```
+App（State を持つ）
+├── Input（Props で受け取る）
+└── Display（Props で受け取る）
+```
+
+### 実装例
+
+```jsx
+// 親コンポーネント
+function App() {
+  const [text, setText] = useState("");
+
+  return (
+    <div>
+      <Input text={text} onTextChange={setText} />
+      <Display text={text} />
+    </div>
+  );
+}
+
+// 子コンポーネント: Input
+function Input({ text, onTextChange }) {
+  return (
+    <input
+      type="text"
+      value={text}
+      onChange={(e) => onTextChange(e.target.value)}
+    />
+  );
+}
+
+// 子コンポーネント: Display
+function Display({ text }) {
+  return <p>入力値: {text}</p>;
+}
+```
+
+## コールバック Props
+
+子から親にデータを渡すには、**コールバック関数**を Props として渡します。
+
+```jsx
+// 親
+function App() {
+  const [count, setCount] = useState(0);
+
+  const handleIncrement = () => {
+    setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <p>カウント: {count}</p>
+      <Button onClick={handleIncrement} />
+    </div>
+  );
+}
+
+// 子
+function Button({ onClick }) {
+  return <button onClick={onClick}>+1</button>;
+}
+```
+
+### 流れ
+
+```
+1. 親が関数（handleIncrement）を定義
+2. 子に Props として渡す（onClick={handleIncrement}）
+3. 子がその関数を呼び出す
+4. 親の State が更新される
+5. 画面が再描画される
+```
+
+## 実践例：Todo アプリ
+
+```jsx
+// 親コンポーネント
+function App() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (text) => {
+    setTodos([...todos, { id: Date.now(), text, done: false }]);
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  return (
+    <div>
+      <TodoForm onAdd={addTodo} />
+      <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
+    </div>
+  );
+}
+
+// 子コンポーネント: TodoForm
+function TodoForm({ onAdd }) {
+  const [text, setText] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button type="submit">追加</button>
+    </form>
+  );
+}
+
+// 子コンポーネント: TodoList
+function TodoList({ todos, onToggle, onDelete }) {
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+        />
+      ))}
+    </ul>
+  );
+}
+
+// 子コンポーネント: TodoItem
+function TodoItem({ todo, onToggle, onDelete }) {
+  return (
+    <li>
+      <span
+        style={{ textDecoration: todo.done ? "line-through" : "none" }}
+        onClick={() => onToggle(todo.id)}
+      >
+        {todo.text}
+      </span>
+      <button onClick={() => onDelete(todo.id)}>削除</button>
+    </li>
+  );
+}
+```
+
+## データの流れ
+
+```
+App（State: todos）
+  │
+  ├── TodoForm
+  │   └── onAdd → App の addTodo を呼ぶ
+  │
+  └── TodoList（Props: todos）
+      └── TodoItem（Props: todo）
+          ├── onToggle → App の toggleTodo を呼ぶ
+          └── onDelete → App の deleteTodo を呼ぶ
+```
+
+- **上から下**：Props でデータを渡す
+- **下から上**：コールバック Props で親を呼び出す
+
+## いつリフトアップするか
+
+- 複数のコンポーネントで**同じデータ**を使いたい
+- 兄弟コンポーネント間でデータを**共有**したい
+- 親が子のデータを**監視**したい
+
+## まとめ
+
+- **State のリフトアップ**：State を共通の親に移動
+- **Props**で子にデータを渡す
+- **コールバック Props**で子から親にイベントを伝える
+- データは**一方向**（親 → 子）に流れる
+- イベントは**コールバック**で子 → 親に伝える
+
+---
+
+## 🔗 次のステップ
+
+State のリフトアップがわかったら、[JS と React の違いを理解しよう](./03-13_JSとReactの違いを理解しよう.md) に進みましょう！

@@ -1,0 +1,330 @@
+# Todo アプリに Firebase を統合しよう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - localStorage から Firestore への移行
+> - ユーザー認証の追加
+> - ユーザーごとの Todo 管理
+> - デプロイして公開
+
+## やることの概要
+
+Chapter 4 で作った **タスク管理アプリ（本格版）** を Firebase 対応にします。
+
+| 変更前       | 変更後           |
+| ------------ | ---------------- |
+| localStorage | Firestore        |
+| 認証なし     | Firebase Auth    |
+| ローカルのみ | デプロイして公開 |
+
+## Step 1: Firebase 設定ファイルを追加
+
+> 📝 **この Step でやること**: `src/lib/firebase.js` の確認
+
+前の記事で作成した `src/lib/firebase.js` を使います。
+
+## Step 2: AuthContext を追加
+
+> 📝 **この Step でやること**: 認証状態を管理する Context の作成
+
+**src/contexts/AuthContext.jsx**（05-12 で作成済み）
+
+```jsx
+import { createContext, useContext, useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../lib/firebase";
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ currentUser, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+```
+
+## Step 3: useTodos を Firestore 対応に修正
+
+> 📝 **この Step でやること**: localStorage から Firestore への移行
+
+**src/hooks/useTodos.js**
+
+```jsx
+import { useState, useEffect } from "react";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
+
+export function useTodos() {
+  const { currentUser } = useAuth();
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // リアルタイムで取得
+  useEffect(() => {
+    if (!currentUser) {
+      setTodos([]);
+      setLoading(false);
+      return;
+    }
+
+    const q = query(
+      collection(db, "todos"),
+      where("userId", "==", currentUser.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const todosData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTodos(todosData);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, [currentUser]);
+
+  // 追加
+  const addTodo = async (text) => {
+    await addDoc(collection(db, "todos"), {
+      text,
+      done: false,
+      userId: currentUser.uid,
+      createdAt: serverTimestamp(),
+    });
+  };
+
+  // 更新
+  const updateTodo = async (id, updates) => {
+    await updateDoc(doc(db, "todos", id), {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  };
+
+  // 削除
+  const deleteTodo = async (id) => {
+    await deleteDoc(doc(db, "todos", id));
+  };
+
+  // 完了切り替え
+  const toggleTodo = async (id, currentDone) => {
+    await updateDoc(doc(db, "todos", id), {
+      done: !currentDone,
+    });
+  };
+
+  return { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo };
+}
+```
+
+## Step 4: ログイン・登録ページを追加
+
+> 📝 **この Step でやること**: ユーザー認証用のページ作成
+
+**src/pages/Login.jsx**
+
+```jsx
+import { useState } from "react";
+import { useNavigate, Navigate, Link } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
+
+export default function Login() {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  if (currentUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (err) {
+      setError("メールアドレスまたはパスワードが正しくありません");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded-lg shadow">
+      <h1 className="text-2xl font-bold mb-6">ログイン</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email"
+          placeholder="メールアドレス"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-4 py-2 border rounded"
+          required
+        />
+        <input
+          type="password"
+          placeholder="パスワード"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-2 border rounded"
+          required
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          {loading ? "ログイン中..." : "ログイン"}
+        </button>
+      </form>
+      <p className="mt-4 text-center">
+        アカウントをお持ちでない方は
+        <Link to="/signup" className="text-blue-500 ml-1">
+          新規登録
+        </Link>
+      </p>
+    </div>
+  );
+}
+```
+
+## Step 5: App.jsx を更新
+
+> 📝 **この Step でやること**: ルーティングと認証ガードの設定
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
+import TodoApp from "./pages/TodoApp";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <TodoApp />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+
+export default App;
+```
+
+## Step 6: ヘッダーにログアウトボタンを追加
+
+> 📝 **この Step でやること**: UI の仕上げ
+
+```jsx
+import { signOut } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
+
+function Header() {
+  const { currentUser } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  return (
+    <header className="flex justify-between items-center mb-6">
+      <h1 className="text-2xl font-bold">📝 タスク管理</h1>
+      <div className="flex items-center gap-4">
+        <span className="text-gray-600">{currentUser?.email}</span>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          ログアウト
+        </button>
+      </div>
+    </header>
+  );
+}
+```
+
+## Step 7: デプロイ
+
+> 📝 **この Step でやること**: Firebase Hosting へのデプロイ
+
+```bash
+npm run build
+firebase deploy --only hosting
+```
+
+## 完成！
+
+これで **Firebase 対応 Todo アプリ** の完成です！
+
+- ✅ ユーザー登録・ログイン
+- ✅ Firestore でデータ保存
+- ✅ ユーザーごとのデータ管理
+- ✅ リアルタイム更新
+- ✅ Web にデプロイ
+
+## まとめ
+
+- **localStorage** → **Firestore** に移行
+- **Firebase Auth** でユーザー認証
+- **userId** でユーザーごとにデータ管理
+- **Firebase Hosting** でデプロイ
+
+---
+
+## 🔗 次のステップ
+
+Firebase 統合ができたら、[まとめと次のステップ](./05-23_まとめと次のステップ.md) に進みましょう！

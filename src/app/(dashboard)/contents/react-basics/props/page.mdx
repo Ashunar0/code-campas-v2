@@ -1,0 +1,231 @@
+# Props でデータを渡す
+
+> 📌 **この記事で学ぶこと**
+>
+> - Props とは何か
+> - Props の渡し方と受け取り方
+> - 分割代入での受け取り
+> - children の使い方
+
+## Props とは？
+
+**Props**（プロップス）は、親コンポーネントから子コンポーネントに**データを渡す**仕組みです。
+
+```
+親コンポーネント
+    │
+    │  Props: { name: "田中", age: 25 }
+    ↓
+子コンポーネント
+```
+
+## Props の渡し方
+
+属性のように書いて渡します。
+
+```jsx
+// 親コンポーネント
+function App() {
+  return (
+    <div>
+      <Greeting name="田中" />
+      <Greeting name="佐藤" />
+    </div>
+  );
+}
+```
+
+## Props の受け取り方
+
+### 方法 1: props オブジェクトで受け取る
+
+```jsx
+// 子コンポーネント
+const Greeting = (props) => {
+  return <h1>こんにちは、{props.name}さん！</h1>;
+};
+```
+
+### 方法 2: 分割代入で受け取る（推奨）
+
+```jsx
+// 子コンポーネント
+const Greeting = ({ name }) => {
+  return <h1>こんにちは、{name}さん！</h1>;
+};
+```
+
+> 💡 分割代入の方がシンプルで読みやすいので、こちらを使いましょう。
+
+## 複数の Props
+
+```jsx
+// 親
+<UserCard name="田中太郎" age={25} email="tanaka@example.com" />;
+
+// 子
+const UserCard = ({ name, age, email }) => {
+  return (
+    <div className="card">
+      <h2>{name}</h2>
+      <p>年齢: {age}歳</p>
+      <p>メール: {email}</p>
+    </div>
+  );
+};
+```
+
+## 様々な値を渡す
+
+```jsx
+// 文字列
+<Component title="タイトル" />
+
+// 数値（{ } で囲む）
+<Component count={10} />
+
+// 真偽値
+<Component isActive={true} />
+<Component isActive />  {/* true の省略形 */}
+
+// 配列
+<Component items={["りんご", "バナナ", "みかん"]} />
+
+// オブジェクト
+<Component user={{ name: "田中", age: 25 }} />
+
+// 関数
+<Component onClick={() => console.log("クリック")} />
+```
+
+## children
+
+特殊な Props として `children` があります。
+タグの**中身**を渡すことができます。
+
+```jsx
+// 親
+<Card>
+  <p>カードの中身です</p>
+</Card>;
+
+// 子
+const Card = ({ children }) => {
+  return <div className="card">{children}</div>;
+};
+```
+
+### children の実用例：Button コンポーネント
+
+```jsx
+const Button = ({ children, onClick }) => {
+  return (
+    <button className="btn" onClick={onClick}>
+      {children}
+    </button>
+  );
+};
+
+// 使用例
+<Button onClick={handleClick}>送信</Button>
+<Button onClick={handleCancel}>キャンセル</Button>
+```
+
+## デフォルト値
+
+Props が渡されなかった場合のデフォルト値を設定できます。
+
+```jsx
+const Greeting = ({ name = "ゲスト" }) => {
+  return <h1>こんにちは、{name}さん！</h1>;
+};
+
+// 使用例
+<Greeting name="田中" />  // → こんにちは、田中さん！
+<Greeting />              // → こんにちは、ゲストさん！
+```
+
+## Props は読み取り専用
+
+**Props は変更できません**。変更しようとするとエラーになります。
+
+```jsx
+// ❌ エラー
+const Greeting = ({ name }) => {
+  name = "佐藤"; // Props を変更しようとしている
+  return <h1>{name}</h1>;
+};
+```
+
+変更が必要なデータは **State**（次の記事）を使います。
+
+## 実践例：UserCard コンポーネント
+
+**src/components/UserCard.jsx**
+
+```jsx
+const UserCard = ({ name, role, imageUrl, isOnline }) => {
+  return (
+    <div className="user-card">
+      <img src={imageUrl} alt={name} />
+      <div className="user-info">
+        <h3>{name}</h3>
+        <p>{role}</p>
+        <span className={isOnline ? "online" : "offline"}>
+          {isOnline ? "オンライン" : "オフライン"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default UserCard;
+```
+
+**src/App.jsx**
+
+```jsx
+import UserCard from "./components/UserCard";
+
+function App() {
+  return (
+    <div>
+      <UserCard
+        name="田中太郎"
+        role="エンジニア"
+        imageUrl="https://via.placeholder.com/100"
+        isOnline={true}
+      />
+      <UserCard
+        name="佐藤花子"
+        role="デザイナー"
+        imageUrl="https://via.placeholder.com/100"
+        isOnline={false}
+      />
+    </div>
+  );
+}
+```
+
+## Props と State の違い（予告）
+
+|              | Props                            | State                          |
+| ------------ | -------------------------------- | ------------------------------ |
+| データの出所 | 親から渡される                   | 自分で持つ                     |
+| 変更可能     | ❌ 読み取り専用                  | ⭕ 変更可能                    |
+| 用途         | コンポーネント間のデータ受け渡し | コンポーネント内の動的なデータ |
+
+## まとめ
+
+- **Props** は親から子へデータを渡す仕組み
+- 属性のように書いて渡す
+- **分割代入**で受け取るのが一般的
+- **children** でタグの中身を渡せる
+- **デフォルト値**を設定できる
+- Props は**読み取り専用**（変更不可）
+
+---
+
+## 🔗 次のステップ
+
+Props がわかったら、[State で状態を管理する](./03-05_Stateで状態を管理する.md) に進みましょう！

@@ -1,0 +1,158 @@
+# ユーザーごとのデータ管理
+
+> 📌 **この記事で学ぶこと**
+>
+> - userId をドキュメントに含める
+> - ユーザーごとにデータをフィルタリング
+> - データの所有権
+
+## なぜユーザーごとに分けるのか
+
+複数ユーザーがいる場合、**自分のデータだけ**を見れるようにする必要があります。
+
+```
+todos/
+├── todo1 { text: "買い物", userId: "user1" }  ← user1 のみ
+├── todo2 { text: "掃除",   userId: "user1" }  ← user1 のみ
+├── todo3 { text: "勉強",   userId: "user2" }  ← user2 のみ
+```
+
+## userId を含めて保存
+
+```javascript
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./lib/firebase";
+import { useAuth } from "./contexts/AuthContext";
+
+const addTodo = async (text) => {
+  const { currentUser } = useAuth();
+
+  await addDoc(collection(db, "todos"), {
+    text,
+    done: false,
+    userId: currentUser.uid, // ユーザー ID を含める
+    createdAt: serverTimestamp(),
+  });
+};
+```
+
+## ユーザーごとにフィルタリング
+
+```javascript
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "./lib/firebase";
+import { useAuth } from "./contexts/AuthContext";
+
+const fetchMyTodos = async () => {
+  const { currentUser } = useAuth();
+
+  const q = query(
+    collection(db, "todos"),
+    where("userId", "==", currentUser.uid) // 自分の Todo だけ
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+```
+
+## リアルタイムリスナーでの実装
+
+```jsx
+function useTodos() {
+  const { currentUser } = useAuth();
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const q = query(
+      collection(db, "todos"),
+      where("userId", "==", currentUser.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setTodos(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return unsubscribe;
+  }, [currentUser]);
+
+  return todos;
+}
+```
+
+## 更新・削除時の所有権チェック
+
+更新や削除の前に、自分のデータかどうかを確認します：
+
+```javascript
+const deleteTodo = async (todoId) => {
+  const todoRef = doc(db, "todos", todoId);
+  const todoSnap = await getDoc(todoRef);
+
+  if (!todoSnap.exists()) {
+    throw new Error("Todo が見つかりません");
+  }
+
+  // 所有権チェック
+  if (todoSnap.data().userId !== currentUser.uid) {
+    throw new Error("削除権限がありません");
+  }
+
+  await deleteDoc(todoRef);
+};
+```
+
+## セキュリティルールとの組み合わせ
+
+クライアント側のチェックは突破される可能性があります。
+**セキュリティルール**でサーバー側でもチェックします（次の記事で解説）。
+
+## データ構造のパターン
+
+### パターン 1: フラットな構造（推奨）
+
+```
+todos/
+  {todoId}/
+    text: "..."
+    userId: "user1"
+```
+
+### パターン 2: ユーザーごとのサブコレクション
+
+```
+users/
+  {userId}/
+    todos/
+      {todoId}/
+        text: "..."
+```
+
+通常は**パターン 1**が推奨です。
+クエリがシンプルで、複数ユーザーのデータを取得しやすいためです。
+
+## まとめ
+
+- **userId** をドキュメントに含める
+- **where** でユーザーごとにフィルタリング
+- 更新・削除前に**所有権チェック**
+- フラットな構造が推奨
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. Todo を追加するときに `userId: currentUser.uid` を含めてみましょう
+> 2. `where("userId", "==", currentUser.uid)` で自分の Todo だけを取得
+> 3. 別のユーザーでログインし、Todo が見えないことを確認
+>
+> **確認ポイント**: Firebase Console で `userId` フィールドが保存されていますか？
+
+---
+
+## 🔗 次のステップ
+
+ユーザーごとのデータ管理ができたら、[セキュリティルール入門](./05-18_セキュリティルール入門.md)（任意）に進みましょう！

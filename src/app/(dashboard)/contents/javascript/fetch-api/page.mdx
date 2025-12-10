@@ -1,0 +1,296 @@
+# fetch で API 通信
+
+> 📌 **この記事で学ぶこと**
+>
+> - API とは何か
+> - fetch の使い方
+> - JSON の取得
+> - エラーハンドリング
+
+## API とは？
+
+**API**（Application Programming Interface）は、異なるシステム間でデータをやり取りするための仕組みです。
+
+Web アプリでは、サーバーからデータを取得するために **Web API** を使います。
+
+例：
+
+- 天気情報を取得
+- ポケモンの情報を取得
+- ユーザーのログイン情報を確認
+
+<!--
+📸 画像メモ: API の概念図
+- ブラウザ（クライアント）→ リクエスト → サーバー
+- サーバー → レスポンス（JSON）→ ブラウザ
+-->
+
+## fetch とは？
+
+**fetch** は、JavaScript で API 通信を行うための組み込み関数です。
+
+```javascript
+const response = await fetch("https://api.example.com/data");
+```
+
+## 基本的な使い方
+
+### GET リクエスト（データ取得）
+
+```javascript
+const fetchData = async () => {
+  const response = await fetch("https://pokeapi.co/api/v2/pokemon/1");
+  const data = await response.json();
+  console.log(data);
+};
+
+fetchData();
+```
+
+### コードの解説
+
+1. `fetch(URL)` : 指定した URL にリクエストを送る
+2. `await response.json()` : レスポンスを JSON 形式に変換
+3. `data` : 取得したデータ（オブジェクト）
+
+## PokeAPI で試してみよう
+
+[PokeAPI](https://pokeapi.co/) は、ポケモンの情報を取得できる無料の API です。
+
+```javascript
+const getPokemon = async () => {
+  const response = await fetch("https://pokeapi.co/api/v2/pokemon/25");
+  const data = await response.json();
+
+  console.log(data.name); // "pikachu"
+  console.log(data.id); // 25
+  console.log(data.height); // 4 (0.4m)
+  console.log(data.types[0].type.name); // "electric"
+};
+
+getPokemon();
+```
+
+<!--
+📸 画像メモ: Console に表示されたピカチュウのデータ
+-->
+
+### 複数のポケモンを取得
+
+```javascript
+const getPokemonList = async () => {
+  const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=10");
+  const data = await response.json();
+
+  console.log(data.results);
+  // [{ name: "bulbasaur", url: "..." }, { name: "ivysaur", url: "..." }, ...]
+};
+
+getPokemonList();
+```
+
+## エラーハンドリング
+
+API 通信は失敗する可能性があります。
+必ず `try-catch` でエラーをハンドリングしましょう。
+
+```javascript
+const fetchData = async () => {
+  try {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon/1");
+
+    // レスポンスが正常かチェック
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+  }
+};
+
+fetchData();
+```
+
+### よくあるエラー
+
+| エラー                    | 原因                                           |
+| ------------------------- | ---------------------------------------------- |
+| 404 Not Found             | URL が間違っている、リソースが存在しない       |
+| 500 Internal Server Error | サーバー側の問題                               |
+| Network Error             | インターネット接続の問題                       |
+| CORS Error                | 異なるドメインからのアクセスが許可されていない |
+
+### CORS エラーについて
+
+**CORS**（Cross-Origin Resource Sharing）エラーは、初心者が最もつまずきやすいエラーの一つです。
+
+```
+Access to fetch at 'https://...' from origin 'http://localhost:...'
+has been blocked by CORS policy
+```
+
+これは**セキュリティの仕組み**であり、エラーではなく正常な動作です。
+
+**対処法**：
+
+- ✅ CORS を許可している API（PokeAPI など）を使う
+- ✅ サーバー側で CORS を許可する設定を追加する
+- ✅ 開発中はプロキシを使う（Firebase Functions など）
+
+> 💡 PokeAPI や JSONPlaceholder などの練習用 API は CORS を許可しているので、学習中は問題ありません。
+
+## DevTools で API 通信を確認しよう
+
+実際の開発では、DevTools の **Network** タブで API 通信をデバッグします。
+
+### 確認手順
+
+1. ブラウザで DevTools を開く（右クリック → 検証）
+2. **Network** タブをクリック
+3. **Fetch/XHR** でフィルタリング
+4. PokeAPI を使う JavaScript を実行
+5. リクエストをクリックして詳細を確認
+
+### 確認できること
+
+| タブ     | 内容                                |
+| -------- | ----------------------------------- |
+| Headers  | リクエスト/レスポンスのヘッダー情報 |
+| Preview  | レスポンスデータのプレビュー        |
+| Response | 生のレスポンスデータ                |
+| Timing   | リクエストにかかった時間            |
+
+> 💡 **Preview** タブでは、JSON が見やすく整形されて表示されます。
+
+## POST リクエスト（データ送信）
+
+データを送信する場合は、オプションを指定します。
+
+```javascript
+const postData = async () => {
+  const response = await fetch("https://api.example.com/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "田中太郎",
+      email: "tanaka@example.com",
+    }),
+  });
+
+  const data = await response.json();
+  console.log(data);
+};
+```
+
+> 💡 Firebase を使う場合は、Firebase SDK が用意されているので、直接 fetch を使うことは少ないです。
+
+## 実践：ポケモンを検索する関数
+
+```javascript
+const searchPokemon = async (name) => {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log("ポケモンが見つかりませんでした");
+        return null;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      id: data.id,
+      name: data.name,
+      height: data.height,
+      weight: data.weight,
+      types: data.types.map((t) => t.type.name),
+      image: data.sprites.front_default,
+    };
+  } catch (error) {
+    console.error("エラー:", error);
+    return null;
+  }
+};
+
+// 使用例
+const main = async () => {
+  const pokemon = await searchPokemon("pikachu");
+  if (pokemon) {
+    console.log(`${pokemon.name} (No.${pokemon.id})`);
+    console.log(`タイプ: ${pokemon.types.join(", ")}`);
+    console.log(`画像: ${pokemon.image}`);
+  }
+};
+
+main();
+```
+
+## ローディング状態の管理
+
+API 通信中は「読み込み中...」と表示することが多いです。
+
+```javascript
+let isLoading = false;
+
+const fetchData = async () => {
+  isLoading = true;
+  console.log("読み込み中...");
+
+  try {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon/1");
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("エラー:", error);
+  } finally {
+    isLoading = false;
+    console.log("読み込み完了");
+  }
+};
+```
+
+> 💡 React では `useState` を使ってローディング状態を管理します。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+// 1. 好きなポケモンの情報を取得して表示
+const getPokemon = async (id) => {
+  // ここを書いてみよう
+};
+
+// 2. 最初の20匹のポケモン名を配列で取得
+const getPokemonNames = async () => {
+  // ここを書いてみよう
+};
+
+// 3. エラーハンドリングを入れて、存在しないポケモンを検索
+const searchPokemon = async (name) => {
+  // ここを書いてみよう
+};
+```
+
+## まとめ
+
+- **API** はデータをやり取りする仕組み
+- **fetch** で API 通信を行う
+- `await response.json()` で JSON を取得
+- **try-catch** でエラーハンドリング
+- `response.ok` でレスポンスが正常かチェック
+- POST リクエストでデータを送信
+
+---
+
+## 🔗 次のステップ
+
+fetch がわかったら、[import / export](./02-10_importとexport.md) に進みましょう！

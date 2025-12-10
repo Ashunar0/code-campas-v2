@@ -9,7 +9,7 @@ import {
 } from "react";
 import { User, onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { getAuthInstance, db } from "@/lib/firebase";
 import { User as CustomUser } from "@/types/type";
 
 type AuthContextType = {
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // 承認されていない場合はログアウト
       if (userWithDates.status !== "approved") {
-        await signOut(auth);
+        await signOut(getAuthInstance());
         setUser(null);
         setUserDetails(null);
         return false;
@@ -74,7 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    // クライアントサイドでのみ実行
+    if (typeof window === "undefined") {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(getAuthInstance(), async (firebaseUser) => {
       setUser(firebaseUser);
 
       if (firebaseUser?.uid) {

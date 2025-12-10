@@ -1,0 +1,159 @@
+# まとめと次のステップ
+
+> 📌 **この記事で学ぶこと**
+>
+> - JavaScript で学んだことの振り返り
+> - React でどう活かされるか
+> - 次の章への準備
+
+## この章で学んだこと
+
+おつかれさまでした！🎉
+
+JavaScript 章では、Web アプリ開発の土台となる知識を学びました。
+
+### 基礎
+
+| 項目     | 内容             |
+| -------- | ---------------- |
+| 変数     | let, const       |
+| 演算子   | 算術、比較、論理 |
+| 条件分岐 | if, 三項演算子   |
+| 関数     | アロー関数 ⭐    |
+
+### 配列・オブジェクト
+
+| 項目           | 内容                            |
+| -------------- | ------------------------------- |
+| 配列           | push, filter, スプレッド構文    |
+| 高階関数       | map ⭐, filter ⭐, find         |
+| オブジェクト   | プロパティアクセス、分割代入 ⭐ |
+| スプレッド構文 | コピー、マージ、更新 ⭐         |
+
+### 非同期・その他
+
+| 項目       | 内容                      |
+| ---------- | ------------------------- |
+| 非同期処理 | async/await ⭐, try-catch |
+| API 通信   | fetch ⭐                  |
+| モジュール | import/export             |
+
+> ⭐ は React で特に重要
+
+## ゼミワークで作ったもの
+
+| Week   | 作ったもの   | 学んだこと                   |
+| ------ | ------------ | ---------------------------- |
+| Week 0 | FizzBuzz     | for 文、条件分岐             |
+| Week 1 | クイズアプリ | 配列、オブジェクト、イベント |
+| Week 1 | 自動販売機   | 状態管理、在庫管理（任意）   |
+| Week 2 | メモアプリ   | CRUD、DOM 操作               |
+
+## React でどう活かされるか
+
+JavaScript で学んだ内容は、React でそのまま使えます。
+
+### アロー関数 → コンポーネント
+
+```jsx
+// React のコンポーネント = アロー関数
+const Greeting = ({ name }) => {
+  return <h1>こんにちは、{name}さん！</h1>;
+};
+```
+
+### map → リスト表示
+
+```jsx
+const users = ["田中", "佐藤", "鈴木"];
+
+return (
+  <ul>
+    {users.map((user) => (
+      <li key={user}>{user}</li>
+    ))}
+  </ul>
+);
+```
+
+### 分割代入 → Props
+
+```jsx
+// props を分割代入で受け取る
+const UserCard = ({ name, age, email }) => {
+  return (
+    <div>
+      <h2>{name}</h2>
+      <p>{age}歳</p>
+      <p>{email}</p>
+    </div>
+  );
+};
+```
+
+### スプレッド構文 → State 更新
+
+```jsx
+const [user, setUser] = useState({ name: "", age: 0 });
+
+// スプレッド構文で一部だけ更新
+setUser({ ...user, name: "田中" });
+```
+
+### async/await → データ取得
+
+```jsx
+useEffect(() => {
+  const fetchData = async () => {
+    const response = await fetch("https://api.example.com/data");
+    const data = await response.json();
+    setData(data);
+  };
+  fetchData();
+}, []);
+```
+
+### filter → 削除機能
+
+```jsx
+const deleteTodo = (id) => {
+  setTodos(todos.filter((todo) => todo.id !== id));
+};
+```
+
+## チェックリスト
+
+次の章に進む前に、以下を確認しましょう：
+
+- [ ] 変数を `const` / `let` で宣言できる
+- [ ] アロー関数が書ける
+- [ ] `map` で配列を変換できる
+- [ ] `filter` で配列を絞り込める
+- [ ] オブジェクトの分割代入ができる
+- [ ] スプレッド構文で配列・オブジェクトを操作できる
+- [ ] `async/await` で非同期処理ができる
+- [ ] `fetch` で API からデータを取得できる
+
+> 💡 全部にチェックがつかなくても大丈夫！
+> React を学びながら復習していきましょう。
+
+## 次の章
+
+次は **React（基礎）** を学びます！
+
+- コンポーネント
+- JSX
+- Props と State
+- イベント処理
+- リスト表示
+- 条件付きレンダリング
+- フォーム
+- useEffect
+
+JavaScript で学んだ知識をフル活用して、React アプリを作っていきましょう！
+
+---
+
+## 🔗 次のステップ
+
+準備ができたら、[Chapter 3: React 基礎](../03_React基礎/03-00_はじめに.md) に進みましょう！

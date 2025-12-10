@@ -1,0 +1,343 @@
+# CSS の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - CSS とは何か
+> - CSS の書き方（セレクタ、プロパティ、値）
+> - CSS の適用方法
+> - よく使うプロパティ
+
+## CSS とは？
+
+**CSS**（Cascading Style Sheets）は、Web ページの**見た目**を整えるための言語です。
+
+HTML が「構造」を作るのに対し、CSS は「装飾」を担当します。
+
+- 文字の色を変える
+- 背景色を設定する
+- レイアウトを調整する
+- アニメーションを付ける
+
+<!--
+📸 画像メモ: CSS あり/なしの比較
+- 左: CSS なし（素の HTML）
+- 右: CSS あり（スタイリング済み）
+-->
+
+## CSS の基本構文
+
+CSS は以下の形式で書きます：
+
+```css
+セレクタ {
+  プロパティ: 値;
+}
+```
+
+例：
+
+```css
+h1 {
+  color: blue;
+  font-size: 24px;
+}
+```
+
+- **セレクタ**：どの要素にスタイルを適用するか（h1, p, .class, #id など）
+- **プロパティ**：何を変えるか（color, font-size など）
+- **値**：どう変えるか（blue, 24px など）
+
+## CSS の適用方法
+
+CSS を HTML に適用する方法は 3 つあります。
+
+### 1. インラインスタイル
+
+HTML タグに直接書く方法。
+
+```html
+<p style="color: red; font-size: 16px;">赤い文字</p>
+```
+
+> ⚠️ 管理が大変なので、あまり使いません。
+
+### 2. 内部スタイル（style タグ）
+
+HTML の `<head>` 内に書く方法。
+
+```html
+<head>
+  <style>
+    p {
+      color: red;
+      font-size: 16px;
+    }
+  </style>
+</head>
+```
+
+### 3. 外部スタイル（推奨 ✅）
+
+別ファイル（.css）に書いて読み込む方法。
+
+**style.css**
+
+```css
+p {
+  color: red;
+  font-size: 16px;
+}
+```
+
+**index.html**
+
+```html
+<head>
+  <link rel="stylesheet" href="style.css" />
+</head>
+```
+
+> 💡 React では、この外部スタイル方式（または Tailwind CSS）を使います。
+
+## セレクタの種類
+
+### タグセレクタ
+
+HTML タグ名で指定。
+
+```css
+p {
+  color: blue;
+}
+```
+
+### クラスセレクタ
+
+クラス名で指定（`.` を付ける）。
+
+```css
+.highlight {
+  background-color: yellow;
+}
+```
+
+```html
+<p class="highlight">ハイライトされたテキスト</p>
+```
+
+### ID セレクタ
+
+ID で指定（`#` を付ける）。
+
+```css
+#header {
+  background-color: black;
+}
+```
+
+```html
+<div id="header">ヘッダー</div>
+```
+
+### クラス vs ID
+
+| 種類   | 記号 | 特徴                                 |
+| ------ | ---- | ------------------------------------ |
+| クラス | `.`  | 複数の要素に使える、再利用向き       |
+| ID     | `#`  | 1 つの要素だけ、一意に特定したいとき |
+
+> 💡 **基本的にはクラスを使う**ことをおすすめします。
+> React でも className（クラス）を使うことがほとんどです。
+
+## よく使うプロパティ
+
+### テキスト関連
+
+```css
+/* 文字の色 */
+color: #333333;
+
+/* 文字のサイズ */
+font-size: 16px;
+
+/* 文字の太さ */
+font-weight: bold; /* 太字 */
+font-weight: normal; /* 通常 */
+font-weight: 700; /* 数値で指定 */
+
+/* 文字の配置 */
+text-align: left; /* 左揃え */
+text-align: center; /* 中央揃え */
+text-align: right; /* 右揃え */
+
+/* 行の高さ */
+line-height: 1.5;
+```
+
+### 背景関連
+
+```css
+/* 背景色 */
+background-color: #f0f0f0;
+
+/* 背景画像 */
+background-image: url("image.jpg");
+
+/* 背景のサイズ */
+background-size: cover;
+```
+
+### サイズ関連
+
+```css
+/* 幅 */
+width: 100px;
+width: 50%; /* 親要素の50% */
+width: 100%; /* 親要素いっぱい */
+
+/* 高さ */
+height: 200px;
+
+/* 最大幅・最小幅 */
+max-width: 800px;
+min-width: 300px;
+```
+
+### 余白関連
+
+```css
+/* 外側の余白（margin） */
+margin: 10px; /* 全方向 */
+margin-top: 10px; /* 上だけ */
+margin: 10px 20px; /* 上下 10px、左右 20px */
+margin: 10px 20px 30px 40px; /* 上 右 下 左 */
+
+/* 内側の余白（padding） */
+padding: 10px;
+padding-left: 20px;
+```
+
+<!--
+📸 画像メモ: margin と padding の違い
+- margin: 要素の外側のスペース
+- padding: 要素の内側のスペース
+-->
+
+### ボーダー関連
+
+```css
+/* ボーダー */
+border: 1px solid #ccc; /* 太さ スタイル 色 */
+border-radius: 8px; /* 角丸 */
+```
+
+### 表示関連
+
+```css
+/* 表示モード */
+display: block; /* ブロック要素 */
+display: inline; /* インライン要素 */
+display: flex; /* Flexbox */
+display: grid; /* Grid */
+display: none; /* 非表示 */
+```
+
+## 色の指定方法
+
+CSS では色を様々な方法で指定できます：
+
+```css
+/* 色名 */
+color: red;
+color: blue;
+
+/* 16進数（HEX） */
+color: #ff0000; /* 赤 */
+color: #333; /* 短縮形 */
+
+/* RGB */
+color: rgb(255, 0, 0); /* 赤 */
+
+/* RGBA（透明度付き） */
+color: rgba(0, 0, 0, 0.5); /* 半透明の黒 */
+```
+
+> 💡 よく使うのは **HEX（#xxxxxx）** 形式です。
+
+## 試してみよう
+
+前回作った `index.html` と同じフォルダに `style.css` を作成し、スタイルを適用してみましょう。
+
+**style.css**
+
+```css
+/* 全体の設定 */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* ヘッダー */
+header {
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+/* メインコンテンツ */
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 見出し */
+h2 {
+  color: #333;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+}
+
+/* リンク */
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* フッター */
+footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+```
+
+**index.html** の `<head>` に追加：
+
+```html
+<link rel="stylesheet" href="style.css" />
+```
+
+ブラウザで確認すると、見た目が変わっているはずです！
+
+## まとめ
+
+- **CSS** は Web ページの見た目を整える言語
+- **セレクタ { プロパティ: 値; }** の形式で書く
+- **外部スタイル**（.css ファイル）を使うのがおすすめ
+- **クラスセレクタ**（.class）をメインで使う
+- よく使うプロパティ：color, font-size, margin, padding, background-color
+
+---
+
+## 🔗 次のステップ
+
+CSS の基礎がわかったら、[Box Model を理解する](./01-03_BoxModelを理解する.md) に進みましょう！

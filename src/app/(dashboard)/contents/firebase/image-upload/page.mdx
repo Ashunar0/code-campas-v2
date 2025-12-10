@@ -1,0 +1,210 @@
+# 画像アップロード機能の実装
+
+> 📌 **この記事で学ぶこと**
+>
+> - ファイル選択 UI
+> - 画像プレビュー
+> - アップロード進捗の表示
+
+## ファイル選択 UI
+
+```jsx
+function ImageUpload() {
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  return <input type="file" accept="image/*" onChange={handleFileChange} />;
+}
+```
+
+## 画像プレビュー
+
+選択した画像をプレビュー表示します：
+
+```jsx
+function ImageUpload() {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      // プレビュー用の URL を作成
+      setPreview(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" accept="image/*" onChange={handleFileChange} />
+      {preview && (
+        <img src={preview} alt="プレビュー" style={{ maxWidth: "200px" }} />
+      )}
+    </div>
+  );
+}
+```
+
+## 完全な実装
+
+```jsx
+import { useState } from "react";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "./lib/firebase";
+
+function ImageUpload({ onUpload }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    // バリデーション
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setError("ファイルサイズは5MB以下にしてください");
+      return;
+    }
+
+    setError(null);
+    setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+
+    setUploading(true);
+    setProgress(0);
+
+    const filename = `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `images/${filename}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setProgress(prog);
+      },
+      (error) => {
+        setError("アップロードに失敗しました");
+        setUploading(false);
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        onUpload?.(url);
+        setFile(null);
+        setPreview(null);
+        setProgress(0);
+        setUploading(false);
+      }
+    );
+  };
+
+  return (
+    <div className="image-upload">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        disabled={uploading}
+      />
+
+      {error && <p className="error">{error}</p>}
+
+      {preview && (
+        <div>
+          <img src={preview} alt="プレビュー" style={{ maxWidth: "200px" }} />
+          <button onClick={handleUpload} disabled={uploading}>
+            {uploading ? "アップロード中..." : "アップロード"}
+          </button>
+        </div>
+      )}
+
+      {uploading && (
+        <div className="progress-bar">
+          <div style={{ width: `${progress}%` }} />
+          <span>{Math.round(progress)}%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## プロフィール画像の更新
+
+```jsx
+function ProfileImageUpload() {
+  const { currentUser } = useAuth();
+
+  const handleUpload = async (imageUrl) => {
+    // 1. Firestore を更新
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      photoURL: imageUrl,
+      updatedAt: serverTimestamp(),
+    });
+
+    // 2. Firebase Auth も更新
+    await updateProfile(auth.currentUser, {
+      photoURL: imageUrl,
+    });
+  };
+
+  return (
+    <div>
+      <h3>プロフィール画像を変更</h3>
+      <ImageUpload onUpload={handleUpload} />
+    </div>
+  );
+}
+```
+
+## URL を Firestore に保存
+
+Todo にも画像を添付できるようにします：
+
+```jsx
+const addTodoWithImage = async (text, imageUrl) => {
+  await addDoc(collection(db, "todos"), {
+    text,
+    imageUrl: imageUrl || null, // 画像がない場合は null
+    done: false,
+    userId: currentUser.uid,
+    createdAt: serverTimestamp(),
+  });
+};
+```
+
+## まとめ
+
+- **ファイル選択**は `<input type="file" />`
+- **プレビュー**は `URL.createObjectURL`
+- **進捗表示**は `uploadBytesResumable`
+- アップロード後の **URL を Firestore に保存**
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. 画像選択とプレビュー機能を実装してみましょう
+> 2. `uploadBytesResumable` で進捗バーを表示してみましょう
+> 3. アップロード後の URL を `<img>` タグで表示してみましょう
+>
+> **チャレンジ**: ファイルサイズが 5MB を超えたらエラーメッセージを表示してみよう
+
+---
+
+## 🔗 次のステップ
+
+画像アップロードができたら、[ユーザーごとのデータ管理](./05-17_ユーザーごとのデータ管理.md) に進みましょう！

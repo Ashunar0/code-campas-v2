@@ -1,0 +1,248 @@
+# カウンターアプリを作ろう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - useState の実践
+> - イベントハンドリング
+> - 条件付きスタイル
+
+> 🎓 **Week 3 ゼミ対応**
+
+## 完成イメージ
+
+機能：
+
+- カウントを表示
+- +1 / -1 ボタン
+- リセットボタン
+- ステップ数の変更（+5、+10）
+- カウントが負のとき赤色に
+
+<!--
+📸 画像メモ: カウンターアプリの完成画面
+-->
+
+## Step 1: プロジェクトの準備
+
+```bash
+cd ~/Desktop/webex
+npm create vite@latest counter-app -- --template react
+cd counter-app
+npm install
+npm run dev
+```
+
+## Step 2: App.jsx を編集
+
+**src/App.jsx**
+
+```jsx
+import { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="app">
+      <h1>カウンター</h1>
+      <p className="count">{count}</p>
+      <div className="buttons">
+        <button onClick={() => setCount(count + 1)}>+1</button>
+        <button onClick={() => setCount(count - 1)}>-1</button>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## Step 3: スタイルを追加
+
+**src/App.css**
+
+```css
+.app {
+  text-align: center;
+  padding: 40px;
+  font-family: sans-serif;
+}
+
+h1 {
+  color: #333;
+}
+
+.count {
+  font-size: 64px;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: #667eea;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #5a6fd6;
+}
+
+button.reset {
+  background: #e74c3c;
+}
+
+button.reset:hover {
+  background: #c0392b;
+}
+```
+
+## Step 4: リセットボタンを追加
+
+```jsx
+<div className="buttons">
+  <button onClick={() => setCount(count + 1)}>+1</button>
+  <button onClick={() => setCount(count - 1)}>-1</button>
+  <button className="reset" onClick={() => setCount(0)}>
+    リセット
+  </button>
+</div>
+```
+
+## Step 5: ステップ数を変更できるように
+
+```jsx
+function App() {
+  const [count, setCount] = useState(0);
+  const [step, setStep] = useState(1);
+
+  return (
+    <div className="app">
+      <h1>カウンター</h1>
+      <p className="count">{count}</p>
+
+      <div className="buttons">
+        <button onClick={() => setCount(count - step)}>-{step}</button>
+        <button onClick={() => setCount(count + step)}>+{step}</button>
+        <button className="reset" onClick={() => setCount(0)}>
+          リセット
+        </button>
+      </div>
+
+      <div className="step-control">
+        <p>ステップ: {step}</p>
+        <button onClick={() => setStep(1)}>1</button>
+        <button onClick={() => setStep(5)}>5</button>
+        <button onClick={() => setStep(10)}>10</button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Step 6: 条件付きスタイル
+
+カウントが負のとき赤色に、正のとき緑色にします。
+
+```jsx
+<p
+  className="count"
+  style={{
+    color: count < 0 ? "#e74c3c" : count > 0 ? "#27ae60" : "#333",
+  }}
+>
+  {count}
+</p>
+```
+
+## 完成コード
+
+**src/App.jsx**
+
+```jsx
+import { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [count, setCount] = useState(0);
+  const [step, setStep] = useState(1);
+
+  const getColor = () => {
+    if (count < 0) return "#e74c3c";
+    if (count > 0) return "#27ae60";
+    return "#333";
+  };
+
+  return (
+    <div className="app">
+      <h1>カウンター</h1>
+
+      <p className="count" style={{ color: getColor() }}>
+        {count}
+      </p>
+
+      <div className="buttons">
+        <button onClick={() => setCount(count - step)}>-{step}</button>
+        <button onClick={() => setCount(count + step)}>+{step}</button>
+        <button className="reset" onClick={() => setCount(0)}>
+          リセット
+        </button>
+      </div>
+
+      <div className="step-control">
+        <p>ステップ: {step}</p>
+        <div className="step-buttons">
+          <button onClick={() => setStep(1)}>1</button>
+          <button onClick={() => setStep(5)}>5</button>
+          <button onClick={() => setStep(10)}>10</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+## JavaScript 版との違い
+
+| 観点         | JavaScript                      | React          |
+| ------------ | ------------------------------- | -------------- |
+| 状態管理     | `let count = 0` + DOM 更新      | `useState`     |
+| DOM 操作     | `querySelector` + `textContent` | 自動           |
+| イベント     | `addEventListener`              | `onClick`      |
+| スタイル変更 | `element.style.color = ...`     | 条件付き style |
+
+React では State を変えるだけで画面が更新されます！
+
+## 発展課題
+
+1. **最小値・最大値**を設定する（0〜100 など）
+2. **履歴機能**を追加（前のカウントに戻る）
+3. **ローカルストレージ**に保存（ページを更新しても残る）
+
+## まとめ
+
+- **useState** で状態を管理
+- **onClick** でイベントを処理
+- **条件付きスタイル**で動的に見た目を変更
+- State を変えるだけで画面が自動更新
+
+---
+
+## 🔗 次のステップ
+
+カウンターができたら、[クイズアプリ（React 版）を作ろう](./03-15_クイズアプリを作ろう.md) に進みましょう！

@@ -1,0 +1,347 @@
+# ポケモン図鑑を作ろう【発展】
+
+> 📌 **この記事で学ぶこと**
+>
+> - API 連携の実践
+> - 非同期処理の応用
+> - 検索・フィルター機能の実装
+
+> 💡 この記事は**発展**です。時間に余裕があれば挑戦してみてください。
+
+## 完成イメージ
+
+PokeAPI を使ったポケモン図鑑を作ります。
+
+機能：
+
+- ポケモンの一覧表示（画像、名前、タイプ）
+- 名前での検索
+- 詳細表示
+
+## Step 1: HTML の準備
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ポケモン図鑑</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔴 ポケモン図鑑</h1>
+
+      <div class="search-box">
+        <input type="text" id="search" placeholder="ポケモンを検索..." />
+      </div>
+
+      <div id="loading">読み込み中...</div>
+      <div id="pokemon-list" class="pokemon-grid"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+```
+
+## Step 2: CSS
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background: linear-gradient(135deg, #ee5a24 0%, #f0932b 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: white;
+  margin-bottom: 24px;
+  font-size: 32px;
+}
+
+.search-box {
+  max-width: 400px;
+  margin: 0 auto 24px;
+}
+
+#search {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 50px;
+  outline: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+#loading {
+  text-align: center;
+  color: white;
+  font-size: 18px;
+  padding: 40px;
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.pokemon-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.pokemon-card img {
+  width: 120px;
+  height: 120px;
+}
+
+.pokemon-card .number {
+  color: #999;
+  font-size: 14px;
+}
+
+.pokemon-card .name {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 8px 0;
+  text-transform: capitalize;
+}
+
+.pokemon-card .types {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.type {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: white;
+}
+
+.type.grass {
+  background: #78c850;
+}
+.type.fire {
+  background: #f08030;
+}
+.type.water {
+  background: #6890f0;
+}
+.type.electric {
+  background: #f8d030;
+}
+.type.normal {
+  background: #a8a878;
+}
+.type.poison {
+  background: #a040a0;
+}
+.type.flying {
+  background: #a890f0;
+}
+.type.bug {
+  background: #a8b820;
+}
+.type.ground {
+  background: #e0c068;
+}
+.type.rock {
+  background: #b8a038;
+}
+.type.psychic {
+  background: #f85888;
+}
+.type.ice {
+  background: #98d8d8;
+}
+.type.dragon {
+  background: #7038f8;
+}
+.type.dark {
+  background: #705848;
+}
+.type.steel {
+  background: #b8b8d0;
+}
+.type.fairy {
+  background: #ee99ac;
+}
+.type.fighting {
+  background: #c03028;
+}
+.type.ghost {
+  background: #705898;
+}
+```
+
+## Step 3: JavaScript
+
+```javascript
+// 状態
+let allPokemon = [];
+
+// DOM要素
+const searchInput = document.getElementById("search");
+const pokemonList = document.getElementById("pokemon-list");
+const loading = document.getElementById("loading");
+
+// 初期データを取得
+const fetchPokemonList = async () => {
+  try {
+    // 最初の151匹を取得
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151");
+    const data = await response.json();
+
+    // 各ポケモンの詳細を取得
+    const pokemonDetails = await Promise.all(
+      data.results.map(async (pokemon) => {
+        const res = await fetch(pokemon.url);
+        return res.json();
+      })
+    );
+
+    allPokemon = pokemonDetails;
+    loading.style.display = "none";
+    renderPokemon(allPokemon);
+  } catch (error) {
+    console.error("エラー:", error);
+    loading.textContent = "データの取得に失敗しました";
+  }
+};
+
+// ポケモンを表示
+const renderPokemon = (pokemons) => {
+  pokemonList.innerHTML = pokemons
+    .map(
+      (pokemon) => `
+    <div class="pokemon-card" onclick="showDetail(${pokemon.id})">
+      <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+      <p class="number">#${String(pokemon.id).padStart(3, "0")}</p>
+      <p class="name">${pokemon.name}</p>
+      <div class="types">
+        ${pokemon.types
+          .map(
+            (t) => `
+          <span class="type ${t.type.name}">${t.type.name}</span>
+        `
+          )
+          .join("")}
+      </div>
+    </div>
+  `
+    )
+    .join("");
+};
+
+// 検索機能
+searchInput.addEventListener("input", (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const filtered = allPokemon.filter(
+    (pokemon) =>
+      pokemon.name.includes(searchTerm) ||
+      String(pokemon.id).includes(searchTerm)
+  );
+  renderPokemon(filtered);
+});
+
+// 詳細表示（シンプル版）
+const showDetail = (id) => {
+  const pokemon = allPokemon.find((p) => p.id === id);
+  if (pokemon) {
+    alert(`
+${pokemon.name.toUpperCase()}
+No.${pokemon.id}
+高さ: ${pokemon.height / 10}m
+重さ: ${pokemon.weight / 10}kg
+タイプ: ${pokemon.types.map((t) => t.type.name).join(", ")}
+    `);
+  }
+};
+
+// 初期化
+fetchPokemonList();
+```
+
+## 解説
+
+### Promise.all
+
+複数の非同期処理を並列で実行し、すべてが完了するのを待ちます。
+
+```javascript
+const results = await Promise.all([fetch(url1), fetch(url2), fetch(url3)]);
+```
+
+これにより、151 件のデータを高速に取得できます。
+
+### filter での検索
+
+```javascript
+const filtered = allPokemon.filter((pokemon) =>
+  pokemon.name.includes(searchTerm)
+);
+```
+
+入力された文字列を含むポケモンだけを抽出しています。
+
+### padStart
+
+番号を 3 桁に揃えます。
+
+```javascript
+String(1).padStart(3, "0"); // "001"
+String(25).padStart(3, "0"); // "025"
+String(151).padStart(3, "0"); // "151"
+```
+
+## 発展課題
+
+以下の機能を追加してみましょう：
+
+1. **タイプでフィルター**：ドロップダウンでタイプを選択
+2. **モーダルで詳細表示**：alert ではなくモーダルウィンドウ
+3. **お気に入り機能**：localStorage に保存
+4. **ページネーション**：20 匹ずつ表示
+
+## まとめ
+
+- **fetch + async/await** で API からデータ取得
+- **Promise.all** で並列処理
+- **map** でデータを HTML に変換
+- **filter** で検索機能を実装
+- API 連携の基本パターンを習得
+
+---
+
+## 🔗 次のステップ
+
+ポケモン図鑑ができたら、[まとめと次のステップ](./02-18_まとめと次のステップ.md) で JavaScript 章を振り返りましょう！

@@ -1,0 +1,160 @@
+# Firebase Functions 入門【任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - Cloud Functions とは
+> - HTTP トリガー関数
+> - Firestore トリガー関数
+
+> 💡 この記事は**任意**です。サーバーレス処理が必要な場合に参照してください。
+
+## Cloud Functions とは？
+
+**Cloud Functions** は、サーバーを持たずにバックエンド処理を実行できるサービスです。
+
+> 💡 **サーバーレスとは？**
+>
+> サーバーを自分で管理する必要がなく、コードだけをデプロイすれば自動的に実行される仕組みです。
+> 必要なときだけ起動し、使った分だけ課金されます。
+
+用途：
+
+- メール送信
+- 画像のリサイズ
+- 外部 API との連携
+- 定期実行タスク
+
+## Functions の初期設定
+
+```bash
+firebase init functions
+```
+
+質問に答えます：
+
+```
+? What language would you like to use?
+→ JavaScript
+
+? Do you want to use ESLint?
+→ No
+
+? Do you want to install dependencies?
+→ Yes
+```
+
+`functions` フォルダが作成されます。
+
+## HTTP トリガー関数
+
+**functions/index.js**
+
+```javascript
+const functions = require("firebase-functions");
+
+exports.helloWorld = functions.https.onRequest((request, response) => {
+  response.send("Hello from Firebase!");
+});
+```
+
+デプロイ：
+
+```bash
+firebase deploy --only functions
+```
+
+URL にアクセス：
+
+```
+https://us-central1-プロジェクト名.cloudfunctions.net/helloWorld
+```
+
+## Firestore トリガー関数
+
+ドキュメントが作成されたときに自動実行：
+
+```javascript
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+
+admin.initializeApp();
+
+// todo が作成されたときに実行
+exports.onTodoCreated = functions.firestore
+  .document("todos/{todoId}")
+  .onCreate(async (snap, context) => {
+    const newTodo = snap.data();
+    console.log("新しい Todo:", newTodo.text);
+
+    // 通知を送るなどの処理...
+  });
+
+// todo が更新されたときに実行
+exports.onTodoUpdated = functions.firestore
+  .document("todos/{todoId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (before.done !== after.done) {
+      console.log("完了状態が変わりました");
+    }
+  });
+```
+
+## 使用例：メール送信
+
+```javascript
+const functions = require("firebase-functions");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  // SMTP 設定
+});
+
+exports.sendWelcomeEmail = functions.firestore
+  .document("users/{userId}")
+  .onCreate(async (snap, context) => {
+    const user = snap.data();
+
+    await transporter.sendMail({
+      to: user.email,
+      subject: "ようこそ！",
+      text: `${user.displayName} さん、登録ありがとうございます！`,
+    });
+  });
+```
+
+## 定期実行（スケジュール）
+
+```javascript
+exports.dailyCleanup = functions.pubsub
+  .schedule("every 24 hours")
+  .onRun(async (context) => {
+    // 日次の処理...
+    console.log("日次クリーンアップ実行");
+  });
+```
+
+## まとめ
+
+- **Cloud Functions** でサーバーレス処理
+- **HTTP トリガー**：API エンドポイント
+- **Firestore トリガー**：データ変更時に自動実行
+- **スケジュール**：定期実行
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `firebase init functions` で Functions を初期化
+> 2. `helloWorld` 関数をデプロイし、URL にアクセスして「Hello from Firebase!」が表示されることを確認
+> 3. （チャレンジ）Firestore トリガー関数を作ってみましょう
+>
+> **ヒント**: Firebase Console の Functions タブでログを確認できます
+
+---
+
+## 🔗 次のステップ
+
+Functions がわかったら、[SWR + Firestore](./05-21_SWRとFirestore.md)（任意）か、[Todo アプリに Firebase を統合しよう](./05-22_TodoアプリにFirebaseを統合.md) に進みましょう！

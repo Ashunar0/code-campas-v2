@@ -1,0 +1,193 @@
+# ユーザー登録機能の実装
+
+> 📌 **この記事で学ぶこと**
+>
+> - createUserWithEmailAndPassword
+> - サインアップフォーム
+> - エラーハンドリング
+
+## ユーザー登録の基本
+
+**createUserWithEmailAndPassword** でユーザーを登録します。
+
+```javascript
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+const signUp = async (email, password) => {
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  const user = userCredential.user;
+  console.log("登録成功:", user.uid);
+  return user;
+};
+```
+
+## サインアップフォーム
+
+```jsx
+import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+function SignUpForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // バリデーション
+    if (password !== confirmPassword) {
+      setError("パスワードが一致しません");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("パスワードは6文字以上で入力してください");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      // 成功 → リダイレクトは後で実装
+    } catch (err) {
+      setError(getErrorMessage(err.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>ユーザー登録</h2>
+
+      {error && <p className="error">{error}</p>}
+
+      <div>
+        <label>メールアドレス</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label>パスワード</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label>パスワード（確認）</label>
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <button type="submit" disabled={loading}>
+        {loading ? "登録中..." : "登録"}
+      </button>
+    </form>
+  );
+}
+```
+
+> 💡 **Firebase のパスワード要件**
+>
+> Firebase Auth では、パスワードは **6 文字以上** が必須です。
+> ユーザーに分かりやすいエラーメッセージを表示しましょう。
+
+## エラーメッセージの日本語化
+
+```javascript
+const getErrorMessage = (code) => {
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "このメールアドレスは既に使用されています";
+    case "auth/invalid-email":
+      return "メールアドレスの形式が正しくありません";
+    case "auth/weak-password":
+      return "パスワードは6文字以上で入力してください";
+    default:
+      return "登録に失敗しました";
+  }
+};
+```
+
+## ユーザー情報を Firestore に保存
+
+登録時にユーザー情報を Firestore にも保存します。
+
+```javascript
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
+const signUp = async (email, password, displayName) => {
+  // 1. Firebase Auth に登録
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  const user = userCredential.user;
+
+  // 2. Firestore にユーザー情報を保存
+  await setDoc(doc(db, "users", user.uid), {
+    email: user.email,
+    displayName,
+    createdAt: serverTimestamp(),
+  });
+
+  return user;
+};
+```
+
+### Firestore のデータ構造
+
+```
+users/
+  {userId}/
+    email: "tanaka@example.com"
+    displayName: "田中太郎"
+    createdAt: Timestamp
+```
+
+## まとめ
+
+- **createUserWithEmailAndPassword** でユーザー登録
+- エラーコードを日本語に変換して表示
+- Firestore にもユーザー情報を保存
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. サインアップフォームを作成し、実際にユーザーを登録してみましょう
+> 2. Firebase Console の「Authentication」→「Users」でユーザーが追加されていることを確認
+> 3. いくつかのエラーパターンを試して、エラーメッセージが正しく表示されることを確認
+>
+> **テスト例**: 同じメールで再登録、短いパスワード、不正なメール形式
+
+---
+
+## 🔗 次のステップ
+
+ユーザー登録ができたら、[ログイン・ログアウト機能の実装](./05-11_ログインログアウトの実装.md) に進みましょう！

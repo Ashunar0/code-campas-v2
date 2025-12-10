@@ -1,0 +1,145 @@
+# Firebase プロジェクトの作成
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firebase コンソールへのアクセス
+> - プロジェクトの作成
+> - Web アプリの登録
+> - 設定情報の取得
+
+## Firebase コンソールにアクセス
+
+1. [Firebase Console](https://console.firebase.google.com/) にアクセス
+2. Google アカウントでログイン
+
+<!--
+📸 画像メモ: Firebase Console のトップ画面
+-->
+
+## プロジェクトを作成
+
+1. **「プロジェクトを追加」** をクリック
+2. プロジェクト名を入力（例：`my-todo-app`）
+3. Google Analytics は**オフ**で OK（任意）
+4. **「プロジェクトを作成」** をクリック
+
+> 💡 **Google Analytics について**
+>
+> Google Analytics はアプリの利用状況を分析するサービスです。
+> 開発・学習段階では不要なので、オフにして進めて問題ありません。
+> 本番運用時に必要になったら、後から有効化できます。
+
+<!--
+📸 画像メモ: プロジェクト作成画面
+-->
+
+## Web アプリを登録
+
+プロジェクトが作成されたら：
+
+1. プロジェクトの概要画面で **「</>」（Web）** アイコンをクリック
+2. アプリのニックネームを入力（例：`todo-web`）
+3. **「Firebase Hosting も設定する」** にチェック（任意）
+4. **「アプリを登録」** をクリック
+
+<!--
+📸 画像メモ: Web アプリ登録画面
+-->
+
+## 設定情報を取得
+
+登録が完了すると、**Firebase 設定**が表示されます。
+
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "my-todo-app.firebaseapp.com",
+  projectId: "my-todo-app",
+  storageBucket: "my-todo-app.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef...",
+};
+```
+
+この情報を**メモ**しておきます（後で使います）。
+
+## 環境変数で管理
+
+設定情報には API キーが含まれています。
+Git にアップロードしないよう、**環境変数**で管理します。
+
+### .env ファイルを作成
+
+プロジェクトのルートに `.env` を作成：
+
+```env
+VITE_FIREBASE_API_KEY=AIzaSy...
+VITE_FIREBASE_AUTH_DOMAIN=my-todo-app.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=my-todo-app
+VITE_FIREBASE_STORAGE_BUCKET=my-todo-app.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abcdef...
+```
+
+> ⚠️ Vite では環境変数は `VITE_` で始める必要があります。
+
+### .gitignore に追加
+
+`.gitignore` に `.env` を追加：
+
+```gitignore
+.env
+.env.local
+```
+
+## Firestore を有効化
+
+1. 左メニューの **「Firestore Database」** をクリック
+2. **「データベースを作成」** をクリック
+3. **「テストモードで開始」** を選択（開発用）
+4. ロケーションを選択（`asia-northeast1` = 東京）
+
+<!--
+📸 画像メモ: Firestore 作成画面
+-->
+
+> ⚠️ テストモードは開発用です。本番環境では適切なセキュリティルールを設定します。
+
+## Authentication を有効化
+
+1. 左メニューの **「Authentication」** をクリック
+2. **「始める」** をクリック
+3. **「メール/パスワード」** を有効化
+
+<!--
+📸 画像メモ: Authentication 設定画面
+-->
+
+## Storage を有効化
+
+1. 左メニューの **「Storage」** をクリック
+2. **「始める」** をクリック
+3. **「テストモードで開始」** を選択
+
+## まとめ
+
+- Firebase Console でプロジェクトを作成
+- Web アプリを登録して設定情報を取得
+- **環境変数**で設定情報を管理
+- Firestore, Authentication, Storage を有効化
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. Firebase Console で新しいプロジェクトを作成してください
+> 2. 設定情報（`firebaseConfig`）をメモ帳にコピーしておきましょう
+> 3. Firestore Database と Authentication を有効化してください
+>
+> **ヒント**: プロジェクト名は自分のアプリ名を使うとわかりやすいです（例：`my-todo-app`）
+
+---
+
+## 🔗 次のステップ
+
+プロジェクトが作れたら、[Firebase の初期設定](./05-02_Firebaseの初期設定.md) に進みましょう！

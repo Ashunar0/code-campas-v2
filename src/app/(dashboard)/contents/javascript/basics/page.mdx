@@ -1,0 +1,291 @@
+# JavaScript の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - JavaScript とは何か
+> - JavaScript の実行環境を作る
+> - 変数の宣言（let, const）
+> - データ型
+
+## JavaScript とは？
+
+**JavaScript** は、Web ページに「動き」をつけるためのプログラミング言語です。
+
+- ボタンをクリックしたときの処理
+- フォームの入力値の検証
+- API からデータを取得して表示
+
+など、ユーザーとのインタラクションを実現できます。
+
+> 💡 JavaScript は「Java」とは**全く別の言語**です。名前が似ているだけ！
+
+## 実行環境を作ろう
+
+JavaScript のコードを書くための環境を作りましょう。
+HTML ファイルに JavaScript ファイルを紐づけて、Live Server で確認する方法を使います。
+
+### Step 1: フォルダを作成
+
+`webex` フォルダ内に、JavaScript 練習用のフォルダを作ります。
+
+```bash
+cd ~/Desktop/webex
+mkdir js-practice
+cd js-practice
+```
+
+### Step 2: ファイルを作成
+
+VSCode で `js-practice` フォルダを開き、以下の 2 つのファイルを作成します。
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript 練習</title>
+  </head>
+  <body>
+    <h1>JavaScript 練習</h1>
+    <p>Console を開いて結果を確認しましょう</p>
+
+    <script src="main.js"></script>
+  </body>
+</html>
+```
+
+**main.js**
+
+```javascript
+console.log("Hello, JavaScript!");
+```
+
+### Step 3: Live Server で開く
+
+1. VSCode で `index.html` を開く
+2. 右クリック → 「**Open with Live Server**」
+3. ブラウザが開く
+
+### Step 4: Console で結果を確認
+
+1. ブラウザで右クリック → 「検証」または「調査」
+2. 「**Console**」タブをクリック
+3. 「Hello, JavaScript!」と表示されていれば成功！
+
+<!--
+📸 画像メモ: Console に Hello, JavaScript! が表示されている様子
+-->
+
+> 💡 `console.log()` は、カッコ内の値を Console に表示する命令です。
+> デバッグ（動作確認）で頻繁に使います。
+
+### 開発の流れ
+
+これからの学習は、この流れで進めます：
+
+1. **main.js** にコードを書く
+2. **保存**（Cmd + S / Ctrl + S）
+3. ブラウザが自動で更新される（Live Server のおかげ）
+4. **Console** で結果を確認
+
+> 💡 **Console で直接試すのも OK**
+> ちょっとしたコードを試すときは、Console に直接入力しても構いません。
+> ただし、Console に書いたコードはページを更新すると消えてしまうので、
+> 残しておきたいコードは main.js に書きましょう。
+
+## 変数
+
+**変数**は、値を入れておく「箱」のようなものです。
+
+### let（変更できる変数）
+
+```javascript
+let name = "田中";
+console.log(name); // "田中"
+
+name = "佐藤"; // 変更できる
+console.log(name); // "佐藤"
+```
+
+### const（変更できない変数）
+
+```javascript
+const age = 25;
+console.log(age); // 25
+
+age = 30; // ❌ エラー！const は変更できない
+```
+
+### let vs const
+
+| 種類    | 変更        | 使いどころ                             |
+| ------- | ----------- | -------------------------------------- |
+| `let`   | ⭕ できる   | 値が変わる可能性がある場合             |
+| `const` | ❌ できない | 値が変わらない場合（基本こっちを使う） |
+
+> 💡 **基本は const を使い**、変更が必要なときだけ let を使う、というスタイルがおすすめです。
+
+### var は使わない
+
+昔は `var` という宣言方法もありましたが、**今は使いません**。
+`let` と `const` を使いましょう。
+
+```javascript
+// ❌ 古い書き方（使わない）
+var oldStyle = "使わないでね";
+
+// ⭕ 今の書き方
+const newStyle = "こっちを使おう";
+```
+
+## データ型
+
+JavaScript にはいくつかのデータ型があります。
+
+### 文字列（String）
+
+```javascript
+const greeting = "こんにちは";
+const name = "たなか"; // シングルクォートでもOK
+
+// テンプレートリテラル（バッククォート）
+const message = `${name}さん、${greeting}！`;
+console.log(message); // "たなかさん、こんにちは！"
+```
+
+> 💡 **テンプレートリテラル**（`` ` ` ``）は、変数を埋め込めるので便利！
+
+### 数値（Number）
+
+```javascript
+const age = 25;
+const price = 1980;
+const pi = 3.14; // 小数もOK
+
+// 計算もできる
+const total = price * 2;
+console.log(total); // 3960
+```
+
+### 真偽値（Boolean）
+
+`true`（真）か `false`（偽）のどちらか。
+
+```javascript
+const isStudent = true;
+const isAdult = false;
+
+console.log(isStudent); // true
+```
+
+条件判定で使います。
+
+### null と undefined
+
+```javascript
+// undefined: 値が設定されていない
+let notSet;
+console.log(notSet); // undefined
+
+// null: 意図的に「空」を設定
+const empty = null;
+console.log(empty); // null
+```
+
+| 値          | 意味                       |
+| ----------- | -------------------------- |
+| `undefined` | 値が未設定                 |
+| `null`      | 意図的に「何もない」を表す |
+
+## コメント
+
+コードにメモを残すことができます。
+
+```javascript
+// 1行コメント
+
+/*
+  複数行コメント
+  ここに説明を書ける
+*/
+
+const name = "田中"; // 変数の説明をつける
+```
+
+コメントはプログラムの動作に影響しません。
+
+## 文字列の連結
+
+```javascript
+const firstName = "太郎";
+const lastName = "田中";
+
+// + で連結
+const fullName = lastName + firstName;
+console.log(fullName); // "田中太郎"
+
+// テンプレートリテラル（おすすめ）
+const greeting = `こんにちは、${lastName}${firstName}さん！`;
+console.log(greeting); // "こんにちは、田中太郎さん！"
+```
+
+## 型の確認
+
+`typeof` で値の型を確認できます。
+
+```javascript
+console.log(typeof "hello"); // "string"
+console.log(typeof 42); // "number"
+console.log(typeof true); // "boolean"
+console.log(typeof undefined); // "undefined"
+console.log(typeof null); // "object" ← JavaScriptの仕様上こうなる
+```
+
+## ミニ演習：Console で型を確認しよう
+
+ブラウザの Console を開いて、以下のコードを 1 行ずつ入力してみましょう：
+
+```javascript
+typeof 42;
+typeof "こんにちは";
+typeof true;
+typeof undefined;
+typeof null; // 何が返ってくる？
+typeof [1, 2, 3]; // 配列は？
+```
+
+> 💡 **やってみよう**: `null` と配列の結果は予想と違ったかもしれません。これは JavaScript の歴史的な仕様です。
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+1. 自分の名前を変数に入れて表示
+2. 自分の年齢を変数に入れて、来年の年齢を計算して表示
+3. テンプレートリテラルで自己紹介文を作成
+
+```javascript
+// 例
+const name = "あなたの名前";
+const age = 20;
+const nextAge = age + 1;
+console.log(`私は${name}、${age}歳です。来年は${nextAge}歳になります。`);
+```
+
+## まとめ
+
+- **JavaScript** は Web に動きをつける言語
+- **index.html + main.js** でコードを書き、**Live Server** で確認
+- 結果は **Console** で見る
+- 変数は **const**（変更不可）と **let**（変更可）
+- データ型：文字列、数値、真偽値、null、undefined
+- **テンプレートリテラル**（`` ` ` ``）で文字列に変数を埋め込める
+
+---
+
+## 🔗 次のステップ
+
+基礎がわかったら、[演算子と条件分岐](./02-02_演算子と条件分岐.md) に進みましょう！

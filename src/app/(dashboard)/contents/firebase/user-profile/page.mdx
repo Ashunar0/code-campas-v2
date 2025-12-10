@@ -1,0 +1,178 @@
+# ユーザー情報の管理
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firestore にユーザー情報を保存
+> - プロフィール編集
+> - updateProfile
+
+## Firestore にユーザー情報を保存
+
+Firebase Auth には最低限の情報しかありません。
+詳細なユーザー情報は **Firestore** に保存します。
+
+> 💡 **なぜ Auth と Firestore 両方に保存する？**
+>
+> - **Firebase Auth**: 認証情報（メール、パスワードなど）のみ保存
+> - **Firestore**: 追加情報（プロフィール、自己紹介、設定など）を保存
+>
+> Auth にはカスタムフィールドを追加できないため、Firestore を併用します。
+
+### データ構造
+
+```
+users/
+  {userId}/
+    email: "tanaka@example.com"
+    displayName: "田中太郎"
+    bio: "React が好きです"
+    photoURL: "https://..."
+    createdAt: Timestamp
+    updatedAt: Timestamp
+```
+
+## ユーザー情報の取得
+
+```jsx
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+import { useAuth } from "./contexts/AuthContext";
+
+function useUserProfile() {
+  const { currentUser } = useAuth();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
+    const fetchProfile = async () => {
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProfile({ id: docSnap.id, ...docSnap.data() });
+      }
+      setLoading(false);
+    };
+
+    fetchProfile();
+  }, [currentUser]);
+
+  return { profile, loading };
+}
+```
+
+## プロフィール編集
+
+```jsx
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./lib/firebase";
+import { useAuth } from "./contexts/AuthContext";
+
+function ProfileEditForm() {
+  const { currentUser } = useAuth();
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        displayName,
+        bio,
+        updatedAt: serverTimestamp(),
+      });
+      alert("プロフィールを更新しました");
+    } catch (error) {
+      console.error("更新エラー:", error);
+      alert("更新に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>表示名</label>
+        <input
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>自己紹介</label>
+        <textarea value={bio} onChange={(e) => setBio(e.target.value)} />
+      </div>
+      <button type="submit" disabled={loading}>
+        {loading ? "保存中..." : "保存"}
+      </button>
+    </form>
+  );
+}
+```
+
+## Firebase Auth のプロフィールを更新
+
+Firebase Auth 自体のプロフィール情報も更新できます。
+
+```javascript
+import { updateProfile } from "firebase/auth";
+import { auth } from "./lib/firebase";
+
+const updateAuthProfile = async (displayName, photoURL) => {
+  await updateProfile(auth.currentUser, {
+    displayName,
+    photoURL,
+  });
+};
+```
+
+## Auth と Firestore の同期
+
+両方を同時に更新する場合：
+
+```javascript
+const updateUserProfile = async (displayName, bio) => {
+  // 1. Firebase Auth を更新
+  await updateProfile(auth.currentUser, { displayName });
+
+  // 2. Firestore を更新
+  await updateDoc(doc(db, "users", auth.currentUser.uid), {
+    displayName,
+    bio,
+    updatedAt: serverTimestamp(),
+  });
+};
+```
+
+## まとめ
+
+- 詳細なユーザー情報は **Firestore** に保存
+- **updateDoc** でプロフィールを更新
+- **updateProfile** で Firebase Auth のプロフィールも更新可能
+- 両方を同期することもできる
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. ユーザー登録時に Firestore にもユーザー情報を保存してみましょう
+> 2. `useUserProfile` フックを作成し、プロフィール情報を取得
+> 3. プロフィール編集フォームを作成し、`displayName` や `bio` を更新できるように
+>
+> **確認ポイント**: Firebase Console で `users` コレクションのデータを確認
+
+---
+
+## 🔗 次のステップ
+
+ユーザー情報の管理ができたら、[Firebase Storage の基礎](./05-15_FirebaseStorageの基礎.md) に進みましょう！

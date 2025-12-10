@@ -1,0 +1,281 @@
+# import / export
+
+> 📌 **この記事で学ぶこと**
+>
+> - モジュールとは
+> - export の種
+>
+>   類
+> - import の使い
+>
+>   方
+> - React での import/export
+
+## モジュールとは？
+
+**モジュール**は、コードを複数のファイルに分割して管理する仕組みです。
+
+```
+src/
+├── App.jsx         # メインのコンポーネント
+├── utils.js        # 便利な関数をまとめたファイル
+├── constants.js    # 定数をまとめたファイル
+└── components/
+    ├── Header.jsx
+    └── Footer.jsx
+```
+
+ファイルを分割することで：
+
+- コードが見やすくなる
+- 再利用しやすくなる
+- チーム開発がしやすくなる
+
+## export（エクスポート）
+
+他のファイルから使えるようにする宣言。
+
+### 名前付きエクスポート（Named Export）
+
+```javascript
+// utils.js
+
+// 関数をエクスポート
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
+
+// 変数をエクスポート
+export const PI = 3.14159;
+
+// まとめてエクスポート
+const multiply = (a, b) => a * b;
+const divide = (a, b) => a / b;
+export { multiply, divide };
+```
+
+### デフォルトエクスポート（Default Export）
+
+1 つのファイルにつき**1 つだけ**設定できる。
+
+```javascript
+// Greeting.jsx
+
+const Greeting = ({ name }) => {
+  return <h1>こんにちは、{name}さん！</h1>;
+};
+
+export default Greeting;
+```
+
+### 両方を組み合わせる
+
+```javascript
+// utils.js
+
+// デフォルトエクスポート
+const formatDate = (date) => {
+  // ...
+};
+export default formatDate;
+
+// 名前付きエクスポート
+export const formatCurrency = (amount) => {
+  return `¥${amount.toLocaleString()}`;
+};
+```
+
+## import（インポート）
+
+他のファイルからエクスポートされたものを読み込む。
+
+### 名前付きインポート
+
+```javascript
+// App.jsx
+import { add, subtract, PI } from "./utils";
+
+console.log(add(1, 2)); // 3
+console.log(subtract(5, 3)); // 2
+console.log(PI); // 3.14159
+```
+
+> ⚠️ 名前付きインポートは `{ }` で囲む必要があります
+
+### デフォルトインポート
+
+```javascript
+// App.jsx
+import Greeting from "./Greeting";
+
+// 任意の名前でインポートできる
+import MyGreeting from "./Greeting"; // これも OK
+```
+
+> 💡 デフォルトインポートは `{ }` 不要
+
+### 両方を組み合わせる
+
+```javascript
+import formatDate, { formatCurrency } from "./utils";
+```
+
+### すべてをインポート
+
+```javascript
+import * as utils from "./utils";
+
+console.log(utils.add(1, 2));
+console.log(utils.PI);
+```
+
+### 別名をつける（as）
+
+```javascript
+import { add as addNumbers } from "./utils";
+
+console.log(addNumbers(1, 2)); // 3
+```
+
+## パスの指定
+
+### 相対パス
+
+```javascript
+// 同じフォルダ
+import { add } from "./utils";
+
+// 親フォルダ
+import { add } from "../utils";
+
+// サブフォルダ
+import Header from "./components/Header";
+```
+
+### パッケージ（node_modules）
+
+```javascript
+// React（node_modules から）
+import React from "react";
+import { useState } from "react";
+
+// その他のパッケージ
+import axios from "axios";
+```
+
+## React での例
+
+### コンポーネントのエクスポート
+
+```jsx
+// components/Header.jsx
+const Header = () => {
+  return (
+    <header>
+      <h1>My App</h1>
+    </header>
+  );
+};
+
+export default Header;
+```
+
+### コンポーネントのインポート
+
+```jsx
+// App.jsx
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+
+const App = () => {
+  return (
+    <div>
+      <Header />
+      <main>コンテンツ</main>
+      <Footer />
+    </div>
+  );
+};
+
+export default App;
+```
+
+### 複数のコンポーネントを 1 つのファイルから
+
+```jsx
+// components/index.js
+export { default as Header } from "./Header";
+export { default as Footer } from "./Footer";
+export { default as Button } from "./Button";
+
+// App.jsx
+import { Header, Footer, Button } from "./components";
+```
+
+## 拡張子について
+
+```javascript
+// .js, .jsx は省略できる（設定による）
+import Header from "./Header"; // Header.jsx
+import utils from "./utils"; // utils.js
+
+// .css は必要
+import "./styles.css";
+
+// .json は必要
+import data from "./data.json";
+```
+
+## よくあるエラー
+
+### SyntaxError: Cannot use import statement outside a module
+
+このエラーが出たら、HTML の `<script>` タグに `type="module"` を追加します。
+
+```html
+<!-- ❌ エラーになる -->
+<script src="main.js"></script>
+
+<!-- ⭕ 正しい -->
+<script type="module" src="main.js"></script>
+```
+
+> 💡 **なぜ必要？** ブラウザにこのファイルはモジュール形式であることを伝えています。これがないと、`import` / `export` は使えません。
+
+### 名前付きエクスポートを {} なしでインポート
+
+```javascript
+// ❌ エラー
+import add from "./utils";
+
+// ⭕ 正しい
+import { add } from "./utils";
+```
+
+### デフォルトエクスポートを {} でインポート
+
+```javascript
+// ❌ エラー（デフォルトエクスポートの場合）
+import { Greeting } from "./Greeting";
+
+// ⭕ 正しい
+import Greeting from "./Greeting";
+```
+
+## まとめ
+
+| 種類       | export                    | import                       |
+| ---------- | ------------------------- | ---------------------------- |
+| 名前付き   | `export const func = ...` | `import { func } from '...'` |
+| デフォルト | `export default func`     | `import func from '...'`     |
+
+- **モジュール**でコードを分割・整理
+- **export** で他のファイルから使えるようにする
+- **import** で他のファイルの機能を読み込む
+- React では**デフォルトエクスポート**をよく使う
+- パスは**相対パス**（./）で指定
+
+---
+
+## 🔗 次のステップ
+
+import/export がわかったら、[FizzBuzz を作ろう](./02-11_FizzBuzzを作ろう.md) に進んで実践しましょう！

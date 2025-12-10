@@ -1,0 +1,243 @@
+# フォームの基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - input の扱い方
+> - Controlled Component とは
+> - 様々なフォーム要素
+> - フォームの送信
+
+## React でのフォーム
+
+React では、フォームの値を **State で管理** します。
+これを **Controlled Component（制御されたコンポーネント）** と呼びます。
+
+## text input
+
+```jsx
+import { useState } from "react";
+
+function App() {
+  const [name, setName] = useState("");
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="名前を入力"
+      />
+      <p>入力値: {name}</p>
+    </div>
+  );
+}
+```
+
+### ポイント
+
+- `value={state}` で State を表示
+- `onChange` で State を更新
+- State が変わると input の表示も変わる
+
+## Controlled Component とは
+
+React が入力値を**完全に制御**しているコンポーネントです。
+
+```
+ユーザーが入力
+    ↓
+onChange が発火
+    ↓
+setState で State を更新
+    ↓
+value に反映されて画面が更新
+```
+
+この仕組みにより、入力値に対してバリデーションや変換を行えます。
+
+```jsx
+// 例：半角数字のみ許可
+const handleChange = (e) => {
+  const value = e.target.value;
+  if (/^\d*$/.test(value)) {
+    setNumber(value);
+  }
+};
+```
+
+## textarea
+
+HTML の textarea と違い、`value` 属性で値を指定します。
+
+```jsx
+const [message, setMessage] = useState("");
+
+return (
+  <textarea
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    rows={5}
+    placeholder="メッセージを入力"
+  />
+);
+```
+
+## select（ドロップダウン）
+
+```jsx
+const [color, setColor] = useState("red");
+
+return (
+  <select value={color} onChange={(e) => setColor(e.target.value)}>
+    <option value="red">赤</option>
+    <option value="blue">青</option>
+    <option value="green">緑</option>
+  </select>
+);
+```
+
+## checkbox
+
+`checked` と `onChange` を使います。
+
+```jsx
+const [isAgreed, setIsAgreed] = useState(false);
+
+return (
+  <label>
+    <input
+      type="checkbox"
+      checked={isAgreed}
+      onChange={(e) => setIsAgreed(e.target.checked)}
+    />
+    利用規約に同意する
+  </label>
+);
+```
+
+## radio
+
+```jsx
+const [gender, setGender] = useState("male");
+
+return (
+  <div>
+    <label>
+      <input
+        type="radio"
+        value="male"
+        checked={gender === "male"}
+        onChange={(e) => setGender(e.target.value)}
+      />
+      男性
+    </label>
+    <label>
+      <input
+        type="radio"
+        value="female"
+        checked={gender === "female"}
+        onChange={(e) => setGender(e.target.value)}
+      />
+      女性
+    </label>
+  </div>
+);
+```
+
+## フォームの送信
+
+```jsx
+import { useState } from "react";
+
+function ContactForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // ページリロードを防ぐ
+
+    console.log("送信データ:", { name, email, message });
+
+    // 送信後にフォームをクリア
+    setName("");
+    setEmail("");
+    setMessage("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>名前</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>メール</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>メッセージ</label>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </div>
+      <button type="submit">送信</button>
+    </form>
+  );
+}
+```
+
+## 複数の State をオブジェクトで管理
+
+フォームの項目が多い場合、1 つのオブジェクトにまとめることもあります。
+
+```jsx
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  message: "",
+});
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData({ ...formData, [name]: value });
+};
+
+return (
+  <form>
+    <input name="name" value={formData.name} onChange={handleChange} />
+    <input name="email" value={formData.email} onChange={handleChange} />
+    <textarea name="message" value={formData.message} onChange={handleChange} />
+  </form>
+);
+```
+
+## まとめ
+
+| 要素       | value/checked               | onChange           |
+| ---------- | --------------------------- | ------------------ |
+| text input | `value={state}`             | `e.target.value`   |
+| textarea   | `value={state}`             | `e.target.value`   |
+| select     | `value={state}`             | `e.target.value`   |
+| checkbox   | `checked={state}`           | `e.target.checked` |
+| radio      | `checked={state === value}` | `e.target.value`   |
+
+- **Controlled Component** で React が値を完全に管理
+- **e.preventDefault()** でフォームのデフォルト動作を防ぐ
+- 複数項目は**オブジェクトの State** でまとめられる
+
+---
+
+## 🔗 次のステップ
+
+フォームがわかったら、[useEffect の基礎](./03-10_useEffectの基礎.md) に進みましょう！

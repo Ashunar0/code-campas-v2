@@ -1,0 +1,139 @@
+# Firebase の初期設定
+
+> 📌 **この記事で学ぶこと**
+>
+> - Firebase パッケージのインストール
+> - firebase.js の作成
+> - 環境変数の読み込み
+
+## Firebase パッケージをインストール
+
+```bash
+npm install firebase
+```
+
+## firebase.js を作成
+
+**src/lib/firebase.js**
+
+```javascript
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+// Firebase の初期化
+const app = initializeApp(firebaseConfig);
+
+// 各サービスのエクスポート
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+
+export const storage = getStorage(app);
+```
+
+> 💡 **`import.meta.env` とは？**
+>
+> Vite では `import.meta.env` を使って環境変数を読み込みます。
+> `.env` ファイルに `VITE_` で始まる変数を定義すると、ここから参照できます。
+
+### 各サービスの役割
+
+| エクスポート | サービス       | 用途         |
+| ------------ | -------------- | ------------ |
+| `db`         | Firestore      | データベース |
+| `auth`       | Authentication | 認証         |
+| `storage`    | Storage        | ファイル保存 |
+
+## ディレクトリ構成
+
+```
+src/
+├── lib/
+│   └── firebase.js      # Firebase 設定
+├── hooks/
+│   ├── useAuth.js       # 認証フック
+│   └── useTodos.js      # Firestore フック
+├── components/
+│   └── ...
+├── contexts/
+│   └── AuthContext.jsx  # 認証 Context
+├── App.jsx
+└── main.jsx
+```
+
+## 動作確認
+
+**App.jsx** で簡単にテスト：
+
+```jsx
+import { db } from "./lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { useEffect } from "react";
+
+function App() {
+  useEffect(() => {
+    const test = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "test"));
+        console.log("Firebase 接続成功！");
+        console.log("ドキュメント数:", snapshot.docs.length);
+      } catch (error) {
+        console.error("Firebase 接続エラー:", error);
+      }
+    };
+    test();
+  }, []);
+
+  return <h1>Firebase テスト</h1>;
+}
+
+export default App;
+```
+
+コンソールに「Firebase 接続成功！」と表示されれば OK！
+
+## 環境変数が読み込めない場合
+
+### 確認ポイント
+
+1. `.env` ファイルがプロジェクトの**ルート**にあるか
+2. 環境変数が `VITE_` で始まっているか
+3. 開発サーバーを**再起動**したか
+
+```bash
+# 開発サーバーを停止して再起動
+npm run dev
+```
+
+## まとめ
+
+- `npm install firebase` でパッケージをインストール
+- `src/lib/firebase.js` で Firebase を初期化
+- **環境変数**で設定情報を管理
+- `db`, `auth`, `storage` をエクスポート
+
+## 🎯 やってみよう
+
+> 💡 **ミニ演習**
+>
+> 1. `src/lib/firebase.js` ファイルを作成してください
+> 2. 動作確認コードを `App.jsx` に追加し、コンソールに「Firebase 接続成功！」と表示されることを確認しましょう
+> 3. もしエラーが出たら、`.env` ファイルの内容と開発サーバーの再起動を確認してください
+>
+> **よくあるエラー**: `VITE_` プレフィックスがない、開発サーバーを再起動していない
+
+---
+
+## 🔗 次のステップ
+
+初期設定ができたら、[Firestore の基礎](./05-03_Firestoreの基礎.md) に進みましょう！

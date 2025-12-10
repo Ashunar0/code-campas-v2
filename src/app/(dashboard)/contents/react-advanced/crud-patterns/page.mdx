@@ -1,0 +1,262 @@
+# CRUD アプリの実装パターン
+
+> 📌 **この記事で学ぶこと**
+>
+> - 実践的な CRUD パターン
+> - ユニーク ID の生成
+> - 楽観的 UI 更新
+> - よくある処理の抽象化
+
+## 実践的な CRUD 関数
+
+```jsx
+const [todos, setTodos] = useState([]);
+
+// Create
+const addTodo = (text) => {
+  const newTodo = {
+    id: crypto.randomUUID(), // ユニークなID
+    text,
+    done: false,
+    createdAt: Date.now(),
+  };
+  setTodos([...todos, newTodo]);
+};
+
+// Update（部分更新）
+const updateTodo = (id, updates) => {
+  setTodos(
+    todos.map((todo) => (todo.id === id ? { ...todo, ...updates } : todo))
+  );
+};
+
+// Delete
+const deleteTodo = (id) => {
+  setTodos(todos.filter((todo) => todo.id !== id));
+};
+```
+
+## ユニーク ID の生成
+
+### 方法 1: Date.now()
+
+```javascript
+const id = Date.now();
+// → 1702000000000
+```
+
+シンプルだが、同時に複数作成すると重複の可能性あり。
+
+### 方法 2: crypto.randomUUID()（推奨）
+
+```javascript
+const id = crypto.randomUUID();
+// → "550e8400-e29b-41d4-a716-446655440000"
+```
+
+確実にユニーク。モダンブラウザで利用可能。
+
+### 方法 3: カウンター
+
+```javascript
+let nextId = 1;
+
+const addItem = (text) => {
+  setItems([...items, { id: nextId++, text }]);
+};
+```
+
+シンプルだが、ページリロードでリセットされる。
+
+## フィルター機能
+
+```jsx
+const [filter, setFilter] = useState("all");
+
+// 派生State
+const filteredTodos = todos.filter((todo) => {
+  switch (filter) {
+    case "active":
+      return !todo.done;
+    case "completed":
+      return todo.done;
+    default:
+      return true;
+  }
+});
+
+// UI
+<div>
+  <button onClick={() => setFilter("all")}>すべて</button>
+  <button onClick={() => setFilter("active")}>未完了</button>
+  <button onClick={() => setFilter("completed")}>完了</button>
+</div>
+
+<ul>
+  {filteredTodos.map((todo) => (
+    <li key={todo.id}>{todo.text}</li>
+  ))}
+</ul>
+```
+
+## 検索機能
+
+```jsx
+const [searchTerm, setSearchTerm] = useState("");
+
+const searchedTodos = todos.filter((todo) =>
+  todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+// UI
+<input
+  type="text"
+  placeholder="検索..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>;
+```
+
+## フィルター + 検索の組み合わせ
+
+```jsx
+const visibleTodos = todos
+  .filter((todo) => {
+    // フィルター
+    if (filter === "active") return !todo.done;
+    if (filter === "completed") return todo.done;
+    return true;
+  })
+  .filter((todo) => {
+    // 検索
+    return todo.text.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+```
+
+## ソート機能
+
+```jsx
+const [sortBy, setSortBy] = useState("createdAt");
+const [sortOrder, setSortOrder] = useState("desc");
+
+const sortedTodos = [...todos].sort((a, b) => {
+  if (sortOrder === "asc") {
+    return a[sortBy] > b[sortBy] ? 1 : -1;
+  } else {
+    return a[sortBy] < b[sortBy] ? 1 : -1;
+  }
+});
+```
+
+## 楽観的 UI 更新
+
+API を呼ぶ前に**先に UI を更新**するパターン。
+
+```jsx
+const deleteTodo = async (id) => {
+  // 1. 先に UI を更新（楽観的）
+  setTodos(todos.filter((t) => t.id !== id));
+
+  try {
+    // 2. API を呼ぶ
+    await fetch(`/api/todos/${id}`, { method: "DELETE" });
+  } catch (error) {
+    // 3. 失敗したら戻す
+    console.error("削除に失敗しました");
+    // 元に戻す処理...
+  }
+};
+```
+
+### メリット
+
+- ユーザー体験が良い（即座に反映）
+- レスポンスを待たなくて良い
+
+> 💡 **なぜ「楽観的」？**
+> 「API は成功するだろう」と楽観的に仮定して、**先に UI を更新**するからです。
+> 失敗したら元に戻す（ロールバック）、という考え方です。
+
+### 注意点
+
+- 失敗時のロールバックを実装する必要がある
+
+## カスタムフックで抽象化
+
+```jsx
+function useTodos(initialTodos = []) {
+  const [todos, setTodos] = useState(initialTodos);
+
+  const addTodo = (text) => {
+    setTodos([
+      ...todos,
+      { id: crypto.randomUUID(), text, done: false, createdAt: Date.now() },
+    ]);
+  };
+
+  const updateTodo = (id, updates) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  return {
+    todos,
+    addTodo,
+    updateTodo,
+    toggleTodo,
+    deleteTodo,
+  };
+}
+
+// 使用例
+function App() {
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
+  // ...
+}
+```
+
+## まとめ
+
+- **crypto.randomUUID()** でユニーク ID を生成
+- **filter** と **検索**を組み合わせる
+- **楽観的 UI 更新**でユーザー体験向上
+- **カスタムフック**でロジックを再利用可能に
+
+## 練習問題
+
+以下の仕様でフィルター + ソート機能を実装してみましょう：
+
+1. 商品リスト（`name`, `price`, `category`）
+2. カテゴリフィルター（「すべて」「食品」「雑貨」）
+3. 価格順ソート（高い順 / 低い順）
+
+### 回答例
+
+```jsx
+const [products] = useState([
+  { id: 1, name: "りんご", price: 100, category: "食品" },
+  { id: 2, name: "ノート", price: 200, category: "雑貨" },
+  { id: 3, name: "パン", price: 150, category: "食品" },
+]);
+const [category, setCategory] = useState("all");
+const [sortOrder, setSortOrder] = useState("asc");
+
+const visibleProducts = products
+  .filter((p) => category === "all" || p.category === category)
+  .sort((a, b) =>
+    sortOrder === "asc" ? a.price - b.price : b.price - a.price
+  );
+```
+
+---
+
+## 🔗 次のステップ
+
+CRUD パターンがわかったら、[モーダルの実装](./04-07_モーダルの実装.md) に進みましょう！

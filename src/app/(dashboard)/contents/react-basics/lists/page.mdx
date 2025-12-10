@@ -1,0 +1,217 @@
+# リスト描画（map の活用）
+
+> 📌 **この記事で学ぶこと**
+>
+> - 配列をリスト表示する方法
+> - map を使った描画
+> - key の重要性
+> - 実践例
+
+## 配列をリスト表示する
+
+React で配列のデータをリスト表示するには、**map** を使います。
+
+```jsx
+const fruits = ["りんご", "バナナ", "みかん"];
+
+return (
+  <ul>
+    {fruits.map((fruit) => (
+      <li>{fruit}</li>
+    ))}
+  </ul>
+);
+```
+
+JavaScript 章で学んだ `map` が、React でも活躍します！
+
+## key の重要性
+
+リストをレンダリングするときは、**key** を指定する必要があります。
+
+```jsx
+// ⚠️ 警告が出る
+{
+  fruits.map((fruit) => <li>{fruit}</li>);
+}
+
+// ⭕ key を指定する
+{
+  fruits.map((fruit, index) => <li key={index}>{fruit}</li>);
+}
+```
+
+### なぜ key が必要？
+
+React は key を使って、どの要素が変更されたかを効率的に判断します。
+
+### 良い key の選び方
+
+**一意な ID**を使うのがベスト：
+
+```jsx
+const todos = [
+  { id: 1, text: "買い物" },
+  { id: 2, text: "掃除" },
+  { id: 3, text: "料理" },
+];
+
+return (
+  <ul>
+    {todos.map((todo) => (
+      <li key={todo.id}>{todo.text}</li>
+    ))}
+  </ul>
+);
+```
+
+### index を key にするのは避ける
+
+並び順が変わる場合、index を key にすると問題が起きることがあります。
+
+```jsx
+// ⚠️ 非推奨（削除や並べ替えで問題が起きる可能性）
+{
+  todos.map((todo, index) => <li key={index}>{todo.text}</li>);
+}
+
+// ⭕ 推奨（一意な id を使う）
+{
+  todos.map((todo) => <li key={todo.id}>{todo.text}</li>);
+}
+```
+
+## 実践例：ユーザーリスト
+
+```jsx
+import { useState } from "react";
+
+function UserList() {
+  const [users] = useState([
+    { id: 1, name: "田中太郎", age: 25 },
+    { id: 2, name: "佐藤花子", age: 30 },
+    { id: 3, name: "鈴木一郎", age: 22 },
+  ]);
+
+  return (
+    <div>
+      <h2>ユーザー一覧</h2>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>
+            {user.name} ({user.age}歳)
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## コンポーネントをリスト描画
+
+リストの各要素をコンポーネントにすることもできます。
+
+```jsx
+// UserCard コンポーネント
+const UserCard = ({ user }) => {
+  return (
+    <div className="card">
+      <h3>{user.name}</h3>
+      <p>{user.age}歳</p>
+    </div>
+  );
+};
+
+// 親コンポーネント
+function App() {
+  const users = [
+    { id: 1, name: "田中太郎", age: 25 },
+    { id: 2, name: "佐藤花子", age: 30 },
+  ];
+
+  return (
+    <div>
+      {users.map((user) => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+```
+
+## 実践例：Todo リスト
+
+```jsx
+import { useState } from "react";
+
+function TodoList() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: "買い物", done: false },
+    { id: 2, text: "掃除", done: true },
+    { id: 3, text: "料理", done: false },
+  ]);
+
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>
+          <span
+            style={{
+              textDecoration: todo.done ? "line-through" : "none",
+            }}
+            onClick={() => toggleTodo(todo.id)}
+          >
+            {todo.text}
+          </span>
+          <button onClick={() => deleteTodo(todo.id)}>削除</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## 空の配列の場合
+
+データがない場合のメッセージを表示しましょう。
+
+```jsx
+{
+  todos.length === 0 ? (
+    <p>Todoがありません</p>
+  ) : (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>{todo.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## まとめ
+
+- 配列をリスト表示するには **map** を使う
+- 各要素に**一意な key** を指定する
+- key には **id** を使う（index は避ける）
+- リストの各要素を**コンポーネント化**できる
+- 空の場合の処理も忘れずに
+
+---
+
+## 🔗 次のステップ
+
+リスト描画がわかったら、[条件分岐での描画](./03-08_条件分岐での描画.md) に進みましょう！

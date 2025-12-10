@@ -1,0 +1,298 @@
+# 非同期処理の基礎
+
+> 📌 **この記事で学ぶこと**
+>
+> - 同期処理と非同期処理の違い
+> - Promise とは
+> - async/await の使い方
+> - エラーハンドリング
+
+## 同期処理と非同期処理
+
+### 同期処理
+
+コードを**上から順番に**実行します。
+1 つの処理が終わるまで次に進みません。
+
+```javascript
+console.log("1番目");
+console.log("2番目");
+console.log("3番目");
+// 出力: 1番目 → 2番目 → 3番目
+```
+
+### 非同期処理
+
+処理の完了を**待たずに**次のコードを実行します。
+**時間のかかる処理**（API 通信、ファイル読み込みなど）で使います。
+
+```javascript
+console.log("1番目");
+setTimeout(() => {
+  console.log("2番目（1秒後）");
+}, 1000);
+console.log("3番目");
+// 出力: 1番目 → 3番目 → 2番目（1秒後）
+```
+
+<!--
+📸 画像メモ: 同期処理と非同期処理の図解
+- 同期: 順番に実行（待つ）
+- 非同期: 並行して実行（待たない）
+-->
+
+## なぜ非同期処理が必要？
+
+API からデータを取得するのに 2 秒かかるとします。
+
+**同期処理だと：**
+
+- 2 秒間、画面が固まる
+- ユーザーは操作できない
+
+**非同期処理だと：**
+
+- データ取得中も画面は操作できる
+- データが届いたら表示を更新
+
+Web アプリでは**非同期処理が必須**です。
+
+## setTimeout
+
+一定時間後に処理を実行する関数。
+非同期処理の基本を理解するのに便利です。
+
+```javascript
+console.log("開始");
+
+setTimeout(() => {
+  console.log("2秒後に実行");
+}, 2000); // 2000ミリ秒 = 2秒
+
+console.log("終了");
+
+// 出力:
+// 開始
+// 終了
+// 2秒後に実行
+```
+
+## Promise
+
+**Promise**（プロミス）は、非同期処理の結果を表すオブジェクトです。
+
+Promise には 3 つの状態があります：
+
+- **pending（保留中）**：まだ完了していない
+- **fulfilled（成功）**：処理が成功した
+- **rejected（失敗）**：処理が失敗した
+
+### Promise の基本
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+  // 非同期処理
+  setTimeout(() => {
+    const success = true;
+    if (success) {
+      resolve("成功しました！"); // 成功時
+    } else {
+      reject("失敗しました..."); // 失敗時
+    }
+  }, 1000);
+});
+
+// 結果を受け取る
+promise
+  .then((result) => console.log(result)) // 成功時
+  .catch((error) => console.log(error)); // 失敗時
+```
+
+> 💡 実際の開発では Promise を直接作ることは少なく、`fetch` などの関数が Promise を返します。
+
+## async/await（最重要）⭐⭐⭐
+
+Promise を**より読みやすく**書くための構文。
+**React では async/await をメインで使います。**
+
+### 基本形
+
+```javascript
+const fetchData = async () => {
+  const result = await somePromise;
+  console.log(result);
+};
+```
+
+- **async**：関数の前につける。「この関数は非同期処理を含む」という宣言
+- **await**：Promise の完了を待つ。「ここで結果が来るまで待つ」
+
+### 例
+
+```javascript
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const demo = async () => {
+  console.log("開始");
+  await delay(2000); // 2秒待つ
+  console.log("2秒経過");
+  await delay(1000); // 1秒待つ
+  console.log("3秒経過");
+};
+
+demo();
+```
+
+### then/catch との比較
+
+```javascript
+// then/catch を使った書き方
+fetchUser()
+  .then((user) => {
+    return fetchPosts(user.id);
+  })
+  .then((posts) => {
+    console.log(posts);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+// async/await を使った書き方（読みやすい！）
+const loadData = async () => {
+  try {
+    const user = await fetchUser();
+    const posts = await fetchPosts(user.id);
+    console.log(posts);
+  } catch (error) {
+    console.error(error);
+  }
+};
+```
+
+## try-catch でエラーハンドリング
+
+非同期処理では**エラーが発生する可能性**があります。
+`try-catch` でエラーを捕捉しましょう。
+
+```javascript
+const fetchData = async () => {
+  try {
+    const response = await fetch("https://api.example.com/data");
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("エラーが発生しました:", error);
+  }
+};
+```
+
+### try-catch-finally
+
+```javascript
+const fetchData = async () => {
+  try {
+    console.log("データ取得開始");
+    const data = await getData();
+    console.log(data);
+  } catch (error) {
+    console.error("エラー:", error);
+  } finally {
+    console.log("処理完了"); // 成功でも失敗でも実行
+  }
+};
+```
+
+## async/await の注意点
+
+### await は async 関数内でのみ使える
+
+```javascript
+// ❌ エラー
+const result = await somePromise;
+
+// ⭕ async関数の中で使う
+const fetchData = async () => {
+  const result = await somePromise;
+};
+```
+
+### 並列実行（Promise.all）
+
+複数の非同期処理を**同時に**実行したい場合：
+
+```javascript
+const fetchAll = async () => {
+  // 順番に実行（遅い）
+  const user = await fetchUser();
+  const posts = await fetchPosts();
+  // → 合計時間 = fetchUser + fetchPosts
+
+  // 並列実行（速い）
+  const [user, posts] = await Promise.all([fetchUser(), fetchPosts()]);
+  // → 合計時間 = どちらか長い方
+};
+```
+
+## ミニ演習：非同期の実行順序を確認しよう
+
+Console で以下を試して、**出力される順番**を予想してみましょう：
+
+```javascript
+console.log("1: 開始");
+
+setTimeout(() => {
+  console.log("2: タイムアウト（0秒後）");
+}, 0);
+
+console.log("3: 終了");
+```
+
+> 💡 **答え**: `1 → 3 → 2` の順番で出力されます。`setTimeout` は 0 秒でも非同期なので、同期処理がすべて終わった後に実行されます。
+
+## DevTools で非同期処理を確認
+
+ブラウザの DevTools の **Network** タブを開くと、API 通信の様子を確認できます：
+
+1. DevTools を開く（右クリック → 検証）
+2. **Network** タブをクリック
+3. ページを更新、または fetch を実行
+4. リクエストをクリックすると、詳細が見られる
+
+これは API 通信のデバッグで非常に役立ちます！
+
+## 練習問題
+
+main.js に以下のコードを書いて試してみましょう：
+
+```javascript
+// 1秒待ってからメッセージを表示する関数
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const countdown = async () => {
+  console.log("3...");
+  await delay(1000);
+  console.log("2...");
+  await delay(1000);
+  console.log("1...");
+  await delay(1000);
+  console.log("スタート！");
+};
+
+countdown();
+```
+
+## まとめ
+
+- **同期処理**：順番に実行（待つ）
+- **非同期処理**：待たずに次を実行
+- **Promise**：非同期処理の結果を表すオブジェクト
+- **async/await**：Promise を読みやすく書く構文
+- **try-catch**：エラーを捕捉
+- React では **async/await** をメインで使う
+
+---
+
+## 🔗 次のステップ
+
+非同期処理がわかったら、[fetch で API 通信](./02-09_fetchでAPI通信.md) に進みましょう！

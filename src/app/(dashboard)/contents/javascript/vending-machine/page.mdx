@@ -1,0 +1,340 @@
+# 自動販売機を作ろう【ハンズオン・任意】
+
+> 📌 **この記事で学ぶこと**
+>
+> - オブジェクトと配列の応用
+> - 状態管理の基礎
+> - 在庫管理のロジック
+
+> 💡 この記事は**任意**です。時間に余裕があれば取り組んでみてください。
+
+## 完成イメージ
+
+自動販売機のシミュレーションを作ります。
+
+機能：
+
+- 商品リストの表示（名前、価格、在庫）
+- お金の投入
+- 商品の購入
+- お釣りの計算
+- 在庫管理
+
+## Console で作る自動販売機
+
+まずは Console で動く自動販売機を作りましょう。
+
+### Step 1: 商品データ
+
+```javascript
+// 商品データ
+const products = [
+  { id: 1, name: "コーラ", price: 120, stock: 5 },
+  { id: 2, name: "お茶", price: 100, stock: 3 },
+  { id: 3, name: "コーヒー", price: 130, stock: 4 },
+  { id: 4, name: "水", price: 80, stock: 10 },
+];
+
+// 投入金額
+let insertedMoney = 0;
+```
+
+### Step 2: 商品一覧を表示
+
+```javascript
+const showProducts = () => {
+  console.log("=== 商品一覧 ===");
+  products.forEach((p) => {
+    const status = p.stock > 0 ? `在庫: ${p.stock}` : "売り切れ";
+    console.log(`${p.id}. ${p.name} - ¥${p.price} (${status})`);
+  });
+  console.log(`投入金額: ¥${insertedMoney}`);
+  console.log("================");
+};
+
+showProducts();
+```
+
+### Step 3: お金を投入
+
+```javascript
+const insertMoney = (amount) => {
+  // 有効な金額かチェック
+  const validAmounts = [10, 50, 100, 500, 1000];
+  if (!validAmounts.includes(amount)) {
+    console.log("無効な金額です。10, 50, 100, 500, 1000円が使えます。");
+    return;
+  }
+
+  insertedMoney += amount;
+  console.log(`¥${amount} を投入しました。現在の投入金額: ¥${insertedMoney}`);
+};
+
+// 使用例
+insertMoney(100);
+insertMoney(100);
+```
+
+### Step 4: 商品を購入
+
+```javascript
+const buyProduct = (productId) => {
+  // 商品を検索
+  const product = products.find((p) => p.id === productId);
+
+  if (!product) {
+    console.log("商品が見つかりません。");
+    return;
+  }
+
+  // 在庫チェック
+  if (product.stock <= 0) {
+    console.log(`${product.name}は売り切れです。`);
+    return;
+  }
+
+  // 金額チェック
+  if (insertedMoney < product.price) {
+    console.log(
+      `金額が足りません。あと¥${product.price - insertedMoney}必要です。`
+    );
+    return;
+  }
+
+  // 購入処理
+  insertedMoney -= product.price;
+  product.stock -= 1;
+
+  console.log(`${product.name}を購入しました！`);
+  console.log(`残りの投入金額: ¥${insertedMoney}`);
+};
+
+// 使用例
+buyProduct(2); // お茶を購入
+```
+
+### Step 5: お釣りを返却
+
+```javascript
+const returnChange = () => {
+  if (insertedMoney > 0) {
+    console.log(`お釣り: ¥${insertedMoney} を返却しました。`);
+    insertedMoney = 0;
+  } else {
+    console.log("お釣りはありません。");
+  }
+};
+
+returnChange();
+```
+
+## HTML 版
+
+Console 版ができたら、HTML で見た目を作ってみましょう。
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>自動販売機</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      .vending-machine {
+        max-width: 400px;
+        margin: 0 auto;
+        background: #333;
+        border-radius: 12px;
+        padding: 20px;
+      }
+      h1 {
+        color: #fff;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .products {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .product {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #444;
+        padding: 12px;
+        border-radius: 8px;
+        color: #fff;
+      }
+      .product.sold-out {
+        opacity: 0.5;
+      }
+      .product button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #4caf50;
+        color: white;
+      }
+      .product button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+      .money-section {
+        margin-top: 20px;
+        padding: 16px;
+        background: #222;
+        border-radius: 8px;
+      }
+      .money-section p {
+        color: #fff;
+        margin-bottom: 10px;
+      }
+      .money-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .money-buttons button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #2196f3;
+        color: white;
+      }
+      .return-btn {
+        margin-top: 10px;
+        width: 100%;
+        padding: 10px;
+        background: #ff9800;
+      }
+      #message {
+        margin-top: 16px;
+        padding: 12px;
+        background: #111;
+        color: #4caf50;
+        border-radius: 4px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="vending-machine">
+      <h1>🥤 自動販売機</h1>
+      <div id="products" class="products"></div>
+      <div class="money-section">
+        <p>投入金額: ¥<span id="inserted">0</span></p>
+        <div class="money-buttons">
+          <button onclick="insertMoney(10)">¥10</button>
+          <button onclick="insertMoney(50)">¥50</button>
+          <button onclick="insertMoney(100)">¥100</button>
+          <button onclick="insertMoney(500)">¥500</button>
+          <button onclick="insertMoney(1000)">¥1000</button>
+        </div>
+        <button class="return-btn" onclick="returnChange()">
+          お釣りを返却
+        </button>
+      </div>
+      <div id="message"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+```
+
+**script.js**
+
+```javascript
+const products = [
+  { id: 1, name: "コーラ", price: 120, stock: 5 },
+  { id: 2, name: "お茶", price: 100, stock: 3 },
+  { id: 3, name: "コーヒー", price: 130, stock: 4 },
+  { id: 4, name: "水", price: 80, stock: 10 },
+];
+
+let insertedMoney = 0;
+
+const productsEl = document.getElementById("products");
+const insertedEl = document.getElementById("inserted");
+const messageEl = document.getElementById("message");
+
+const render = () => {
+  productsEl.innerHTML = products
+    .map(
+      (p) => `
+    <div class="product ${p.stock === 0 ? "sold-out" : ""}">
+      <div>
+        <strong>${p.name}</strong><br>
+        ¥${p.price} (在庫: ${p.stock})
+      </div>
+      <button 
+        onclick="buyProduct(${p.id})"
+        ${p.stock === 0 || insertedMoney < p.price ? "disabled" : ""}
+      >購入</button>
+    </div>
+  `
+    )
+    .join("");
+
+  insertedEl.textContent = insertedMoney;
+};
+
+const showMessage = (msg) => {
+  messageEl.textContent = msg;
+  setTimeout(() => (messageEl.textContent = ""), 3000);
+};
+
+const insertMoney = (amount) => {
+  insertedMoney += amount;
+  showMessage(`¥${amount} を投入しました`);
+  render();
+};
+
+const buyProduct = (id) => {
+  const product = products.find((p) => p.id === id);
+  if (!product || product.stock === 0) return;
+  if (insertedMoney < product.price) return;
+
+  insertedMoney -= product.price;
+  product.stock -= 1;
+  showMessage(`${product.name}を購入しました！🎉`);
+  render();
+};
+
+const returnChange = () => {
+  if (insertedMoney > 0) {
+    showMessage(`お釣り ¥${insertedMoney} を返却しました`);
+    insertedMoney = 0;
+    render();
+  }
+};
+
+render();
+```
+
+## まとめ
+
+- **オブジェクトの配列**で商品データを管理
+- **状態管理**（insertedMoney, stock）で動作を制御
+- **条件分岐**で購入可能かチェック
+- `find` で商品を検索
+
+---
+
+## 🔗 次のステップ
+
+次は、[メモアプリを作ろう](./02-14_メモアプリを作ろう.md) に進みましょう！

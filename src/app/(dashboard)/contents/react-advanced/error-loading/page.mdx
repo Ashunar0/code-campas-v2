@@ -1,0 +1,337 @@
+# エラーハンドリングとローディング状態
+
+> 📌 **この記事で学ぶこと**
+>
+> - エラー状態の管理
+> - ローディング状態の管理
+> - トースト通知
+> - ユーザーに優しいエラー表示
+
+## 3 つの状態パターン
+
+非同期処理では、3 つの状態を管理するのが一般的です。
+
+```jsx
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+```
+
+### なぜこの 3 つ？
+
+ユーザーに適切なフィードバックを返すためです：
+
+| 状態             | 表示内容                        |
+| ---------------- | ------------------------------- |
+| `loading = true` | ローディングスピナー            |
+| `error` がある   | エラーメッセージ + 再試行ボタン |
+| `data` がある    | データ表示                      |
+
+> 💡 **ローディングやエラーを無視すると...**
+> ユーザーは「フリーズした？」「壊れた？」と不安になります。
+
+## 基本パターン
+
+```jsx
+function DataFetcher() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch("/api/data");
+        if (!response.ok) throw new Error("データの取得に失敗しました");
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+  if (!data) return null;
+
+  return <DataDisplay data={data} />;
+}
+```
+
+## ローディング表示
+
+### シンプルなスピナー
+
+```jsx
+function LoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent" />
+    </div>
+  );
+}
+```
+
+### スケルトン
+
+```jsx
+function TodoSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+      <div className="h-4 bg-gray-200 rounded w-1/2" />
+    </div>
+  );
+}
+```
+
+## エラー表示
+
+### シンプルなエラーメッセージ
+
+```jsx
+function ErrorMessage({ message, onRetry }) {
+  return (
+    <div className="bg-red-50 border border-red-200 rounded p-4 text-center">
+      <p className="text-red-600 mb-2">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          再試行
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## トースト通知
+
+成功・失敗をトーストで表示します。
+
+### シンプルなトースト
+
+```jsx
+import { useState, useEffect } from "react";
+
+function useToast() {
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
+
+  const hideToast = () => {
+    setToast(null);
+  };
+
+  // 自動で消える
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(hideToast, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  return { toast, showToast, hideToast };
+}
+
+function Toast({ message, type }) {
+  const bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
+
+  return (
+    <div
+      className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded shadow-lg`}
+    >
+      {message}
+    </div>
+  );
+}
+```
+
+### 使用例
+
+```jsx
+function App() {
+  const { toast, showToast } = useToast();
+
+  const handleSave = async () => {
+    try {
+      await saveData();
+      showToast("保存しました！", "success");
+    } catch (err) {
+      showToast("保存に失敗しました", "error");
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleSave}>保存</button>
+      {toast && <Toast message={toast.message} type={toast.type} />}
+    </div>
+  );
+}
+```
+
+## 操作中の状態
+
+ボタンなど、操作中は無効化します。
+
+```jsx
+function SaveButton({ onSave }) {
+  const [saving, setSaving] = useState(false);
+
+  const handleClick = async () => {
+    setSaving(true);
+    try {
+      await onSave();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <button onClick={handleClick} disabled={saving}>
+      {saving ? "保存中..." : "保存"}
+    </button>
+  );
+}
+```
+
+## 確認ダイアログ
+
+削除などの破壊的操作には確認を入れます。
+
+```jsx
+function DeleteButton({ onDelete, itemName }) {
+  const handleDelete = () => {
+    if (window.confirm(`「${itemName}」を削除しますか？`)) {
+      onDelete();
+    }
+  };
+
+  return (
+    <button onClick={handleDelete} className="text-red-500">
+      削除
+    </button>
+  );
+}
+```
+
+## カスタムフックにまとめる
+
+```jsx
+function useAsync(asyncFunction) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+
+  const execute = async (...args) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await asyncFunction(...args);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, error, data, execute };
+}
+
+// 使用例
+function App() {
+  const { loading, error, data, execute } = useAsync(fetchTodos);
+
+  useEffect(() => {
+    execute();
+  }, []);
+
+  // ...
+}
+```
+
+## まとめ
+
+- **3 つの状態**：data, loading, error
+- **ローディング**：スピナーやスケルトン
+- **エラー**：メッセージと再試行ボタン
+- **トースト**：操作の結果を通知
+- **確認ダイアログ**：破壊的操作の前に確認
+- **カスタムフック**でパターンを再利用
+
+## 練習問題
+
+以下の仕様で API データ表示コンポーネントを作ってみましょう：
+
+1. `https://jsonplaceholder.typicode.com/users` からユーザー一覧を取得
+2. ローディング中はスピナー表示
+3. エラー時はメッセージ + 再試行ボタン
+
+### 回答例
+
+```jsx
+import { useState, useEffect } from "react";
+
+function UserList() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("https://jsonplaceholder.typicode.com/users");
+      if (!res.ok) throw new Error("取得失敗");
+      const data = await res.json();
+      setUsers(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  if (loading) return <p>読み込み中...</p>;
+  if (error)
+    return (
+      <div>
+        <p>{error}</p>
+        <button onClick={fetchUsers}>再試行</button>
+      </div>
+    );
+
+  return (
+    <ul>
+      {users.map((user) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## 🔗 次のステップ
+
+エラーハンドリングがわかったら、[タスク管理アプリ（本格版）を作ろう](./04-14_タスク管理アプリ本格版.md) に進みましょう！

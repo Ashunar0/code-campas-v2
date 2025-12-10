@@ -1,0 +1,458 @@
+# クイズアプリを作ろう【ハンズオン】
+
+> 📌 **この記事で学ぶこと**
+>
+> - 配列とオブジェクトの活用
+> - DOM 操作の基礎
+> - イベント処理
+> - 状態管理の基礎
+
+## 完成イメージ
+
+シンプルなクイズアプリを作ります。
+
+機能：
+
+- 問題と選択肢を表示
+- 回答を選択できる
+- 正解・不正解を判定
+- スコアを表示
+
+<!--
+📸 画像メモ: クイズアプリの完成画面
+- 問題文が表示されている
+- 4つの選択肢ボタン
+- スコア表示
+-->
+
+## Step 1: HTML の準備
+
+`webex` フォルダにプロジェクトを作成します。
+
+```bash
+cd ~/Desktop/webex
+mkdir quiz-app
+cd quiz-app
+```
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>クイズアプリ</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>JavaScript クイズ</h1>
+
+      <div id="quiz-container">
+        <div id="question"></div>
+        <div id="choices"></div>
+        <div id="result"></div>
+      </div>
+
+      <div id="score">
+        スコア: <span id="score-value">0</span> / <span id="total">0</span>
+      </div>
+
+      <button id="next-btn" style="display: none;">次の問題</button>
+      <button id="restart-btn" style="display: none;">もう一度</button>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+```
+
+## Step 2: CSS でスタイリング
+
+**style.css**
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 24px;
+  color: #333;
+}
+
+#question {
+  font-size: 20px;
+  margin-bottom: 24px;
+  min-height: 60px;
+}
+
+#choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-btn {
+  padding: 16px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.choice-btn:hover {
+  border-color: #667eea;
+  background: #f0f0ff;
+}
+
+.choice-btn.correct {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+.choice-btn.wrong {
+  background: #f44336;
+  border-color: #f44336;
+  color: white;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#score {
+  margin-top: 24px;
+  font-size: 18px;
+  color: #666;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #5a6fd6;
+}
+```
+
+## Step 3: クイズデータの準備
+
+**script.js**
+
+```javascript
+// クイズデータ（オブジェクトの配列）
+const quizData = [
+  {
+    question: "JavaScript の変数宣言に使うキーワードは？",
+    choices: ["var", "let", "const", "上記すべて"],
+    correct: 3,
+  },
+  {
+    question: "配列の要素数を取得するプロパティは？",
+    choices: ["size", "count", "length", "total"],
+    correct: 2,
+  },
+  {
+    question: "配列の各要素を変換して新しい配列を作るメソッドは？",
+    choices: ["forEach", "filter", "find", "map"],
+    correct: 3,
+  },
+  {
+    question: "非同期処理を扱うためのキーワードは？",
+    choices: ["sync/wait", "async/await", "promise/then", "fetch/get"],
+    correct: 1,
+  },
+  {
+    question: "関数の短い書き方の名前は？",
+    choices: ["矢印関数", "短縮関数", "アロー関数", "ラムダ関数"],
+    correct: 2,
+  },
+];
+```
+
+## Step 4: 変数と要素の取得
+
+```javascript
+// 状態管理
+let currentQuestion = 0;
+let score = 0;
+
+// DOM要素の取得
+const questionEl = document.getElementById("question");
+const choicesEl = document.getElementById("choices");
+const resultEl = document.getElementById("result");
+const scoreValue = document.getElementById("score-value");
+const totalEl = document.getElementById("total");
+const nextBtn = document.getElementById("next-btn");
+const restartBtn = document.getElementById("restart-btn");
+```
+
+## Step 5: 問題を表示する関数
+
+```javascript
+const showQuestion = () => {
+  const quiz = quizData[currentQuestion];
+
+  // 問題文を表示
+  questionEl.textContent = `Q${currentQuestion + 1}. ${quiz.question}`;
+
+  // 選択肢をクリア
+  choicesEl.innerHTML = "";
+  resultEl.textContent = "";
+  nextBtn.style.display = "none";
+
+  // 選択肢ボタンを生成
+  quiz.choices.forEach((choice, index) => {
+    const button = document.createElement("button");
+    button.textContent = choice;
+    button.className = "choice-btn";
+    button.addEventListener("click", () => checkAnswer(index));
+    choicesEl.appendChild(button);
+  });
+};
+```
+
+## Step 6: 回答をチェックする関数
+
+```javascript
+const checkAnswer = (selectedIndex) => {
+  const quiz = quizData[currentQuestion];
+  const buttons = choicesEl.querySelectorAll(".choice-btn");
+
+  // すべてのボタンを無効化
+  buttons.forEach((btn) => (btn.disabled = true));
+
+  // 正解の場合
+  if (selectedIndex === quiz.correct) {
+    score++;
+    scoreValue.textContent = score;
+    resultEl.textContent = "正解！🎉";
+    resultEl.style.color = "#4caf50";
+    buttons[selectedIndex].classList.add("correct");
+  } else {
+    // 不正解の場合
+    resultEl.textContent = "不正解...😢";
+    resultEl.style.color = "#f44336";
+    buttons[selectedIndex].classList.add("wrong");
+    buttons[quiz.correct].classList.add("correct");
+  }
+
+  // 次へボタンを表示
+  if (currentQuestion < quizData.length - 1) {
+    nextBtn.style.display = "inline-block";
+  } else {
+    showFinalResult();
+  }
+};
+```
+
+## Step 7: 最終結果を表示
+
+```javascript
+const showFinalResult = () => {
+  setTimeout(() => {
+    questionEl.textContent = "クイズ終了！";
+    choicesEl.innerHTML = "";
+    resultEl.textContent = `あなたのスコア: ${score} / ${quizData.length}`;
+    resultEl.style.color = "#333";
+    restartBtn.style.display = "inline-block";
+  }, 1000);
+};
+```
+
+## Step 8: イベントリスナー
+
+```javascript
+// 次の問題へ
+nextBtn.addEventListener("click", () => {
+  currentQuestion++;
+  showQuestion();
+});
+
+// リスタート
+restartBtn.addEventListener("click", () => {
+  currentQuestion = 0;
+  score = 0;
+  scoreValue.textContent = 0;
+  restartBtn.style.display = "none";
+  showQuestion();
+});
+```
+
+## Step 9: 初期化
+
+```javascript
+// 初期表示
+totalEl.textContent = quizData.length;
+showQuestion();
+```
+
+## 完成コード（まとめ）
+
+**script.js** の全体：
+
+```javascript
+// クイズデータ
+const quizData = [
+  {
+    question: "JavaScript の変数宣言に使うキーワードは？",
+    choices: ["var", "let", "const", "上記すべて"],
+    correct: 3,
+  },
+  {
+    question: "配列の要素数を取得するプロパティは？",
+    choices: ["size", "count", "length", "total"],
+    correct: 2,
+  },
+  {
+    question: "配列の各要素を変換して新しい配列を作るメソッドは？",
+    choices: ["forEach", "filter", "find", "map"],
+    correct: 3,
+  },
+  {
+    question: "非同期処理を扱うためのキーワードは？",
+    choices: ["sync/wait", "async/await", "promise/then", "fetch/get"],
+    correct: 1,
+  },
+  {
+    question: "関数の短い書き方の名前は？",
+    choices: ["矢印関数", "短縮関数", "アロー関数", "ラムダ関数"],
+    correct: 2,
+  },
+];
+
+// 状態管理
+let currentQuestion = 0;
+let score = 0;
+
+// DOM要素の取得
+const questionEl = document.getElementById("question");
+const choicesEl = document.getElementById("choices");
+const resultEl = document.getElementById("result");
+const scoreValue = document.getElementById("score-value");
+const totalEl = document.getElementById("total");
+const nextBtn = document.getElementById("next-btn");
+const restartBtn = document.getElementById("restart-btn");
+
+// 問題を表示
+const showQuestion = () => {
+  const quiz = quizData[currentQuestion];
+  questionEl.textContent = `Q${currentQuestion + 1}. ${quiz.question}`;
+  choicesEl.innerHTML = "";
+  resultEl.textContent = "";
+  nextBtn.style.display = "none";
+
+  quiz.choices.forEach((choice, index) => {
+    const button = document.createElement("button");
+    button.textContent = choice;
+    button.className = "choice-btn";
+    button.addEventListener("click", () => checkAnswer(index));
+    choicesEl.appendChild(button);
+  });
+};
+
+// 回答をチェック
+const checkAnswer = (selectedIndex) => {
+  const quiz = quizData[currentQuestion];
+  const buttons = choicesEl.querySelectorAll(".choice-btn");
+
+  buttons.forEach((btn) => (btn.disabled = true));
+
+  if (selectedIndex === quiz.correct) {
+    score++;
+    scoreValue.textContent = score;
+    resultEl.textContent = "正解！🎉";
+    resultEl.style.color = "#4caf50";
+    buttons[selectedIndex].classList.add("correct");
+  } else {
+    resultEl.textContent = "不正解...😢";
+    resultEl.style.color = "#f44336";
+    buttons[selectedIndex].classList.add("wrong");
+    buttons[quiz.correct].classList.add("correct");
+  }
+
+  if (currentQuestion < quizData.length - 1) {
+    nextBtn.style.display = "inline-block";
+  } else {
+    showFinalResult();
+  }
+};
+
+// 最終結果
+const showFinalResult = () => {
+  setTimeout(() => {
+    questionEl.textContent = "クイズ終了！";
+    choicesEl.innerHTML = "";
+    resultEl.textContent = `あなたのスコア: ${score} / ${quizData.length}`;
+    resultEl.style.color = "#333";
+    restartBtn.style.display = "inline-block";
+  }, 1000);
+};
+
+// イベントリスナー
+nextBtn.addEventListener("click", () => {
+  currentQuestion++;
+  showQuestion();
+});
+
+restartBtn.addEventListener("click", () => {
+  currentQuestion = 0;
+  score = 0;
+  scoreValue.textContent = 0;
+  restartBtn.style.display = "none";
+  showQuestion();
+});
+
+// 初期化
+totalEl.textContent = quizData.length;
+showQuestion();
+```
+
+## まとめ
+
+- **オブジェクトの配列**でクイズデータを管理
+- **DOM 操作**で動的に要素を生成
+- **イベントリスナー**でユーザー操作に反応
+- **状態管理**（currentQuestion, score）で進行を管理
+
+---
+
+## 🔗 次のステップ
+
+クイズアプリができたら、[自動販売機を作ろう（任意）](./02-13_自動販売機を作ろう.md) または [メモアプリを作ろう](./02-14_メモアプリを作ろう.md) に進みましょう！
